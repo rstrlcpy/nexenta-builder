@@ -1,0 +1,12 @@
+Package: nexenta-builder
+Version: 2.3
+Architecture: solaris-i386
+Maintainer: Nexenta System <support@nexenta.com>
+Installed-Size: 33
+Depends: apt, debarchiver, debootstrap, mkisofs
+Section: devel
+Priority: optional
+Description: Nexenta ISO Builder Kit
+ Bootstraps Nexenta Core Platform into customized ISO using
+ APT repository as its input
+ .

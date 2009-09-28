@@ -1,0 +1,66 @@
+#!/bin/ksh -p
+#
+# Copyright 2005 Nexenta Systems, Inc.  All rights reserved.
+# Use is subject to license terms.
+#
+# $Id: eventhook 8626 2005-10-26 21:29:21Z mac $
+#
+
+PATH=/bin:/sbin export PATH
+umask 0222
+
+tmp_resolv_conf=/tmp/resolv.conf.$$
+etc_resolv_conf=/etc/resolv.conf
+
+# Refresh the domain and name servers on /etc/resolv.conf
+
+function insert
+{
+	dnsservers=`dhcpinfo -i $1 DNSserv`
+	if [ -n "${dnsservers}" ]; then
+		# remove the old domain and name servers
+		if [ -f ${etc_resolv_conf} ]; then
+			rm -f ${tmp_resolv_conf}
+			sed -e '/^domain/d' -e '/^nameserver/d' \
+			    ${etc_resolv_conf} > ${tmp_resolv_conf}
+		fi
+
+		# add the new domain
+		dnsdomain=`dhcpinfo -i $1 DNSdmain`
+		if [ -n "${dnsdomain}" ]; then
+			echo "domain ${dnsdomain}" >> ${tmp_resolv_conf}
+		fi
+
+		# add new name servers
+		for name in ${dnsservers}; do
+			echo "nameserver ${name}" >> ${tmp_resolv_conf}
+		done
+		mv -f ${tmp_resolv_conf} ${etc_resolv_conf}
+	fi
+}
+
+# Remove the domain and name servers from /etc/resolv.conf
+
+function remove
+{
+	if [ -f ${etc_resolv_conf} ]; then
+		rm -f ${tmp_resolv_conf}
+		sed -e '/^domain/d' -e '/^nameserver/d' \
+		    ${etc_resolv_conf} > ${tmp_resolv_conf}
+		mv -f ${tmp_resolv_conf} ${etc_resolv_conf}
+	fi
+}
+
+case $2 in
+BOUND | EXTEND)
+	insert $1
+	exit 0
+	;;
+EXPIRE | DROP | RELEASE)
+	remove
+	exit 0
+	;;
+*)
+	exit 0
+	;;
+esac

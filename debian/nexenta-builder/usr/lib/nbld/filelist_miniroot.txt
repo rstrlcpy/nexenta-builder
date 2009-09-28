@@ -1,0 +1,80 @@
+#
+# Copyright 2005 Nexenta Systems, Inc.  All rights reserved.
+# Use is subject to license terms.
+#
+# $Id: filelist_miniroot.txt 114066 2006-10-16 16:45:44Z root $
+#
+
+#
+# This file specifies the contents of miniroot.  Files and directories
+# mentioned in this file will be copied over from the BFU staging area
+# into the miniroot.
+#
+# An entry which begins with '!' will be excluded from the miniroot
+# and instead will be made part of the CD-ROM contents.
+#
+# Otherwise, all other entries specify either files or directories
+# with one entry per line; blank and commented lines are ignored.
+#
+
+bin
+boot/acpi/tables
+boot/solaris
+boot/solaris.xpm
+boot/grub
+dev
+devices/pseudo
+etc
+!etc/gconf
+kernel
+lib
+platform/i86pc/kernel
+proc
+sbin
+system
+tmp
+var
+!var/lib/apt
+!var/lib/dpkg
+!var/cache/man
+!var/lib/scrollkeeper
+root
+
+# We need this else svc.startd will crash after we mount /usr on LiveCD
+usr/lib/locale
+
+# We need these because the system's hostname is set prior to /usr being mounted
+usr/bin/bash
+usr/bin/hostname
+usr/bin/uname
+
+# Some misc stuff
+usr/bin/cp
+usr/bin/ls
+usr/bin/cat
+usr/bin/eject
+usr/bin/sleep
+usr/bin/grep
+
+# We need these for device and media discovery
+usr/bin/pkill
+usr/sbin/pmadm
+usr/sbin/devfsadm
+usr/sbin/reboot
+usr/lib/devfsadm
+usr/lib/sysevent
+
+# and for lofs
+usr/sbin/lofiadm
+usr/lib/fs
+
+# and for ZFS
+#usr/lib/fs/zfs
+#usr/lib/libvolmgt.so.1
+#usr/lib/libdiskmgt.so.1
+#usr/lib/libzfs.so
+#usr/lib/libzfs.so.1
+#usr/lib/libzpool.so
+#usr/lib/libzpool.so.1
+#usr/sbin/zpool
+#usr/sbin/zfs

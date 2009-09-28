@@ -1,0 +1,8 @@
+Origin: GNU_Solaris
+Label: GNU_Solaris
+Suite: elatte
+Version: 0.1
+Codename: elatte
+Architectures: all solaris-i386
+Components: main
+Description: GNU/Solaris Elatte Development Branch

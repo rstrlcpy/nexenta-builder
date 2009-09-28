@@ -1,0 +1,13 @@
+#!/sbin/sh
+#
+# Copyright 2005 Nexenta Systems, Inc.  All rights reserved.
+# Use is subject to license terms.
+#
+# $Id: elatte-sysidtool-system 8761 2005-10-27 23:49:11Z mac $
+#
+
+if [ -x /lib/svc/method/sshd ]; then
+	# Generate SSH host keys
+	/lib/svc/method/sshd -c
+fi
+exit 0

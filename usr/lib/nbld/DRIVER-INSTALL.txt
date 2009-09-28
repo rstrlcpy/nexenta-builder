@@ -1,0 +1,219 @@
+
+	=====================================================
+        Nexenta Installer - Missing Driver Installation Guide
+	=====================================================
+	
+                           v1.0, 04/16/2008
+
+NexentaStor Installer provides a new capability, to install the product 
+even in case of a missing driver. (See related FAQ entries for 
+information on supported hardware platforms and supported devices at
+http://www.nexenta.com/nexentastor-faq). 
+
+In this document:
+  
+  * procedure: how to install a third-party driver
+  * basic driver-related troubleshooting steps
+  * setting up basic networking connectivity and USB media
+    in the minimal and constrained Nexenta Installer environment.
+
+At any point during installation, press F3 and review "Detected Devices"
+printout. These are all devices in your systems, including possibly 
+those for which Nexenta does not provide drivers. 
+
+For all missing drivers, the "Detected Devices" list contains the 
+corresponding PCI/PCI-X/PCIe IDs. The missing PCI IDs are important.
+The missing PCI IDs will allow you to identify the missing driver,
+and ultimately resolve the problem.
+
+Nexenta provides a useful tool called 'hwdisco' - 
+Nexenta hardware discovery utility. The usage is described below.
+
+Press F2 to get to a shell prompt and execute commands (listed below).
+
+In most cases the 'hwdisco' utility will recommend web site from where 
+the missing driver can be downloaded. 
+Otherwise, use device's PCI/PCIe/PCI-X ID to find out driver's
+availability on the Internet.
+
+
+  1. COPYING DRIVER OR PACKAGE
+  ----------------------------
+
+  There are two common cases which might require third-party driver
+installation:
+
+  Case A. No networking adapter detected.
+  
+  Suggestion:
+
+  Use USB media to copy required driver into the Installer's 
+environment. After USB media is connected, it will be automatically
+mounted under /media/<USB-VENDOR> directory. At this point you could
+simply create a temporary directory (use 'mkdir' command) and
+copy the driver over into this directory.
+
+Next, follow the instructions below.
+
+
+  Case B. No hard disk detected.
+
+  Suggestion:
+  
+  Setup network connectivity using detected networking adapter. Use DHCP
+or static configuration. For DHCP, run command:
+
+  ifconfig <drv>0 dhcp
+  
+where <drv> is networking driver name and '0' is instance number.
+
+For static network interface configuration, run:
+
+  ifconfig <drv>0 <ip-addr> netmask <mask>
+  
+where <ip-addr> is IPv4 address, and netmask is networking mask
+(both in a canonical form #.#.#.#)
+
+Once network connectivity is established, use 'scp' command to copy
+required driver to the Installer's environment.
+
+
+
+  2. QUEUING DRIVER OR PACKAGE FOR INSTALLATION
+  ----------------------------------------------
+
+  After the driver or package has been successfully copied over, 
+please use the following procedure to schedule driver/package 
+installation job for Nexenta Installer.
+
+"Case A" below describes installing missing driver if you have
+the missing driver's binary executable. 
+
+"Case B" below describes installing missing driver if you have
+the missing driver in a form of SVR4 package. In both cases the
+provided 'hwdisco' utility does the job.
+
+
+  *
+  * Case A. Enabling and queuing driver binary
+  *
+
+  Usage: hwdisco -d '"pci#,#" "pci#,#" ...' <32bit-drv> [64bit-drv] [config]
+
+  Enable third-party driver. Kernel module installation will be attempted
+and Installer will be prepared to make sure that the driver is enabled
+after installation is complete.
+
+
+   pci#,#	PCI/PCIe/PCI-X ids to bind with the driver. Example:
+                '"pcie11,85" "pcie11,ca"'
+
+   32bit-drv	32-bit driver binary file name. Required and must be
+                locally available. Read /DRIVER-INSTALL.txt for more
+                details on how it could be copied over, etc
+
+   64bit-drv	64-bit driver binary file name. Optional. Must be locally
+                available if specified
+
+   config       driver configuration file. Optional. Must be locally
+                available if specified
+
+  Example:
+
+  hwdisco -d '"pcie11,85" "pcie11,ca"' /bcme /bcme64 /bcme.conf
+  
+  *
+  * Case B. Queueing driver package
+  *
+
+  Usage: hwdisco -p <SVR4-package>
+
+  Enable third-party driver. SVR4 compliant package installation will be
+attempted at installation time. 
+
+
+  SVR4-pacakge		SVR4 compliant package file name. Must be locally
+                        available. Read /DRIVER-INSTALL.txt for more
+                        details on how it could be copied over, etc
+
+  Example:
+
+  hwdisco -p /BRCMbcme.pkg
+
+  
+To execute the commands listed above (and any other commands), first 
+press F2. This will provide shell prompt.  
+
+  
+
+  3. FINAL STEPS
+  --------------
+
+  After new driver or package installation has been successfully
+queued, press F1 and continue installation procedure. 
+
+You might be asked about missing drivers once more
+(in case of SVR4 package installation). This, however, should not 
+prevent Installer from completing scheduled jobs.
+
+  At the end of the installation, press F3 and verify that you see 
+message "Processing driver/package installation jobs ...", 
+which would mean that Installer has successfully added driver(s)/
+package(s) to the system's pool 'syspool'.
+
+
+
+  4. TROUBLESHOOTING
+  ------------------
+
+      A. Adding, Updating, and Removing a Driver
+
+  Use the add_drv(1M) command to make the installed driver usable. The
+  following events take place when you add a driver:
+
+    * The driver initialization happened - attach()
+    * The driver is added to the /devices directory
+    * The driver is the most recent module listed by modinfo
+    * The driver is the most recent module listed in the file
+      /etc/name_to_major
+
+  The file /etc/driver_aliases might be updated. The /etc/driver_aliases
+  file shows which devices are bound to which drivers. If a driver is not
+  listed in the /etc/driver_aliases file, then the NexentaOS does not load
+  that driver or attach to that driver. Each line of the /etc/driver_aliases
+  file shows a driver name followed by a device name.
+
+  WARNING: Do not edit the /etc/driver_aliases file manually. Use the add_drv
+  command to establish a device binding. Use the update_drv command to change
+  a device binding.
+
+  List of devices currently supported by the NexentaOS and OpenSolaris:
+  http://www.sun.com/bigadmin/hcl/devicelist/
+
+  Searchable PCI vendor and device lists: http://www.pcidatabase.com/
+
+  Repository of vendor IDs, device IDs, subsystems, and device classes used
+  in PCI devices: http://pciids.sourceforge.net/
+
+  Use the update_drv command to notify the system about attribute changes
+  to an installed device driver. By default, the update_drv command reloads
+  the hardware configuration file for the specified driver. Use the prtconf
+  command to review the current configuration information for a device and
+  driver. For example, the -D option shows which driver manages a particular
+  device. The -P option shows information about pseudo devices.
+
+  Use the rem_drv command to update the system driver configuration files
+  so that the driver is no longer usable. The rem_drv command does not
+  physically delete driver files. If possible, the rem_drv command unloads
+  the driver from memory.
+
+       B. Use the following commands to further monitor and
+          troubleshoot the situation:
+
+  - modinfo | grep <driver-name>
+    (for details on modinfo, please refer to the corresponding manpage)
+  
+  - cat /etc/driver_aliases | grep <driver-name>
+
+  - dmesg | grep <driver-name>
+

@@ -1,0 +1,269 @@
+#
+# Copyright 2005 Nexenta Systems, Inc.  All rights reserved.
+# Use is subject to license terms.
+#
+# $Id: elatte-unstable.bootstrap 113861 2006-09-28 09:11:26Z root $
+#
+
+mirror_style main
+download_style apt
+finddebs_style from-indices
+variants -
+
+CPIO=/usr/sun/bin/cpio
+
+work_out_debs () {
+    required="$BOOTSTRAP_REQUIRED"
+    test "x$required" = x && required="$(get_debs Priority: required) less base-files base-passwd whiptail"
+    base="$BOOTSTRAP_BASE"
+    test "x$base" = x && base="$(get_debs Priority: important) $BOOTSTRAP_EXTRA_DEBS"
+    return 0
+}
+
+install_class_action_files () {
+	alien_pkgs=`find $TARGET/var/lib/dpkg/alien/ -maxdepth 1 -mindepth 1 -type d`
+	for pkg in $alien_pkgs; do
+		if [ ! -d $pkg/reloc ]; then
+			continue
+		fi
+		cd $pkg/reloc
+		file_list=`find . -maxdepth 1 -mindepth 1 -type d`
+		if [ $? -eq 0 ]; then
+			info CONFIGURING "Setting up %s..." `basename $pkg`
+			for file in $file_list; do
+				cp -a $file $TARGET/
+			done
+		fi
+		cd - > /dev/null 2>&1
+	done
+}
+
+setup_devnull () {
+	find /dev -name null -print | $CPIO -pdum $TARGET/
+	find /devices/pseudo -name "*null" -print | $CPIO -pdum $TARGET/
+}
+
+setup_devs () {
+dev_entries='
+/dev/stdin				/dev/fd/0
+/dev/stdout				/dev/fd/1
+/dev/stderr				/dev/fd/2
+/devices/pseudo/arp@0:arp              	/dev/arp
+/devices/pseudo/clone@0:ibd            	/dev/ibd
+/devices/pseudo/icmp@0:icmp            	/dev/icmp
+/devices/pseudo/icmp@0:icmp            	/dev/rawip
+/devices/pseudo/icmp6@0:icmp6          	/dev/icmp6
+/devices/pseudo/icmp6@0:icmp6          	/dev/rawip6
+/devices/pseudo/ip@0:ip                	/dev/ip
+/devices/pseudo/ip6@0:ip6              	/dev/ip6
+/devices/pseudo/rts@0:rts              	/dev/rts
+/devices/pseudo/tcp@0:tcp              	/dev/tcp
+/devices/pseudo/tcp6@0:tcp6            	/dev/tcp6
+/devices/pseudo/udp@0:udp              	/dev/udp
+/devices/pseudo/udp6@0:udp6            	/dev/udp6
+/devices/pseudo/ipsecah@0:ipsecah      	/dev/ipsecah
+/devices/pseudo/ipsecesp@0:ipsecesp    	/dev/ipsecesp
+/devices/pseudo/keysock@0:keysock      	/dev/keysock
+/devices/pseudo/cn@0:console           	/dev/console
+/devices/pseudo/cn@0:syscon            	/dev/syscon
+/devices/pseudo/cn@0:systty            	/dev/systty
+/devices/pseudo/devinfo@0:devinfo      
+/devices/pseudo/ksyms@0:ksyms          	/dev/ksyms
+/devices/pseudo/log@0:conslog          	/dev/conslog
+/devices/pseudo/log@0:log              	/dev/log
+/devices/pseudo/mm@0:mem               	/dev/mem
+/devices/pseudo/mm@0:kmem              	/dev/kmem
+/devices/pseudo/mm@0:null              	/dev/null
+/devices/pseudo/mm@0:allkmem           	/dev/allkmem
+/devices/pseudo/mm@0:zero              	/dev/zero
+/devices/pseudo/openeepr@0:openprom    	/dev/openprom
+/devices/pseudo/sad@0:admin            	/dev/sad/admin
+/devices/pseudo/sad@0:user             	/dev/sad/user
+/devices/pseudo/sy@0:tty               	/dev/tty
+/devices/pseudo/sysevent@0:sysevent    	/dev/sysevent
+/devices/pseudo/sysmsg@0:msglog        	/dev/msglog
+/devices/pseudo/sysmsg@0:sysmsg        	/dev/sysmsg
+/devices/pseudo/tl@0:ticots            	/dev/ticots
+/devices/pseudo/tl@0:ticotsord         	/dev/ticotsord
+/devices/pseudo/tl@0:ticlts            	/dev/ticlts
+/devices/pseudo/wc@0:wscons            	/dev/wscons
+/devices/pseudo/conskbd@0:kbd          	/dev/kbd
+/devices/pseudo/random@0:random		/dev/random
+/devices/pseudo/random@0:urandom	/dev/urandom
+/devices/pseudo/clone@0:ptm		/dev/ptmx
+/devices/pseudo/kstat@0:kstat		/dev/kstat
+'
+
+	eval echo "\"\$dev_entries\""  | \
+	while read path symlink; do
+		if [ -e "$path" ]; then
+			echo "$path" | $CPIO -pdum $TARGET/
+		fi
+		if [ ! -z "$symlink" -a -e "$symlink" ]; then
+			echo "$symlink" | $CPIO -pdum $TARGET/
+		fi
+	done
+
+	# will need ptys for expect's spawn
+	for i in $(ls /dev/pts); do echo /dev/pts/$i | $CPIO -pdum $TARGET/; done
+}
+
+prepare_nlu() {
+    rm -rf /tmp/nlubin /tmp/nlulib
+    mkdir -p /var/lib/dpkg/alien/nexenta-sunw 2>/dev/null
+    test -f /var/lib/dpkg/alien/nexenta-sunw/b55.libc.64 || \
+    	cp $TARGET/var/lib/dpkg/alien/nexenta-sunw/b55.libc.64 /var/lib/dpkg/alien/nexenta-sunw
+    test -f /var/lib/dpkg/alien/nexenta-sunw/b55.libc.32 || \
+    	cp $TARGET/var/lib/dpkg/alien/nexenta-sunw/b55.libc.32 /var/lib/dpkg/alien/nexenta-sunw
+    test -f /var/lib/dpkg/alien/nexenta-sunw/nluld || \
+    	cp $TARGET/var/lib/dpkg/alien/nexenta-sunw/nluld /var/lib/dpkg/alien/nexenta-sunw
+    $TARGET/var/lib/dpkg/alien/nexenta-sunw/makenlu.sh
+    cp -ar /tmp/nlubin $TARGET/tmp
+    cp -ar /tmp/nlulib $TARGET/tmp
+    cp -ar /tmp/nl $TARGET/tmp
+    cp /lib/ld.so.1  $TARGET/lib
+    cp /lib/amd64/ld.so.1  $TARGET/lib/amd64
+}
+
+first_stage_install () {
+    setup_devnull
+    setup_devs
+    extract $required
+    install_class_action_files
+
+    if test -f /.volid; then
+        cp $TARGET/var/lib/dpkg/alien/nexenta-sunw/ld32 $TARGET/lib/ld.so.1
+        cp $TARGET/var/lib/dpkg/alien/nexenta-sunw/ld64 $TARGET/lib/amd64/ld.so.1
+    else
+        prepare_nlu
+    fi
+
+    mkdir -p "$TARGET/var/lib/dpkg"
+    : >"$TARGET/var/lib/dpkg/status"
+    : >"$TARGET/var/lib/dpkg/available"
+
+    setup_etc
+    if [ ! -e "$TARGET/etc/mnttab" ]; then
+        echo '# UNCONFIGURED MNTTAB FOR BASE SYSTEM' > "$TARGET/etc/mnttab"
+        chown 0.0 "$TARGET/etc/mnttab"; chmod 644 "$TARGET/etc/mnttab"
+    fi
+
+    x_feign_install () {
+        local pkg="$1"
+        local deb="$(debfor $pkg)"
+        local ver="$(
+            ar -p "$TARGET/$deb" control.tar.gz | zcat |
+                tar -O -xf - control ./control 2>/dev/null |
+                sed -ne 's/^Version: *//Ip' | head -n 1
+        )"
+
+        mkdir -p "$TARGET/var/lib/dpkg/info"
+
+        echo \
+"Package: $pkg
+Version: $ver
+Status: install ok installed" >> "$TARGET/var/lib/dpkg/status"
+
+        touch "$TARGET/var/lib/dpkg/info/${pkg}.list"
+    }
+
+    x_setup_proc () {
+        on_exit "umount $TARGET/proc"
+        umount $TARGET/proc 2>/dev/null || true
+        in_target mount /proc
+    }
+
+    x_setup_proc
+    x_feign_install dpkg
+}
+
+second_stage_install () {
+    x_core_install () {
+	smallyes '' | in_target dpkg --force-depends --install $(debfor "$@")
+    }
+    p () {
+	baseprog="$(($baseprog + ${1:-1}))"
+    }
+
+    in_target /sbin/ldconfig
+
+    DEBIAN_FRONTEND=noninteractive
+    DEBCONF_NONINTERACTIVE_SEEN=true
+    export DEBIAN_FRONTEND DEBCONF_NONINTERACTIVE_SEEN
+
+    baseprog=0
+    bases=7
+
+    p; progress $baseprog $bases INSTCORE "Installing core packages" #1
+    info INSTCORE "Installing core packages..."
+
+    p; progress $baseprog $bases INSTCORE "Installing core packages" #2
+    ln -sf mawk $TARGET/usr/bin/awk
+    x_core_install base-files base-passwd
+    p; progress $baseprog $bases INSTCORE "Installing core packages" #3
+    x_core_install dpkg
+
+    if [ ! -e "$TARGET/etc/localtime" ]; then
+        ln -sf /usr/share/zoneinfo/UTC "$TARGET/etc/localtime"
+    fi
+
+    p; progress $baseprog $bases INSTCORE "Installing core packages" #4
+    x_core_install perl-base
+
+    p; progress $baseprog $bases INSTCORE "Installing core packages" #5
+    rm $TARGET/usr/bin/awk
+    x_core_install mawk
+
+    p; progress $baseprog $bases INSTCORE "Installing core packages" #6
+    if doing_variant -; then
+      x_core_install debconf
+    fi
+
+    baseprog=0
+    bases=$(set -- $required; echo $#)
+
+    info UNPACKREQ "Unpacking required packages..."
+
+    smallyes '' | 
+      (repeat 2 in_target_failmsg UNPACK_REQ_FAIL_FIVE "Failure while unpacking required packages. Repeat one more time." "" \
+      dpkg --status-fd 8 --force-depends --unpack $(debfor $required) 8>&1 1>&7 |
+      dpkg_progress $baseprog $bases UNPACKREQ "Unpacking required packages" UNPACKING) 7>&1
+
+    info CONFREQ "Configuring required packages..."
+
+    mv "$TARGET/sbin/start-stop-daemon" "$TARGET/sbin/start-stop-daemon.REAL"
+    echo \
+"#!/bin/sh
+echo
+echo \"Warning: Fake start-stop-daemon called, doing nothing\"" > "$TARGET/sbin/start-stop-daemon"
+    chmod 755 "$TARGET/sbin/start-stop-daemon"
+
+    setup_dselect_method apt
+
+    smallyes '' | 
+      (repeat 2 in_target_failmsg CONF_REQ_FAIL "Trying to resolve configuration issues." "" \
+      dpkg --status-fd 8 --configure --pending --force-configure-any --force-depends 8>&1 1>&7 |
+      dpkg_progress $baseprog $bases CONFREQ "Configuring required packages" CONFIGURING) 7>&1
+
+    baseprog=0
+    bases="$(set -- $base; echo $#)"
+
+    info UNPACKBASE "Unpacking the base system..."
+
+    smallyes '' | 
+      (repeat 2 in_target_failmsg INST_BASE_FAIL_FIVE "Failure while installing base packages.  Repeat one more time." "" \
+      dpkg --status-fd 8 --force-auto-select --force-overwrite --force-depends --force-confold --skip-same-version --unpack $(debfor $base) 8>&1 1>&7 |
+      dpkg_progress $baseprog $bases UNPACKBASE "Unpacking base system" UNPACKING) 7>&1
+
+    info CONFBASE "Configuring the base system..."
+
+    smallyes '' |
+      (repeat 2 in_target_failmsg CONF_BASE_FAIL_FIVE "Failure while configuring base packages.  Repeat one more time." "" \
+      dpkg --status-fd 8 --force-confold --skip-same-version --configure --force-depends -a 8>&1 1>&7 |
+      dpkg_progress $baseprog $bases CONFBASE "Configuring base system" CONFIGURING) 7>&1
+
+    mv "$TARGET/sbin/start-stop-daemon.REAL" "$TARGET/sbin/start-stop-daemon"
+
+    progress $bases $bases CONFBASE "Configuring base system"
+    info BASESUCCESS "Base system installed successfully."
+}
