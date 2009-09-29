@@ -1,6 +1,0 @@
-#!/bin/bash
-export TERMINFO=/lib/terminfo
-export TERM=xterm
-while true; do
-	/usr/games/bastet
-done

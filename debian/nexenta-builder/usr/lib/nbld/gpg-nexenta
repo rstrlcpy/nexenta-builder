@@ -1,2 +1,0 @@
-#!/bin/bash
-echo sunay92|gpg --passphrase-fd 0 --yes "$@"
