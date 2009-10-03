@@ -132,6 +132,7 @@ prepare_nlu() {
 first_stage_install () {
     setup_devnull
     setup_devs
+    extract base-files base-passwd
     extract $required
     install_class_action_files
 
