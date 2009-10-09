@@ -511,6 +511,9 @@ function create_mini
 	echo "  preparing ramdisk image ... \c"
 
 	total_size=0
+	#du not seeing actual file size, sync and wait 5 seconds 
+	sync; sync
+	sleep 5
 	# Find out the size of miniroot staging area
 	for file in ${filelist}
 	do

@@ -1,3 +1,10 @@
+nexenta-builder (2.3.2) hardy; urgency=low
+
+  * Add du fix to nbld-livdcd for correct filesize 
+  * Bump NCP2 -> 3
+
+ -- Nexenta Systems <maintainer@nexenta.com>  Fri, 09 Oct 2009 09:32:21 -0700
+
 nexenta-builder (2.3.1) hardy; urgency=low
 
   * Add fix to hardy-unstable.bootstrap to extract base-files first 
