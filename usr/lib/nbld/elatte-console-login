@@ -53,19 +53,24 @@ if test ! -f $FIRSTSTART; then
 
 	if test -f $TRYREBOOT; then
 		touch $FIRSTSTART
-		read livecd_volid < /.volid
-		dev_phys=`/sbin/mdisco -V ${livecd_volid} -l 2>/dev/null`
-		cp /usr/sbin/reboot /reboot
-		cp /usr/bin/sleep /sleep
+		cp /usr/sbin/uadmin /uadmin
+		cp /usr/sun/bin/sleep /sleep
 		cp /usr/bin/eject /eject
-		cp /usr/bin/nohup /nohup
-		cp /usr/bin/true /true
+		cp /usr/sun/bin/true /true
+		cp /usr/lib/libvolmgt.so.1 /lib
+		cp /usr/lib/libshell.so.1 /lib
+		cp /usr/lib/libast.so.1 /lib
+		cp /usr/lib/libcmd.so.1 /lib
+		cp /usr/lib/libdll.so.1 /lib
+		cp /usr/lib/libsum.so.1 /lib
+		cp /usr/lib/libsmbios.so.1 /lib
 		sync
-		/eject -f $dev_phys 2>/dev/null
-		/nohup /reboot 2>/dev/null &
+		reboot -qn 2>/dev/null &
+		/sleep 1
+		/eject -f cdrom 2>/dev/null
 		echo "Rebooting into Nexenta now..." >/dev/msglog
-		while ./true; do ./sleep 1; done
-		/nohup /reboot 2>/dev/null
+		while /true; do /sleep 1; done
+		/uadmin 2 8 2>/dev/null
 	fi
 
 	echo >/dev/msglog

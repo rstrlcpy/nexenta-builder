@@ -2940,7 +2940,6 @@ cleanup()
 	exec 3>&-
 	cleanup_pre
 	svcadm disable system/filesystem/rmvolmgr > /dev/null 2>&1
-	svcadm disable -s system/hal > /dev/null 2>&1
 	rm -f $DIALOG_RES >/dev/null 2>&1
 }
 

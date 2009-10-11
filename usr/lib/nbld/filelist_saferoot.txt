@@ -20,7 +20,6 @@
 bin
 boot/acpi/tables
 boot/solaris
-boot/solaris.xpm
 dev
 devices/pseudo
 etc

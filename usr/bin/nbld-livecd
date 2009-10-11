@@ -364,9 +364,14 @@ function customize_mini
 		fatal_error
 	fi
 
-	# Set LiveCD root password to "livecd"
 	if [ "${MODE}" = "livecd" ]; then
+		# Set LiveCD root password to "livecd"
 		sed 's/^root:/root:pv80DlPSjDfZI/g' $1/etc/shadow > ${TMP_FILE}
+		copy_file ${TMP_FILE} $1/etc/shadow 0400 root:sys
+		rm ${TMP_FILE}
+	else
+		# Set InstallCD root password to "empty"
+		sed 's/^root:/root:moAdagpFPw1iE/g' $1/etc/shadow > ${TMP_FILE}
 		copy_file ${TMP_FILE} $1/etc/shadow 0400 root:sys
 		rm ${TMP_FILE}
 	fi
@@ -422,6 +427,11 @@ function customize_mini
 	# Set up dialog RC file for InstallCD
 	if [ "${MODE}" != "livecd" ]; then
 		cp ${DIALOGRC} $1/root/.dialogrc
+		if cat ${FAKEROOT}/${REPO}/defaults | grep "nlm-eval:" >/dev/null; then
+			sed -i -e "s/NexentaStor/Developer Edition/" $1/root/.screenrc
+		elif cat ${FAKEROOT}/${REPO}/defaults | grep "nlm-com:" >/dev/null; then
+			sed -i -e "s/NexentaStor/Enterprise Edition/" $1/root/.screenrc
+		fi
 	fi
 
 	cp ${CUSTOM_DIR}/DRIVER-INSTALL.txt $1/
@@ -511,10 +521,9 @@ function create_mini
 	echo "  preparing ramdisk image ... \c"
 
 	total_size=0
-	#du not seeing actual file size, sync and wait 5 seconds 
-	sync; sync
-	sleep 5
 	# Find out the size of miniroot staging area
+	sync; sync; sync
+	sleep 5 #this should give du time to see the correct file size
 	for file in ${filelist}
 	do
 		du -sk ${MINIROOT_STAGING}/${file} | read size name
@@ -633,7 +642,7 @@ function customize_usr
 		fi
 	fi
 
-	ln -s ../../usr/gnusolaris/hwdisco ${FAKEROOT}/usr/bin/hwdisco
+	ln -sf ../../usr/gnusolaris/hwdisco ${FAKEROOT}/usr/bin/hwdisco
 }
 
 iso_excl='
