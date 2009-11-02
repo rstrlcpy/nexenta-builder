@@ -1045,12 +1045,12 @@ elif [ ! -d ${FAKEROOT} ]; then
 fi
 
 if [ -d ${FAKEROOT}/${REPO} ]; then
-	LIVE64=n
-	NODENAME=${NBLD_DISTRO}_installcd
+	LIVE64=y
+	NODENAME=${NBLD_DEFAULT_MODE}_installcd
 	VOLID=Nexenta_InstallCD
 	MODE=install
-	ISO_IMAGE=${STAGING_DIR}/${NBLD_DISTRO}_install.iso
-	if cat ${FAKEROOT}/${REPO}/defaults | grep NexentaCore >/dev/null; then
+	ISO_IMAGE=${STAGING_DIR}/${NBLD_DEFAULT_MODE}_install.iso
+	if cat ${FAKEROOT}/${REPO}/defaults | egrep "NexentaCore|NexentaStor" >/dev/null; then
 		INSTALL_MODE=core
 	else
 		INSTALL_MODE=generic
