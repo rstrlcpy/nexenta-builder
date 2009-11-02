@@ -337,15 +337,15 @@ if test "x$mode" = xinstall; then
 	echo "Propagating local repository... "
 	mkdir $rootdir$hddrepo/incoming/$dist
 	mv $rootdir/var/cache/stage0_archive/*.deb $rootdir$hddrepo/incoming/$dist
-	if echo $ks_license_text | grep "nlm-eval:" >/dev/null; then
-		echo "Uploading nlm-eval... "
-		find $rootdir$hddrepo/incoming -name "nlm*_*.*" | xargs rm -f
-		nlm_eval_pkg=$(find /export/nza-eval -name "nlm-eval_*.deb")
-		test -d $rootdir$hddrepo/incoming/$dist || mkdir $rootdir$hddrepo/incoming/$dist
-		cp $nlm_eval_pkg $rootdir$hddrepo/incoming/$dist
-		sed -i -e "s/$/ nlm-eval/" /tmp/base-$profile1.lst
-		echo "nlm-eval var/cache/apt/archives/"$(basename $nlm_eval_pkg) >> /tmp/debpaths
-	fi
+#	if echo $ks_license_text | grep "nlm-eval:" >/dev/null; then
+#		echo "Uploading nlm-eval... "
+#		find $rootdir$hddrepo/incoming -name "nlm*_*.*" | xargs rm -f
+#		nlm_eval_pkg=$(find /export/nza-eval -name "nlm-eval_*.deb")
+#		test -d $rootdir$hddrepo/incoming/$dist || mkdir $rootdir$hddrepo/incoming/$dist
+#		cp $nlm_eval_pkg $rootdir$hddrepo/incoming/$dist
+#		sed -i -e "s/$/ nlm-eval/" /tmp/base-$profile1.lst
+#		echo "nlm-eval var/cache/apt/archives/"$(basename $nlm_eval_pkg) >> /tmp/debpaths
+#	fi
 	rm -Rf $rootdir/var/cache/stage0_archive
 	rm -f $rootdir/var/cache/apt/archive/*.deb
 	debarchiver -o -x -i $rootdir$hddrepo/incoming ||
@@ -381,6 +381,8 @@ if test "x$mode" = xinstall; then
 		eval "echo \"_KS_profile_rootsize[$p]='\$rootsize$p'\"" >> $install_profile
 	done
 	echo "_KS_profiles='$profiles'" >> $install_profile
+	echo "grub_n_title='$grub_n_title'" >> $install_profile
+	echo "grub_s_title='$grub_s_title'" >> $install_profile
 	for i in $ks_ifaces; do
 		eval "echo \"_KS_iface_ip[$i]='\$ks_iface_ip$i'\"" >> $install_profile
 		eval "echo \"_KS_iface_mask[$i]='\$ks_iface_mask$i'\"" >> $install_profile
@@ -413,6 +415,20 @@ if test "x$mode" = xinstall; then
 	test "x$ks_autopart_export_home" != x && echo "_KS_autopart_export_home='$ks_autopart_export_home'" >> $install_profile
 	test "x$ks_autopart_manual" != x && echo "_KS_autopart_manual='$ks_autopart_manual'" >> $install_profile
 	test "x$ks_need_network" != x && echo "_KS_need_network='$ks_need_network'" >> $install_profile
+	if test "x$ks_startup_wizard" != x; then
+	        echo "_KS_startup_wizard='$ks_startup_wizard'" >> $install_profile
+	        test "x$ks_show_wizard_license" != x && echo "_KS_show_wizard_license='$ks_show_wizard_license'" >> $install_profile
+	fi
+	if test "x$model_id" != x -a "x$model_name" != x; then
+	        echo "package NZA::Model;" > /tmp/model.$$
+	        echo "\$NZA::Model::ID='$model_id';" >> /tmp/model.$$
+	        echo "\$NZA::Model::NAME='$model_name';" >> /tmp/model.$$
+	        echo "\$NZA::Model::COMPANY_SNAME='$company_title';" >> /tmp/model.$$
+	        echo "\$NZA::Model::PRODUCT_FAMILY='$product_title';" >> /tmp/model.$$
+	        echo "1;" >> /tmp/model.$$
+	        mv /tmp/model.$$ $rootdir$hddrepo/Model.pm
+	        echo "_KS_model='Model.pm'" >> $install_profile
+	fi
 	if test "x$ks_license_text" != x; then
 		if test -f $customdir/$ks_license_text; then
 			cp $customdir/$ks_license_text $rootdir$hddrepo
@@ -420,6 +436,7 @@ if test "x$mode" = xinstall; then
 		fi
 		echo "_KS_license_text='$ks_license_text'" >> $install_profile
 	fi
+
 	rm -f /tmp/debpaths.new
 	cat /tmp/debpaths | while read p f; do
 		f=$(find $rootdir$hddrepo/dists/$dist -name "${p}_*.deb")

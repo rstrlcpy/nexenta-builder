@@ -989,12 +989,12 @@ autopart()
 		oneline_msgbox Error "Disk size is too small and cannot even fit a root partition.\nNeeded at least $root_min_size MB."
 		return 1
 	fi
-	
+
 	if test $(($cyls*$csize)) -lt $(($root_min_bytes+$swap_bytes)); then
 		oneline_msgbox Error "Disk size is too small.\nNeeded at least $(($root_min_size+$swap_size)) MB."
 		return 1
 	fi
-	
+
 	if ! fdisk -B $phys >/dev/null 2>&1; then
 		oneline_msgbox Error "Fdisk cannot apply new partition table."
 		return 1
@@ -1234,7 +1234,7 @@ autopart_ask()
 			fi
 			printlog "Selected disk(s) for auto partitioning: $(dialog_res)"
 			result_disk_pool=$(dialog_res)
-			
+
 			if [ "$(echo $result_disk_pool|wc -w)" -lt "2" ]; then
 				rm -f $TMP_FILE $TMP_DISKSIZE_FILE
 				return 0
@@ -1871,23 +1871,23 @@ upgrade_init()
 	fi
 
 	if [ -f $TMPDEST/usr/sbin/installf ]; then
-		mv $TMPDEST/usr/sbin/installf $TMPDEST/usr/sbin/_installf 
+		mv $TMPDEST/usr/sbin/installf $TMPDEST/usr/sbin/_installf
 	fi
 
 	if [ -f $TMPDEST/usr/bin/installf ]; then
-		mv $TMPDEST/usr/bin/installf $TMPDEST/usr/bin/_installf 
+		mv $TMPDEST/usr/bin/installf $TMPDEST/usr/bin/_installf
 	fi
 
 	if [ -f $TMPDEST/usr/sbin/removef ]; then
-		mv $TMPDEST/usr/sbin/removef $TMPDEST/usr/sbin/_removef 
+		mv $TMPDEST/usr/sbin/removef $TMPDEST/usr/sbin/_removef
 	fi
 
 	if [ -f $TMPDEST/usr/bin/removef ]; then
-		mv $TMPDEST/usr/bin/removef $TMPDEST/usr/bin/_removef 
+		mv $TMPDEST/usr/bin/removef $TMPDEST/usr/bin/_removef
 	fi
 
 	if [ -f $TMPDEST/boot/grub/menu.lst ]; then
-		mv $TMPDEST/boot/grub/menu.lst $TMPDEST/boot/grub/_menu.lst 
+		mv $TMPDEST/boot/grub/menu.lst $TMPDEST/boot/grub/_menu.lst
 	fi
 }
 
@@ -1902,23 +1902,23 @@ upgrade_fini()
 	fi
 
 	if [ -f $TMPDEST/usr/sbin/_installf ]; then
-		mv $TMPDEST/usr/sbin/_installf $TMPDEST/usr/sbin/installf 
+		mv $TMPDEST/usr/sbin/_installf $TMPDEST/usr/sbin/installf
 	fi
 
 	if [ -f $TMPDEST/usr/bin/_installf ]; then
-		mv $TMPDEST/usr/bin/_installf $TMPDEST/usr/bin/installf 
+		mv $TMPDEST/usr/bin/_installf $TMPDEST/usr/bin/installf
 	fi
 
 	if [ -f $TMPDEST/usr/sbin/_removef ]; then
-		mv $TMPDEST/usr/sbin/_removef $TMPDEST/usr/sbin/removef 
+		mv $TMPDEST/usr/sbin/_removef $TMPDEST/usr/sbin/removef
 	fi
 
 	if [ -f $TMPDEST/usr/bin/_removef ]; then
-		mv $TMPDEST/usr/bin/_removef $TMPDEST/usr/bin/removef 
+		mv $TMPDEST/usr/bin/_removef $TMPDEST/usr/bin/removef
 	fi
 
 	if [ -f $TMPDEST/boot/grub/_menu.lst ]; then
-		mv $TMPDEST/boot/grub/_menu.lst $TMPDEST/boot/grub/menu.lst 
+		mv $TMPDEST/boot/grub/_menu.lst $TMPDEST/boot/grub/menu.lst
 		# check if safe mode were present in old version
 		if ! cat $TMPDEST/boot/grub/menu.lst | grep "Safe Mode" >/dev/null 2>&1; then
 			# nope, adding new entry to the old menu.lst...
@@ -2661,6 +2661,10 @@ install_grub()
 		sed -i -e "s/\(hd[0-9]\+,[0-9]\+,\)./\1$slice/" $TMPDEST/boot/grub/menu.lst
 	fi
 
+	# Edit menu.lst for curently distro
+	sed -i -e "s/_#N.*N#_/$grub_n_title/" $TMPDEST/boot/grub/menu.lst
+	sed -i -e "s/_#S.*S#_/$grub_s_title/" $TMPDEST/boot/grub/menu.lst
+
 	# enable ZFS/Boot feature in the GRUB menu for all entries
 	if test $ROOTDISK_TYPE = "zfs" && \
 	   ! cat $TMPDEST/boot/grub/menu.lst | grep "ZFS-BOOTFS" >/dev/null; then
@@ -2836,7 +2840,7 @@ update_boot_archive()
 	test ! -d $TMPDEST/etc/devices && mkdir $TMPDEST/etc/devices
 	if test $ROOTDISK_TYPE = "zfs"; then
 		cp /etc/zfs/zpool.cache $TMPDEST/etc/zfs
-	fi 
+	fi
 	cp -f /etc/path_to_inst $TMPDEST/etc
 	cd $TMPDEST
 	SUN_PERSONALITY=1 bootadm update-archive -R $TMPDEST >/dev/null
@@ -3186,8 +3190,8 @@ tz_by_location()
 			}
 		}
 
-		$1 == cc && $5 == region { 
-			# Check if tzname mapped to 
+		$1 == cc && $5 == region {
+			# Check if tzname mapped to
 			# backward compatible tzname
 			if ($4 == "-") {
 				print $3
