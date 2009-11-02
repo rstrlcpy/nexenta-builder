@@ -71,7 +71,7 @@ dev_entries='
 /devices/pseudo/cn@0:console           	/dev/console
 /devices/pseudo/cn@0:syscon            	/dev/syscon
 /devices/pseudo/cn@0:systty            	/dev/systty
-/devices/pseudo/devinfo@0:devinfo      
+/devices/pseudo/devinfo@0:devinfo
 /devices/pseudo/ksyms@0:ksyms          	/dev/ksyms
 /devices/pseudo/log@0:conslog          	/dev/conslog
 /devices/pseudo/log@0:log              	/dev/log
@@ -132,7 +132,7 @@ prepare_nlu() {
 first_stage_install () {
     setup_devnull
     setup_devs
-    extract base-files base-passwd
+    extract coreutils base-files base-passwd
     extract $required
     install_class_action_files
 
@@ -224,12 +224,15 @@ second_stage_install () {
       x_core_install debconf
     fi
 
+    p; progress $baseprog $bases INSTCORE "Installing core packages" #7
+    x_core_install coreutils
+
     baseprog=0
     bases=$(set -- $required; echo $#)
 
     info UNPACKREQ "Unpacking required packages..."
 
-    smallyes '' | 
+    smallyes '' |
       (repeat 2 in_target_failmsg UNPACK_REQ_FAIL_FIVE "Failure while unpacking required packages. Repeat one more time." "" \
       dpkg --status-fd 8 --force-depends --unpack $(debfor $required) 8>&1 1>&7 |
       dpkg_progress $baseprog $bases UNPACKREQ "Unpacking required packages" UNPACKING) 7>&1
@@ -245,7 +248,7 @@ echo \"Warning: Fake start-stop-daemon called, doing nothing\"" > "$TARGET/sbin/
 
     setup_dselect_method apt
 
-    smallyes '' | 
+    smallyes '' |
       (repeat 2 in_target_failmsg CONF_REQ_FAIL "Trying to resolve configuration issues." "" \
       dpkg --status-fd 8 --configure --pending --force-configure-any --force-depends 8>&1 1>&7 |
       dpkg_progress $baseprog $bases CONFREQ "Configuring required packages" CONFIGURING) 7>&1
@@ -255,7 +258,7 @@ echo \"Warning: Fake start-stop-daemon called, doing nothing\"" > "$TARGET/sbin/
 
     info UNPACKBASE "Unpacking the base system..."
 
-    smallyes '' | 
+    smallyes '' |
       (repeat 2 in_target_failmsg INST_BASE_FAIL_FIVE "Failure while installing base packages.  Repeat one more time." "" \
       dpkg --status-fd 8 --force-auto-select --force-overwrite --force-depends --force-confold --skip-same-version --unpack $(debfor $base) 8>&1 1>&7 |
       dpkg_progress $baseprog $bases UNPACKBASE "Unpacking base system" UNPACKING) 7>&1
