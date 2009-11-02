@@ -29,7 +29,7 @@
 
 -->
 
-<service_bundle type='manifest' name='elatte:sysidtool'>
+<service_bundle type='manifest' name='nexenta:sysidtool'>
 
 <service
 	name='system/sysidtool'
@@ -90,7 +90,7 @@
 		<exec_method
 			type='method'
 			name='start'
-                        exec='/lib/svc/method/elatte-sysidtool-net'
+                        exec='/lib/svc/method/nexenta-sysidtool-net'
 			timeout_seconds='0' />
 
 		<exec_method
@@ -144,7 +144,7 @@
 		<exec_method
 			type='method'
 			name='start'
-			exec='/lib/svc/method/elatte-sysidtool-system'
+			exec='/lib/svc/method/nexenta-sysidtool-system'
 			timeout_seconds='0' />
 
 		<exec_method
@@ -159,11 +159,11 @@
 	<template>
 		<common_name>
 			<loctext xml:lang='C'>
-			elatte-sysidtool
+			nexenta-sysidtool
 			</loctext>
 		</common_name>
 		<documentation>
-			<manpage title='elatte-sysidtool' section='1M' manpath='/usr/man' />
+			<manpage title='nexenta-sysidtool' section='1M' manpath='/usr/man' />
 		</documentation>
 	</template>
 </service>

@@ -8,7 +8,7 @@
     $Id: elatte_livecd.xml 10949 2005-11-20 03:48:09Z mac $
 -->
 
-<service_bundle type='profile' name='elatte_livecd'
+<service_bundle type='profile' name='nexenta_livecd'
 	 xmlns:xi='http://www.w3.org/2003/XInclude' >
 
   <!--
