@@ -5,7 +5,7 @@
     Copyright 2005 Nexenta Systems, Inc.  All rights reserved.
     Use is subject to license terms.
 
-    $Id: elatte_livecd.xml 10949 2005-11-20 03:48:09Z mac $
+    $Id: nexenta_livecd.xml 10949 2005-11-20 03:48:09Z mac $
 -->
 
 <service_bundle type='profile' name='nexenta_livecd'
