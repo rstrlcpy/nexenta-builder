@@ -1,0 +1,10 @@
+bindkey -k k1 select 1
+bindkey -k k2 select 2
+bindkey -k k3 select 3
+startup_message off
+sorendition 04
+hardstatus lastline "%{kB} %w %= | NexentaStor v3.0, software v3.0.0"
+screen -t Installer 1 /usr/gnusolaris/nexenta-install.sh
+screen -t Shell     2 
+screen -t Log       3 /usr/bin/install-log
+select 1

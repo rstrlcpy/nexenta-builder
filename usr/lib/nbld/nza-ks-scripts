@@ -1,0 +1,73 @@
+#!/bin/bash
+
+_KS_callback_post_install()
+{
+	# Setup custom UNIX environment
+	echo "HISTTIMEFORMAT=\"%h %d %H:%M:%S \"" >> $TMPDEST/root/.bashrc
+
+	# Setup NMC executional environment
+	echo "nms_state=\$(svcs -Ho state nms 2>/dev/null)" >> $TMPDEST/root/.bash_profile
+	echo "if test \"x\$nms_state\" != 'xmaintenance' -a \"x\$nms_state\" != 'xdisabled'; then" >> $TMPDEST/root/.bash_profile
+	echo "	trap '' INT" >> $TMPDEST/root/.bash_profile
+	echo "	nmc" >> $TMPDEST/root/.bash_profile
+	echo "	exit" >> $TMPDEST/root/.bash_profile
+	echo "elif test \"x\$nms_state\" = 'xdisabled'; then" >> $TMPDEST/root/.bash_profile
+	echo "  echo " >> $TMPDEST/root/.bash_profile
+	echo "  echo '   NexentaStor Safe Mode: starting UNIX shell now...'" >> $TMPDEST/root/.bash_profile
+	echo "  echo " >> $TMPDEST/root/.bash_profile
+	echo "else" >> $TMPDEST/root/.bash_profile
+	echo "  echo " >> $TMPDEST/root/.bash_profile
+	echo "  echo '                         * * *'" >> $TMPDEST/root/.bash_profile
+	echo "  echo '  Nexenta Storage Appliance failed to initialize!'" >> $TMPDEST/root/.bash_profile
+	echo "  echo '  Suggested possible recovery actions:'" >> $TMPDEST/root/.bash_profile
+	echo "  echo '     - Reboot into a known working system checkpoint'" >> $TMPDEST/root/.bash_profile
+	echo "  echo '     - Run \"svcadm clear nms\" and try to re-login'" >> $TMPDEST/root/.bash_profile
+	echo "  echo " >> $TMPDEST/root/.bash_profile
+	echo "  echo '  Suggested troubleshooting actions:'" >> $TMPDEST/root/.bash_profile
+	echo "  echo '     - Run \"svcs -vx\" and collect output for further analysis'" >> $TMPDEST/root/.bash_profile
+	echo "  echo '     - Run \"dmesg\" and look for error messages'" >> $TMPDEST/root/.bash_profile
+	echo "  echo '     - View \"/var/log/nms.log\" for error messages'" >> $TMPDEST/root/.bash_profile
+	echo "  echo '     - View \"/var/svc/log/application-nms:default.log\" for error messages'" >> $TMPDEST/root/.bash_profile
+	echo "  echo " >> $TMPDEST/root/.bash_profile
+	echo "fi" >> $TMPDEST/root/.bash_profile
+
+	echo "  echo " >> $TMPDEST/export/home/admin/.bash_profile
+	echo "  echo '                            * * *'" >> $TMPDEST/export/home/admin/.bash_profile
+	echo "  echo '  CAUTION: This appliance is not a general purpose operating system:'" >> $TMPDEST/export/home/admin/.bash_profile
+	echo "  echo '  managing the appliance via Unix shell is NOT recommended. Please use'" >> $TMPDEST/export/home/admin/.bash_profile
+	echo "  echo '  management console (NMC). NMC is the command-line interface (CLI) of'" >> $TMPDEST/export/home/admin/.bash_profile
+	echo "  echo '  the appliance, specifically designed for all command-line interactions.'" >> $TMPDEST/export/home/admin/.bash_profile
+	echo "  echo '  Using Unix shell without authorization of your support provider may not'" >> $TMPDEST/export/home/admin/.bash_profile
+	echo "  echo '  be supported and MAY VOID your license agreement. To display the'" >> $TMPDEST/export/home/admin/.bash_profile
+	echo "  echo '  agreement, please use the following NMC command:'" >> $TMPDEST/export/home/admin/.bash_profile
+	echo "  echo " >> $TMPDEST/export/home/admin/.bash_profile
+	echo "  echo '  show appliance license agreement'" >> $TMPDEST/export/home/admin/.bash_profile
+	echo "  echo " >> $TMPDEST/export/home/admin/.bash_profile
+
+	# Permit SSH root logins
+	sed -i -e "s/\s*PermitRootLogin.*no/PermitRootLogin yes/" $TMPDEST/etc/ssh/sshd_config
+
+	# Make sure no kernel/user logging goes to the /dev/console
+	sed -i -e "/\/dev\/sysmsg/d" $TMPDEST/etc/syslog.conf
+
+	# J.L. wrote:
+	#
+	#	I was getting a lot of these on sram:
+	#
+	#	klmops: NOTICE: lm_block_lock: nlm4, couldn't reserve svc thread: clnt
+	#
+	#	And asked on the nfs-discuss list. The default LOCKD_SERVERS=20 in / 
+	#	etc/default/nfs was likely too low (the client hitting this was a  
+	#       mail server) and so I increased this to 30. Likely we'll want to have  
+	#	to default set even higher for a NAS (128?)
+	sed -i -e "s/LOCKD_SERVERS.*=.*/LOCKD_SERVERS=128/" $TMPDEST/etc/default/nfs
+
+	# accept negative timestamps over NFS
+	echo "set nfs:nfs_allow_preepoch_time = 1" >> $TMPDEST/etc/system
+
+	# make Linux NFS mounts over automounter behave sane
+	sed -i -e "s;\(/net.*nosuid\)\(.*\);\1,vers=3\2;" $TMPDEST/etc/auto_master
+
+	# adjust console-login to start wizard if enabled
+	sed -i -e "/^#.*console-login.*exit/ a unset SUN_PERSONALITY; TERM=sun-color; LOGNAME=root; HOME=\/root; SHELL=\/bin\/bash; export TERM LOGNAME HOME SHELL; if test -f $FIRSTSTART; then svcadm enable system-log \>\/dev\/null 2\>\&1; sleep 5; clear \>\/dev\/console; eval \`cat $FIRSTSTART\` \>\/dev\/console \<\/dev\/console 2\>\&1; rm -f $FIRSTSTART; fi" $TMPDEST/lib/svc/method/console-login
+}
