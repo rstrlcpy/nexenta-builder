@@ -2464,19 +2464,19 @@ customize_hdd_install()
 customize_common()
 {
 	# Copy over customized SMF manifests and methods
-	cp $REPO/elatte-sysidtool.xml $TMPDEST/var/svc/manifest/system/
-	chmod 0444 $TMPDEST/var/svc/manifest/system/elatte-sysidtool.xml
-	chown root:sys $TMPDEST/var/svc/manifest/system/elatte-sysidtool.xml
+	cp $REPO/nexenta-sysidtool.xml $TMPDEST/var/svc/manifest/system/
+	chmod 0444 $TMPDEST/var/svc/manifest/system/nexenta-sysidtool.xml
+	chown root:sys $TMPDEST/var/svc/manifest/system/nexenta-sysidtool.xml
 
-	cp $REPO/elatte-sysidtool-net $TMPDEST/lib/svc/method/
-	chmod 0555 $TMPDEST/lib/svc/method/elatte-sysidtool-net
-	chown root:bin $TMPDEST/lib/svc/method/elatte-sysidtool-net
+	cp $REPO/nexenta-sysidtool-net $TMPDEST/lib/svc/method/
+	chmod 0555 $TMPDEST/lib/svc/method/nexenta-sysidtool-net
+	chown root:bin $TMPDEST/lib/svc/method/nexenta-sysidtool-net
 
-	cp $REPO/elatte-sysidtool-system $TMPDEST/lib/svc/method/
-	chmod 0555 $TMPDEST/lib/svc/method/elatte-sysidtool-system
-	chown root:bin $TMPDEST/lib/svc/method/elatte-sysidtool-system
+	cp $REPO/nexenta-sysidtool-system $TMPDEST/lib/svc/method/
+	chmod 0555 $TMPDEST/lib/svc/method/nexenta-sysidtool-system
+	chown root:bin $TMPDEST/lib/svc/method/nexenta-sysidtool-system
 
-	printlog "Installed 'Elatte' sysidtools SMF methods"
+	printlog "Installed 'Nexenta' sysidtools SMF methods"
 
 	#
 	# Work around GNU's "uname -S" problem; we use /bin/hostname
