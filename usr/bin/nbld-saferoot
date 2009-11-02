@@ -55,10 +55,10 @@ NODENAME=nexenta_safemode
 # The following variables are used internally and should
 # not be set by the user under normal circumstances.
 #
-SYSIDTOOL_XML=${CUSTOM_DIR}/elatte-sysidtool.xml
-SYSIDTOOL_NET=${CUSTOM_DIR}/elatte-sysidtool-net
-SYSIDTOOL_SYSTEM=${CUSTOM_DIR}/elatte-sysidtool-system
-SMF_PROFILE=${CUSTOM_DIR}/elatte_livecd.xml
+SYSIDTOOL_XML=${CUSTOM_DIR}/nexenta-sysidtool.xml
+SYSIDTOOL_NET=${CUSTOM_DIR}/nexenta-sysidtool-net
+SYSIDTOOL_SYSTEM=${CUSTOM_DIR}/nexenta-sysidtool-system
+SMF_PROFILE=${CUSTOM_DIR}/nexenta_livecd.xml
 MINI_FILELIST=${CUSTOM_DIR}/filelist_saferoot.txt
 CD_DIRLIST=.cd_dirlist
 DHCP_EVENTHOOK=${CUSTOM_DIR}/eventhook
