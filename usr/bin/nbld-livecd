@@ -34,7 +34,7 @@ PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/ucb:/usr/ccs/bin export PATH
 umask 0222
 
 MODE=livecd
-REPO=/usr/gnusolaris
+REPO=/usr/nexenta
 
 #
 # CUSTOM_DIR specifies the location where customized LiveCD
@@ -642,7 +642,7 @@ function customize_usr
 		fi
 	fi
 
-	ln -sf ../../usr/gnusolaris/hwdisco ${FAKEROOT}/usr/bin/hwdisco
+	ln -sf ../../usr/nexenta/hwdisco ${FAKEROOT}/usr/bin/hwdisco
 }
 
 iso_excl='

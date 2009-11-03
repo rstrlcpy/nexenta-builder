@@ -82,7 +82,7 @@ if test ! -f $FIRSTSTART; then
 	echo "  * you could login now as 'root'(empty password) and make" >/dev/msglog
 	echo "    additional modifications;" >/dev/msglog
 	echo >/dev/msglog
-	echo "  * you could execute /usr/gnusolaris/nexenta-install.sh" >/dev/msglog
+	echo "  * you could execute /usr/nexenta/nexenta-install.sh" >/dev/msglog
 	echo "    script at anytime to repeat installation procedure;" >/dev/msglog
 	echo >/dev/msglog
 	echo "              Enjoy! From the Nexenta Team." >/dev/msglog

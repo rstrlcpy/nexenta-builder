@@ -40,7 +40,7 @@ RM_DISK=""
 UPGRADE_DISK=""
 UPGRADE=0
 CUSTOM_REPO=$1
-REPO=${CUSTOM_REPO:=/usr/gnusolaris}
+REPO=${CUSTOM_REPO:=/usr/nexenta}
 DEFPROFILE=$REPO/defaults
 TMPDEST=/tmp/dest.$$
 UPGRADE_LOG=$TMPDEST/var/tmp/nexenta_upgrade.log
@@ -3500,7 +3500,7 @@ svcadm enable datalink-management > /dev/null 2>&1
 svcadm enable system/hal > /dev/null 2>&1
 svcadm enable system/filesystem/rmvolmgr > /dev/null 2>&1
 
-for i in `ls /tmp/dest.*/usr/gnusolaris 2>/dev/null`; do umount $i 2>/dev/null; done
+for i in `ls /tmp/dest.*/usr/nexenta >/dev/null`; do umount $i 2>/dev/null; done
 for i in `ls /tmp/dest.* 2>/dev/null`; do umount $i 2>/dev/null; done
 
 # ignore Ctrl-C

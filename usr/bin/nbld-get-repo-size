@@ -30,6 +30,6 @@
 test ! -f /etc/nbld.cf && echo "Error: can't find /etc/nbld.cf" && exit 1
 . /etc/nbld.cf
 
-find $NBLD_MINIROOT/usr/gnusolaris/dists/elatte-unstable -name "*.deb" | \
+find $NBLD_MINIROOT/usr/nexenta/dists/elatte-unstable -name "*.deb" | \
 	     xargs ls -l | awk '{print $5}' | sed "s/$/\+/g" | \
 	     awk '{a+=$1;b+=$2}END{printf("%.2f\t%.2f\n",a,b/NR)}'
