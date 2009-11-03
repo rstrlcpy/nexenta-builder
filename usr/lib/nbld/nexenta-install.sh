@@ -62,6 +62,7 @@ test -f /usr/gnu/bin/du && DU=/usr/gnu/bin/du
 reposize=`$DU $REPO/dists -B MB -c --summarize | grep total | sed -e 's/MB//g' | nawk '{ print $1 }'`
 (( spaceneeded=reposize*3 ))
 DIALOG_OK=0
+DIALOG_CANCEL=1
 DIALOG_ESC=255
 export KEEP_COLORS=1
 DIALOG_RES=/tmp/dialog_result.$$
@@ -1273,8 +1274,19 @@ autopart_ask()
 									break
 								fi
 							done
+							result_disk_spare=$(dialog_res)
+							printlog "Selected disk(s) for hot-spare: $(dialog_res)"
 							break
 						fi
+						;;
+					$DIALOG_CANCEL)
+						result_disk_spare=""
+						printlog "Hot-spare disks not selected"
+						break
+						;;
+					$DIALOG_ESC)
+						rm -f $TMP_FILE $TMP_DISKSIZE_FILE
+						return 2
 						;;
 					esac
 				done
