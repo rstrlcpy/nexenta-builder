@@ -3728,7 +3728,6 @@ cp $LOGFILE $TMPDEST/root
 if [ $UPGRADE -eq 0 ]; then
 	# Trigger first time startup wizard if specified via Kick-Start profile
 	if test "x$_KS_startup_wizard" != x; then
-		cp $REPO/$_KS_startup_wizard $TMPDEST/usr/bin
 		chmod 755 $TMPDEST/usr/bin/$_KS_startup_wizard
 		echo "/usr/bin/screen -q -T xterm -s /usr/bin/$_KS_startup_wizard" > $TMPDEST/$FIRSTSTART
 		if test "x$_KS_show_wizard_license" = x1; then
