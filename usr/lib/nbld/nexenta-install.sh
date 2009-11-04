@@ -3512,7 +3512,7 @@ svcadm enable datalink-management > /dev/null 2>&1
 svcadm enable system/hal > /dev/null 2>&1
 svcadm enable system/filesystem/rmvolmgr > /dev/null 2>&1
 
-for i in `ls /tmp/dest.*/usr/nexenta >/dev/null`; do umount $i 2>/dev/null; done
+for i in `ls /tmp/dest.*/usr/nexenta 2>/dev/null`; do umount $i 2>/dev/null; done
 for i in `ls /tmp/dest.* 2>/dev/null`; do umount $i 2>/dev/null; done
 
 # ignore Ctrl-C
