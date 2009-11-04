@@ -39,7 +39,7 @@ var
 !var/lib/scrollkeeper
 !var/lib/dpkg/alien
 usr
-!usr/gnusolaris
+!usr/nexenta
 !usr/include
 !usr/man
 !usr/share/man
