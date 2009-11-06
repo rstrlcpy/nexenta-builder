@@ -1156,10 +1156,6 @@ autopart_ask()
 	done
 
 	rlist=$(cat $TMP_FILE)
-	list_height=$(cat $TMP_FILE|wc -l)
-	if [ "$list_height" -gt "3" ]; then
-		list_height=4
-	fi
 	rm -f $TMP_FILE >/dev/null
 
 	if test "x$rlist" != "x"; then
@@ -1172,7 +1168,7 @@ autopart_ask()
 			CHECK_INFO="$CHECK_INFO\n"
 		fi
 
-		echo "$DIALOG_WITH_ESC $manual_cmd --no-cancel --title \" Fresh Installation \" --checklist \"$CHECK_INFO\nPlease select disk(s) (no more than 3) to be automatically partitioned:\" 0 0 $list_height $rlist" >$TMP_FILE
+		echo "$DIALOG_WITH_ESC $manual_cmd --no-cancel --title \" Fresh Installation \" --checklist \"$CHECK_INFO\nPlease select disk(s) (no more than 3) to be automatically partitioned:\" 0 0 4 $rlist" >$TMP_FILE
 		. $TMP_FILE 2>$DIALOG_RES
 		local rc=$?
 
