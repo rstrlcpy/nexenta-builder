@@ -96,6 +96,8 @@ INFO_TZ="Therefore TZ='%s' will be used."
 result_disk_pool=""
 result_disk_spare=""
 
+auto_install=""
+
 dialog_cmd() {
 	echo dialog\ --backtitle\ $TITLE-Installer\ --keep-window\ --colors\ --no-signals\ --no-escape
 }
@@ -1157,7 +1159,10 @@ autopart_ask()
 
 	rlist=$(cat $TMP_FILE)
 	rm -f $TMP_FILE >/dev/null
-
+	if test "x$auto_install" = "x1"; then
+		# TODO: Need to add code for select disks
+		return 0
+	fi
 	if test "x$rlist" != "x"; then
 		CHECK_INFO="\nPlease select disk(s) for the $TITLE system volume. Automatic partitioning will repartition the selected disk(s) using pre-configured layout.\n\\Z1NOTE\\Zn: For mirrored ZFS-boot configuration, please select two or more equal-size disks.\n\\Z1WARNING\\Zn: $TITLE Operating System will be installed onto the system volume, and all existing data on the selected disk(s) will be lost during the installation process!"
 		if boolean_check $_KS_autopart_manual; then
@@ -2214,10 +2219,10 @@ configure_network()
 						oneline_msgbox Error "Invalid IP address and/or netmask."
 					done
 					ifconfig ${ifname}:1 unplumb >/dev/null 2>&1
-				elif test "x${_KS_iface_ip[$ipnum]}" != x -a "x${_KS_iface_mask[$ipnum]}" != x; then
-					ipaddress=${_KS_iface_ip[$ipnum]}
-					netmask=${_KS_iface_mask[$ipnum]}
-					static_ifnames[$ipnum]=$ifname
+				elif test "x${_KS_iface_ip[$ifnum]}" != x -a "x${_KS_iface_mask[$ifnum]}" != x; then
+					ipaddress=${_KS_iface_ip[$ifnum]}
+					netmask=${_KS_iface_mask[$ifnum]}
+					static_ifnames[$ifnum]=$ifname
 				fi
 			fi
 
@@ -2578,9 +2583,13 @@ reboot_exit()
 				fi
 			fi
 		else
-			touch /.nexenta-try-reboot
-			oneline_info "$*"
-			sleep 2
+			if test "x$auto_install" = "x1"; then
+				touch /.nexenta-try-poweroff
+			else
+				touch /.nexenta-try-reboot
+				oneline_info "$*"
+				sleep 2
+			fi
 		fi
 	fi
 	clear
@@ -3488,6 +3497,12 @@ create_swap()
 	done
 }
 
+
+extract_args()
+{
+	echo "$(/usr/sbin/prtconf -v /devices|/usr/bin/sed -n "/$1/{;n;p;}"|/usr/bin/sed -e "s/^\s*value=\|'//g")"
+}
+
 ############# main ###############
 check_components
 dumpkeys | grep padenter | sed -e 's/numl /all /g' > $TMP_FILE
@@ -3518,6 +3533,17 @@ for i in `ls /tmp/dest.* 2>/dev/null`; do umount $i 2>/dev/null; done
 # ignore Ctrl-C
 trap '' INT
 
+# Get parameters for full automatic installation
+if test "x$(extract_args auto_install)" != x; then
+	auto_install="1"
+	_KS_auto_reboot="1"
+	_KS_welcome_head="0"
+	_KS_welcome_ks="0"
+	_KS_iface_ip[0]="$(extract_args ip_addr)"
+	_KS_iface_mask[0]="$(extract_args netmask)"
+	_KS_gateway="$(extract_args gateway)"
+fi
+
 installcd=$(cat /.volid 2>/dev/null)
 
 if test "x$installcd" = x -o "x$installcd" != "xNexenta_InstallCD"; then
@@ -3545,7 +3571,8 @@ if ! check_requirements; then
 fi
 
 if test "x$_KS_license_text" != x -a \
-	"x$_KS_license_text" != x0; then
+	"x$_KS_license_text" != x0 -a \
+	"x$auto_install" = x; then
 	lic_text="$REPO/$_KS_license_text"
 	if ! test -f "$lic_text"; then
 		lic_text=$(extract_lic_text $_KS_license_text)
@@ -3728,16 +3755,18 @@ cp $LOGFILE $TMPDEST/root
 if [ $UPGRADE -eq 0 ]; then
 	# Trigger first time startup wizard if specified via Kick-Start profile
 	if test "x$_KS_startup_wizard" != x; then
-		chmod 755 $TMPDEST/usr/bin/$_KS_startup_wizard
-		echo "/usr/bin/screen -q -T xterm -s /usr/bin/$_KS_startup_wizard" > $TMPDEST/$FIRSTSTART
-		if test "x$_KS_show_wizard_license" = x1; then
-			if test -f "$REPO/$_KS_license_text"; then
-				cp $REPO/$_KS_license_text $TMPDEST/etc/license_text
-				chmod 644 $TMPDEST/etc/license_text
+		if test "x$auto_install" != x; then
+			chmod 755 $TMPDEST/usr/bin/$_KS_startup_wizard
+			echo "/usr/bin/screen -q -T xterm -s /usr/bin/$_KS_startup_wizard" > $TMPDEST/$FIRSTSTART
+			if test "x$_KS_show_wizard_license" = x1; then
+				if test -f "$REPO/$_KS_license_text"; then
+					cp $REPO/$_KS_license_text $TMPDEST/etc/license_text
+					chmod 644 $TMPDEST/etc/license_text
+				fi
+				echo $(extract_lic_file $_KS_license_text) > $TMPDEST/$LICENSELOC
 			fi
-			echo $(extract_lic_file $_KS_license_text) > $TMPDEST/$LICENSELOC
+			printlog "First time startup wizard '/usr/bin/$_KS_startup_wizard' enabled."
 		fi
-		printlog "First time startup wizard '/usr/bin/$_KS_startup_wizard' enabled."
 		if test "x$_KS_model" != x; then
 			cp $REPO/$_KS_model $TMPDEST/usr/lib/perl5/NZA
 		fi
