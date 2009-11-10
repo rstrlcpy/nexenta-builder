@@ -1161,6 +1161,13 @@ autopart_ask()
 	rm -f $TMP_FILE >/dev/null
 	if test "x$auto_install" = "x1"; then
 		# TODO: Need to add code for select disks
+		result_disk_pool="$(echo $rlist | egrep -o "(c[0-9]{1,2}\w*d[0-9]{1,2})" | head -n $num_disk )"
+		printlog "Selected disk(s) for auto partitioning: $(echo $result_disk_pool)"
+		if test "x$num_spare" != "x"; then
+			result_disk_spare="$(echo $rlist | egrep -o "(c[0-9]{1,2}\w*d[0-9]{1,2})" | sed "1,${num_disk}d" | head -n $num_spare )"
+			printlog "Selected disk(s) for hot-spare: $(echo $result_disk_spare)"
+		fi
+		rm -f $TMP_FILE $TMP_DISKSIZE_FILE
 		return 0
 	fi
 	if test "x$rlist" != "x"; then
@@ -3542,6 +3549,9 @@ if test "x$(extract_args auto_install)" != x; then
 	_KS_iface_ip[0]="$(extract_args ip_addr)"
 	_KS_iface_mask[0]="$(extract_args netmask)"
 	_KS_gateway="$(extract_args gateway)"
+	num_disk="$(extract_args num_disk)"
+	num_spare="$(extract_args num_spare)"
+
 fi
 
 installcd=$(cat /.volid 2>/dev/null)
@@ -3637,8 +3647,11 @@ while true; do
 				echo $result_disk_pool >$DIALOG_RES
 				test "x$(dialog_res)" = x && continue
 				autodisk="$(dialog_res)"
-				message_Yn_ask "\nAre you absolutely sure that you want to repartition selected disk(s) '$autodisk'? This process will \\Z1*DESTROY*\\Zn any existing data on disk(s).\n\nPlease consult platform manual for guidance on selecting boot disks.\nContinue to automatic partitioning?\n"
-				if test $? = $DIALOG_OK; then
+				if test "x$auto_install" != "x1"; then
+					message_Yn_ask "\nAre you absolutely sure that you want to repartition selected disk(s) '$autodisk'? This process will \\Z1*DESTROY*\\Zn any existing data on disk(s).\n\nPlease consult platform manual for guidance on selecting boot disks.\nContinue to automatic partitioning?\n"
+
+				fi
+				if test $? = $DIALOG_OK -o "x$auto_install" = "x1"; then
 					ROOTDISK_TYPE=$_KS_rootdisk_type
 					if test "x$ROOTDISK_TYPE" = x; then
 						$DIALOG --yes-label ZFS --no-label UFS --title " Filesystem Type " --yesno "\nPlease select 'root' filesystem type..." 6 50
@@ -3755,7 +3768,7 @@ cp $LOGFILE $TMPDEST/root
 if [ $UPGRADE -eq 0 ]; then
 	# Trigger first time startup wizard if specified via Kick-Start profile
 	if test "x$_KS_startup_wizard" != x; then
-		if test "x$auto_install" != x; then
+		if test "x$auto_install" != "x1"; then
 			chmod 755 $TMPDEST/usr/bin/$_KS_startup_wizard
 			echo "/usr/bin/screen -q -T xterm -s /usr/bin/$_KS_startup_wizard" > $TMPDEST/$FIRSTSTART
 			if test "x$_KS_show_wizard_license" = x1; then
