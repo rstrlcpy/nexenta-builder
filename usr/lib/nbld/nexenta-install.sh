@@ -1108,7 +1108,7 @@ autopart_ask()
 
 	rm -f $TMP_FILE $TMP_DISKSIZE_FILE>/dev/null
 	touch $TMP_FILE
-	if test "x$(/usr/sbin/prtconf -v /devices|/usr/bin/sed -n '/install_server/{;n;p;}'|/usr/bin/sed -e "s/^\s*value=\|'//g")" != x; then
+	if test "x$(extract_args iso_nfs_path)" != x; then
 		test "x$cdrom" = x && cdrom=" "
 	fi
 	$REPO/mdisco -ld | sed -e 's/p0/s0/g' | egrep -v -e "${cdrom}" | sort |\
@@ -2193,6 +2193,11 @@ configure_network()
 	iflist=`ifconfig -a|grep flags=|nawk -F: '{print $1}'|egrep -v lo0`
 	for ifname in $iflist; do
 
+		if test "x$auto_install" = "x1"; then
+			_KS_iface_ip[$ifnum]="$(extract_args ipaddr_$ifnum)"
+			_KS_iface_mask[$ifnum]="$(extract_args netmask_$ifnum)"
+		fi
+
 		if test "x$_KS_use_dhcp" = x; then
 			oneline_Yn_ask "Do you want to configure network interface $ifname?"
 			test $? != $DIALOG_OK && continue
@@ -2590,10 +2595,8 @@ reboot_exit()
 				fi
 			fi
 		else
-			if test "x$auto_install" = "x1"; then
-				touch /.nexenta-try-poweroff
-			else
-				touch /.nexenta-try-reboot
+			touch /.nexenta-try-reboot
+			if test "x$auto_install" != "x1"; then
 				oneline_info "$*"
 				sleep 2
 			fi
@@ -3546,11 +3549,9 @@ if test "x$(extract_args auto_install)" != x; then
 	_KS_auto_reboot="1"
 	_KS_welcome_head="0"
 	_KS_welcome_ks="0"
-	_KS_iface_ip[0]="$(extract_args ip_addr)"
-	_KS_iface_mask[0]="$(extract_args netmask)"
 	_KS_gateway="$(extract_args gateway)"
-	num_disk="$(extract_args num_disk)"
-	num_spare="$(extract_args num_spare)"
+	syspool_disk="$(extract_args syspool_disks)"
+	syspool_spare="$(extract_args syspool_spare)"
 
 fi
 

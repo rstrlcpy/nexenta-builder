@@ -44,12 +44,6 @@ TERM=sun-color
 SHELL=/bin/bash
 FIRSTSTART=/.nexenta-first-start
 TRYREBOOT=/.nexenta-try-reboot
-TRYPOWEROFF=/.nexenta-try-poweroff
-if test -f $TRYREBOOT; then
-	UA_OPERATION=8
-elif test -f $TRYPOWEROFF; then
-	UA_OPERATION=6
-fi
 export PATH EDITOR LOGNAME HOME PS1 TERM SHELL
 if test ! -f $FIRSTSTART; then
 	unset SUN_PERSONALITY
@@ -76,7 +70,7 @@ if test ! -f $FIRSTSTART; then
 		/eject -f cdrom 2>/dev/null
 		echo "Rebooting into Nexenta now..." >/dev/msglog
 		while /true; do /sleep 1; done
-		/uadmin 2 $UA_OPERATION 2>/dev/null
+		/uadmin 2 8 2>/dev/null
 	fi
 
 	echo >/dev/msglog

@@ -13,7 +13,7 @@ fs_type="hsfs"
 # Mount directories from CD.
 #
 if [ -x /sbin/mdisco ]; then
-	install_srv=`/usr/sbin/prtconf -v /devices|/usr/bin/sed -n '/install_server/{;n;p;}'|/usr/bin/sed -e "s/^\s*value=\|'//g"`
+	install_srv=`/usr/sbin/prtconf -v /devices|/usr/bin/sed -n '/iso_nfs_path/{;n;p;}'|/usr/bin/sed -e "s/^\s*value=\|'//g"`
 	/sbin/mount -o remount /
 	/usr/sbin/devfsadm -c disk
 
