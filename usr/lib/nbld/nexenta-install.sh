@@ -1161,10 +1161,10 @@ autopart_ask()
 	rm -f $TMP_FILE >/dev/null
 	if test "x$auto_install" = "x1"; then
 		# TODO: Need to add code for select disks
-		result_disk_pool="$(echo $rlist | egrep -o "(c[0-9]{1,2}\w*d[0-9]{1,2})" | head -n $num_disk )"
+		result_disk_pool="$(echo $syspool_luns | sed -e "s/_/ /g")"
 		printlog "Selected disk(s) for auto partitioning: $(echo $result_disk_pool)"
-		if test "x$num_spare" != "x"; then
-			result_disk_spare="$(echo $rlist | egrep -o "(c[0-9]{1,2}\w*d[0-9]{1,2})" | sed "1,${num_disk}d" | head -n $num_spare )"
+		if test "x$syspool_spare" != "x"; then
+			result_disk_spare="$(echo $syspool_spare | sed -e "s/_/ /g" )"
 			printlog "Selected disk(s) for hot-spare: $(echo $result_disk_spare)"
 		fi
 		rm -f $TMP_FILE $TMP_DISKSIZE_FILE
@@ -3550,7 +3550,7 @@ if test "x$(extract_args auto_install)" != x; then
 	_KS_welcome_head="0"
 	_KS_welcome_ks="0"
 	_KS_gateway="$(extract_args gateway)"
-	syspool_disk="$(extract_args syspool_disks)"
+	syspool_disk="$(extract_args syspool_luns)"
 	syspool_spare="$(extract_args syspool_spare)"
 
 fi
