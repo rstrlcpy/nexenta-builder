@@ -3649,7 +3649,7 @@ while true; do
 				test "x$(dialog_res)" = x && continue
 				autodisk="$(dialog_res)"
 				if test "x$auto_install" != "x1"; then
-					message_Yn_ask "\nAre you absolutely sure that you want to repartition selected disk(s) '$autodisk'? This process will \\Z1*DESTROY*\\Zn any existing data on disk(s).\n\nPlease consult platform manual for guidance on selecting boot disks.\nContinue to automatic partitioning?\n"
+					message_Yn_ask "\nAre you absolutely sure that you want to repartition selected disk(s) '$autodisk $result_disk_spare'? This process will \\Z1*DESTROY*\\Zn any existing data on disk(s).\n\nPlease consult platform manual for guidance on selecting boot disks.\nContinue to automatic partitioning?\n"
 
 				fi
 				if test $? = $DIALOG_OK -o "x$auto_install" = "x1"; then
