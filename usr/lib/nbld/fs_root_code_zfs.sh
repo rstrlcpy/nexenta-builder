@@ -67,11 +67,28 @@ if [ -x /sbin/mdisco ]; then
 		echo "discovery failed" >/dev/msglog
 	else
 		echo "${dev_phys}" >/dev/msglog
-		/sbin/mount -F ${fs_type} ${dev_phys} ${livecd_mnt}
-		if [ $? != 0 ]; then
+		install_srv=`echo ${install_srv} | sed -r -e "s/^[0-9.]+://"`
+		while true; do
+			/sbin/mount -F ${fs_type} ${dev_phys} ${livecd_mnt} 2>/dev/msglog
+			if [ $? != 0 ]; then
+				if [ "$fs_type" == "hsfs" ]; then
+					rc=1; break
+				else
+					path_to_root="$(echo ${dev_phys} | egrep -o "/[a-zA-Z0-9_-]+$")$path_to_root"
+					dev_phys=`echo ${dev_phys} | sed -r -e "s/\/[a-zA-Z0-9_-]+$//g"`
+					if [ "${path_to_root}" == "${install_srv}" ]; then
+						rc=1; break
+					fi
+				fi
+			else
+				rc=0; break
+			fi
+		done
+		if [ $rc != 0 ]; then
 			echo "error mounting ${livecd_mnt} on ${dev_phys}" \
 			    >/dev/msglog
 		else
+			livecd_mnt="${livecd_mnt}${path_to_root}"
 			livecd_mountpool && while read dir; do
 				livecd_domount ${pool_mnt}/${dir} /${dir}
 			done < /.cd_dirlist
