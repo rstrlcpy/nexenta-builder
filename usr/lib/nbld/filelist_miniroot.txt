@@ -28,6 +28,7 @@ etc
 kernel
 lib
 platform/i86pc/kernel
+platform/i86xpv/kernel
 proc
 sbin
 system
@@ -51,12 +52,16 @@ usr/bin/uname
 usr/bin/cp
 usr/bin/ls
 usr/bin/cat
+usr/bin/sed
 usr/bin/eject
 usr/bin/sleep
 usr/bin/grep
 
 # We need these for device and media discovery
 usr/bin/pkill
+usr/sbin/prtconf
+usr/sbin/i86/prtconf
+usr/sbin/amd64/prtconf
 usr/sbin/pmadm
 usr/sbin/devfsadm
 usr/sbin/reboot

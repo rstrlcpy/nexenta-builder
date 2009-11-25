@@ -68,15 +68,15 @@ if [ -x /sbin/mdisco ]; then
 	else
 		echo "${dev_phys}" >/dev/msglog
 		install_srv=`echo ${install_srv} | sed -r -e "s/^[0-9.]+://"`
-		while true; do
+		while :; do
 			/sbin/mount -F ${fs_type} ${dev_phys} ${livecd_mnt} 2>/dev/msglog
 			if [ $? != 0 ]; then
-				if [ "$fs_type" == "hsfs" ]; then
+				if [ "$fs_type" = "hsfs" ]; then
 					rc=1; break
 				else
 					path_to_root="$(echo ${dev_phys} | egrep -o "/[a-zA-Z0-9_-]+$")$path_to_root"
-					dev_phys=`echo ${dev_phys} | sed -r -e "s/\/[a-zA-Z0-9_-]+$//g"`
-					if [ "${path_to_root}" == "${install_srv}" ]; then
+					dev_phys=`echo ${dev_phys} | sed -e "s/\/[a-zA-Z0-9_-]+$//g"`
+					if [ "${path_to_root}" = "${install_srv}" ]; then
 						rc=1; break
 					fi
 				fi
