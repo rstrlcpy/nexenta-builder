@@ -2295,7 +2295,7 @@ configure_network()
 			printlog "Default gateway set to $gateway in /etc/defaultrouter"
 		fi
 
-		if test "x$_KS_dns1" = x -o "x$_KS_dns2" = x; then
+		if test "x$_KS_dns1" = x -a "x$_KS_dns2" = x; then
 			oneline_Yn_ask "Do you want configure name server addresses?"
 			if test $? = $DIALOG_OK; then
 				$DIALOG --title " Network configuration " \
@@ -3552,6 +3552,8 @@ if test "x$(extract_args auto_install)" != x; then
 	_KS_gateway="$(extract_args gateway)"
 	syspool_disk="$(extract_args syspool_luns)"
 	syspool_spare="$(extract_args syspool_spare)"
+	_KS_dns1="$(extract_args dns_ip_1)"
+	_KS_dns2="$(extract_args dns_ip_2)"
 
 fi
 
