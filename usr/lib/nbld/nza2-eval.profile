@@ -2,6 +2,12 @@
 # NexentaStor 2.x Profile (Unified Storage Appliance)
 #
 
+# Need to have it override for 2.x
+REQ_DEBS="pciutils nexenta-keyring lib64z1 gnupg sunwpiclr sunwdtrc sunwdtrp sunwrcmdc nexenta-sunw"
+MINIMAL_CMN_DEBS="vim sunwsshu sunwsshdu bzip2 mkisofs sudo"
+STAGE0_EXCLUDE_DEBS="alien myamanet-rf aptitude sunwdtrc rpm info manpages locales sunwrcmdc sunwfmd sunwpkgcmdsu sunwdtrp libssl0.9.7 libsnmp9 librpm4 man-db debhelper libldap-2.2-7 sasl2-bin nano nvi sunwsmbsu sunwsmbsr sunwsmbskr audioctl patch sunwdrmr sunwdsdr sunwdsdu sunwiscsir sunwiscsiu sunwima sunwimac sunwimacr sunwimar sunwmpapi sunwmpapir sunwmdb sunwmdbr sunwxwdv sunwtnetd sunwhea sunwiir sunwiiu sunwrdcr sunwrdcu sunwscmr sunwscmu sunwspsvr sunwspsvu sunwxvmr sunwxvmu sunwxvmdomr sunwxvmdomu libasn1-6-heimdal libgssapi4-heimdal libkrb5-17-heimdal libroken16-heimdal"
+
+
 #
 # STAGE0_DEBS - the content of InstallCD miniroot
 #               (generally speaking, this is Installer requirements)
