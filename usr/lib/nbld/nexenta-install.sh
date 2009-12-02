@@ -2194,8 +2194,8 @@ configure_network()
 	for ifname in $iflist; do
 
 		if test "x$auto_install" = "x1"; then
-			_KS_iface_ip[$ifnum]="$(extract_args ipaddr_$ifnum)"
-			_KS_iface_mask[$ifnum]="$(extract_args netmask_$ifnum)"
+			_KS_iface_ip[$ifnum]="$(extract_args ipaddr_$ifname)"
+			_KS_iface_mask[$ifnum]="$(extract_args netmask_$ifname)"
 		fi
 
 		if test "x$_KS_use_dhcp" = x; then
