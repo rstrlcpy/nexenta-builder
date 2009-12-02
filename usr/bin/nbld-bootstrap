@@ -337,15 +337,17 @@ if test "x$mode" = xinstall; then
 	echo "Propagating local repository... "
 	mkdir $rootdir$hddrepo/incoming/$dist
 	mv $rootdir/var/cache/stage0_archive/*.deb $rootdir$hddrepo/incoming/$dist
-#	if echo $ks_license_text | grep "nlm-eval:" >/dev/null; then
-#		echo "Uploading nlm-eval... "
-#		find $rootdir$hddrepo/incoming -name "nlm*_*.*" | xargs rm -f
-#		nlm_eval_pkg=$(find /export/nza-eval -name "nlm-eval_*.deb")
-#		test -d $rootdir$hddrepo/incoming/$dist || mkdir $rootdir$hddrepo/incoming/$dist
-#		cp $nlm_eval_pkg $rootdir$hddrepo/incoming/$dist
-#		sed -i -e "s/$/ nlm-eval/" /tmp/base-$profile1.lst
-#		echo "nlm-eval var/cache/apt/archives/"$(basename $nlm_eval_pkg) >> /tmp/debpaths
-#	fi
+        if test "x$builtin_plugins" != x; then
+                for pub_plugin in $builtin_plugins; do
+                        echo "Uploading plugin $pub_plugin... "
+                        find $rootdir$hddrepo/incoming -name "${pub_plugin}_*.*" | xargs rm -f
+                        plugin_pkg=$(find $builtin_plugins_dir -name "${pub_plugin}_*.deb")
+                        test -d $rootdir$hddrepo/incoming/$dist || mkdir $rootdir$hddrepo/incoming/$dist
+                        cp $plugin_pkg $rootdir$hddrepo/incoming/$dist
+                        sed -i -e "s/$/ $pub_plugin/" /tmp/base-$profile1.lst
+                        echo "$pub_plugin var/cache/apt/archives/"$(basename $plugin_pkg) >> /tmp/debpaths
+                done
+        fi
 	rm -Rf $rootdir/var/cache/stage0_archive
 	rm -f $rootdir/var/cache/apt/archive/*.deb
 	debarchiver -o -x -i $rootdir$hddrepo/incoming ||

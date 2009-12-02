@@ -21,7 +21,7 @@ STAGE0_DEBS="screen dialog debootstrap wget sunwsshu sunwsshdu sunwesu sunwixgbe
 #
 LOCAL_ARCHIVE_DEBS=" \
 		screen dialog vim file cpio tree bzip2 joe unzip mkisofs \
-		nmc nlm-eval nms nms-dev nmv nmv-theme-nexenta \
+		nmc nms nms-dev nmv nmv-theme-nexenta \
 		alien nexenta-pkgcmd sunwlibc \
 		sunwndmpu sunwndmpr ndmpcopy \
 		sunwsmbfsu \
@@ -57,6 +57,8 @@ dot_screenrc="nza-dot-screenrc"
 release_file="nza-release.txt"
 apt_sources="http://apt.nexenta.org elatte-testing main contrib non-free"
 plugin_sources="http://nexenta.com/apt-plugins elatte-stable main contrib non-free"
+builtin_plugins_dir="$customdir/extradebs"
+builtin_plugins="nlm-eval nms-delorean nmc-delorean"
 ks_min_mem_required="512"
 ks_rootdisk_type="zfs"
 ks_rootdisks=
