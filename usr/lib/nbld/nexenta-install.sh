@@ -3789,7 +3789,8 @@ if [ $UPGRADE -eq 0 ]; then
 		fi
 	fi
 	if test "x$auto_install" = "x1"; then
-		nlm_key="$(extract_args nlm_key)"
+		nlm_key="$(extract_args nlm_key | sed -e 's/_/-/g')";
+		test -d "$TMPDEST/var/lib/nza" && mkdir -p $TMPDEST/var/lib/nza
 		test "x$nlm_key" = x && echo $nlm_key > $TMPDEST/var/lib/nza/nlm.key
 	fi
 	if test $ROOTDISK_TYPE = "zfs"; then
