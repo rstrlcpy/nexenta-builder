@@ -2196,6 +2196,7 @@ configure_network()
 		if test "x$auto_install" = "x1"; then
 			_KS_iface_ip[$ifnum]="$(extract_args ipaddr_$ifname)"
 			_KS_iface_mask[$ifnum]="$(extract_args netmask_$ifname)"
+			test "x${_KS_iface_ip[$ifnum]}" != x && continue
 		fi
 
 		if test "x$_KS_use_dhcp" = x; then
@@ -3786,6 +3787,10 @@ if [ $UPGRADE -eq 0 ]; then
 		if test "x$_KS_model" != x; then
 			cp $REPO/$_KS_model $TMPDEST/usr/lib/perl5/NZA
 		fi
+	fi
+	if test "x$auto_install" = "x1"; then
+		nlm_key="$(extract_args nlm_key)"
+		test "x$nlm_key" = x && echo $nlm_key > $TMPDEST/var/lib/nza/nlm.key
 	fi
 	if test $ROOTDISK_TYPE = "zfs"; then
 		zfs snapshot $ZFS_ROOTFS@initial 2>/dev/null
