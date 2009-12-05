@@ -2196,7 +2196,10 @@ configure_network()
 		if test "x$auto_install" = "x1"; then
 			_KS_iface_ip[$ifnum]="$(extract_args ipaddr_$ifname)"
 			_KS_iface_mask[$ifnum]="$(extract_args netmask_$ifname)"
-			test "x${_KS_iface_ip[$ifnum]}" != x && continue
+			if test "x${_KS_iface_ip[$ifnum]}" = x -o "x${_KS_iface_mask[$ifnum]}" = x; then
+				(( ifnum = ifnum + 1 ))
+				continue
+			fi
 		fi
 
 		if test "x$_KS_use_dhcp" = x; then
@@ -2275,7 +2278,12 @@ configure_network()
 		(( numconfigured = numconfigured + 1 ))
 		(( ifnum = ifnum + 1 ))
 
-		test "x$_KS_use_dhcp" != x -a "x$_KS_use_ipv6" != x && break
+		if boolean_check $_KS_use_dhcp; then
+			if boolean_check $_KS_use_ipv6; then
+				break
+			fi
+		fi
+		-a "x$_KS_use_ipv6" != x && break
 	done
 
 	if test $staticif != 0; then
@@ -3790,8 +3798,11 @@ if [ $UPGRADE -eq 0 ]; then
 	fi
 	if test "x$auto_install" = "x1"; then
 		nlm_key="$(extract_args nlm_key | sed -e 's/_/-/g')";
-		test -d "$TMPDEST/var/lib/nza" && mkdir -p $TMPDEST/var/lib/nza
-		test "x$nlm_key" = x && echo $nlm_key > $TMPDEST/var/lib/nza/nlm.key
+		if test "x$nlm_key" != x; then
+			test -d "$TMPDEST/var/lib/nza" && mkdir -p $TMPDEST/var/lib/nza
+			touch $TMPDEST/var/lib/nza/nlm.key
+	       		echo $nlm_key > $TMPDEST/var/lib/nza/nlm.key
+		fi
 	fi
 	if test $ROOTDISK_TYPE = "zfs"; then
 		zfs snapshot $ZFS_ROOTFS@initial 2>/dev/null
