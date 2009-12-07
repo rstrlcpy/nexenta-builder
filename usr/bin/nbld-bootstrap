@@ -205,7 +205,7 @@ EOF
 	pkglist="$NBLD_TMP/debootstrap-pkglist.installcd.tmp"
 	debootstrap \
 		    --arch solaris-i386 \
-		    --components=main,contrib,non-free \
+		    --components=main \
 		    --resolve-deps \
 		    --print-debs \
 		    $dist \
@@ -227,7 +227,7 @@ EOF
 	repolock_set=yes
 	debootstrap \
 		    --arch solaris-i386 \
-		    --components=main,contrib,non-free \
+		    --components=main\
 		    --keep-debootstrap-dir \
 		    --resolve-deps \
 		    --download-only \
@@ -264,7 +264,7 @@ pkglist="$NBLD_TMP/debootstrap-pkglist.profile0.tmp"
 export BOOTSTRAP_REQUIRED= BOOTSTRAP_BASE=$MINIMAL_CMN_DEBS
 env FAKEROOT=yes debootstrap \
 	    --arch solaris-i386 \
-	    --components=main,contrib,non-free \
+	    --components=main \
 	    --keep-debootstrap-dir \
 	    --resolve-deps \
 	    --print-debs \
@@ -285,7 +285,7 @@ pkglist="$NBLD_TMP/debootstrap-pkglist.mode.tmp"
 export BOOTSTRAP_REQUIRED= BOOTSTRAP_BASE=
 env FAKEROOT=yes debootstrap \
 	    --arch solaris-i386 \
-	    --components=main,contrib,non-free \
+	    --components=main \
 	    --keep-debootstrap-dir \
 	    --resolve-deps \
 	    --print-debs \
@@ -311,7 +311,7 @@ while ! mkdir $repolock 2>/dev/null; do sleep 1; done
 repolock_set=yes
 env FAKEROOT=yes debootstrap \
 	    --arch solaris-i386 \
-	    --components=main,contrib,non-free \
+	    --components=main \
 	    --keep-debootstrap-dir \
 	    --resolve-deps \
 	    $dist \
