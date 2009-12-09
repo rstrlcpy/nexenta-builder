@@ -34,13 +34,13 @@ LOCAL_ARCHIVE_DEBS=" \
 # (see nbld-bootstrap source code for details)
 #
 product_title="NexentaCore"
+os_version="v.3.0"
 rootsize1="1024"
 profile1="hardy-core"
 lines1="3000"
 desc1="Standard Core installation profile"
 longdesc1=""
 profiles="1"
-dot_screenrc="hardy-dot-screenrc"
 release_file="core-release.txt"
 apt_sources="http://apt.nexenta.org hardy-unstable main contrib non-free"
 ks_min_mem_required="256"

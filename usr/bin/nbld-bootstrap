@@ -471,7 +471,20 @@ if test "x$mode" = xinstall; then
 	chmod 755 $rootdir/usr/bin/install-log
 	cp $customdir/tail.pl $rootdir/usr/bin
 	chmod 755 $rootdir/usr/bin/tail.pl
-	cp $customdir/$dot_screenrc $rootdir/root/.screenrc
+	screen_title=$product_title $os_version
+	test "x$sw_version" != "x" && screen_title="$screen_title, software $sw_version"
+	cat << EOF > $rootdir/root/.screenrc
+bindkey -k k1 select 1
+bindkey -k k2 select 2
+bindkey -k k3 select 3
+startup_message off
+sorendition 04
+hardstatus lastline "%{kB} %w %= | $screen_title"
+screen -t Installer 1 /usr/nexenta/nexenta-install.sh
+screen -t Shell     2
+screen -t Log       3 /usr/bin/install-log
+select 1
+EOF
 	chmod 644 $rootdir/root/.screenrc
 	mv $rootdir/etc/syslog.conf $rootdir/etc/syslog.conf.unmodified
 	cp $customdir/nexenta-syslog.conf $rootdir/etc/syslog.conf
