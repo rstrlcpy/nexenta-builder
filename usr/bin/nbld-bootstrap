@@ -471,7 +471,7 @@ if test "x$mode" = xinstall; then
 	chmod 755 $rootdir/usr/bin/install-log
 	cp $customdir/tail.pl $rootdir/usr/bin
 	chmod 755 $rootdir/usr/bin/tail.pl
-	screen_title=$product_title $os_version
+	screen_title="$product_title $os_version"
 	test "x$sw_version" != "x" && screen_title="$screen_title, software $sw_version"
 	cat << EOF > $rootdir/root/.screenrc
 bindkey -k k1 select 1
