@@ -122,7 +122,6 @@ MINIMAL_CMN_DEBS="vim sunwsshu sunwsshdu bzip2 mkisofs sudo sed sunwcsu"
 HDD_EXCLUDE_DEBS="openssh-client openssh-server"
 
 STAGE0_EXCLUDE_DEBS="alien aptitude sunwdtrc rpm info locales sunwrcmdc sunwfmd sunwpkgcmdsu sunwdtrp libssl0.9.7 libsnmp9 librpm4 debhelper libldap-2.2-7 sasl2-bin nano nvi sunwsmbsu sunwsmbsr sunwsmbskr audioctl patch sunwdmgtu sunwdmgtr sunwdrmr sunwdsdr sunwdsdu sunwiscsir sunwiscsiu sunwima sunwimac sunwimacr sunwimar sunwmpapi sunwmpapir sunwmdb sunwmdbr sunwsshdr sunwsshdu sunwxwdv sunwtnetd sunwsmedia sunwsmediar sunwhea sunwiir sunwiiu sunwrdcr sunwrdcu sunwscmr sunwscmu sunwspsvr sunwspsvu sunwrmvolmgrr sunwrmvolmgr sunwxvmr sunwxvmu sunwxvmdomr sunwxvmdomu"
-#STAGE0_EXCLUDE_DEBS="alien aptitude sunwdtrc rpm info manpages locales sunwrcmdc sunwfmd sunwpkgcmdsu sunwdtrp libssl0.9.7 libsnmp9 librpm4 man-db debhelper libldap-2.2-7 sasl2-bin nano nvi sunwsmbsu sunwsmbsr sunwsmbskr audioctl patch sunwcakrx sunwcarx sunwdmgtu sunwdmgtr sunwdrmr sunwdsdr sunwdsdu sunwiscsir sunwiscsiu sunwima sunwimac sunwimacr sunwimar sunwmpapi sunwmpapir sunwmdb sunwmdbr sunwsshdr sunwsshdu sunwxwdv sunwtnetd sunwsmedia sunwsmediar sunwhea sunwiir sunwiiu sunwrdcr sunwrdcu sunwscmr sunwscmu sunwspsvr sunwspsvu sunwrmvolmgrr sunwrmvolmgr sunwxvmr sunwxvmu sunwxvmdomr sunwxvmdomu"
 
 if test -f $customdir/$mode.profile; then
 	. $customdir/$mode.profile
@@ -658,7 +657,7 @@ fi
 echo "NOTE: log file saved at $latest_log"
 
 if test "x$mode" = xinstall; then
-	nbld-saferoot $rootdir$hddrepo
+	nbld-saferoot $rootdir$hddrepo || exit 1
 fi
 
-nbld-livecd
+nbld-livecd || exit 1
