@@ -1,9 +1,25 @@
 #
 # NexentaStor 3.x Profile (Unified Storage Appliance)
 #
+
+#
+# REQ_DEBS
+#
+#
 REQ_DEBS="pciutils nexenta-keyring zlib1g gnupg sunwpiclr sunwdtrc sunwdtrp sunwrcmdc nexenta-sunw"
+
+#
+# MINIMAL_CMN_DEBS
+#
+#
 MINIMAL_CMN_DEBS="vim sunwsshu sunwsshdu bzip2 mkisofs sudo"
+
+#
+# STAGE0_EXCLUDE_DEBS
+#
+#
 STAGE0_EXCLUDE_DEBS="alien sunwmpsvplr sunwmpathadm sunwamt-lms python nexenta-pkgcmd dpkg-dev debhelper libdb4.2 tasksel tasksel-data libhal-dev libhal-storage-dev libsigc++-1.2-dev python2.5 sunwmmsr sunwmmsu myamanet-rf aptitude sunwdtrc info manpages sunwrcmdc sunwfmd sunwpkgcmdsu sunwdtrp libssl0.9.7 man-db nano sunwsmbsu sunwsmbsr sunwsmbskr patch sunwdrmr sunwdsdr sunwdsdu sunwiscsir sunwiscsiu sunwima sunwimac sunwimacr sunwimar sunwmpapi sunwmpapir sunwmdb sunwmdbr sunwxwdv sunwtnetd sunwhea sunwiir sunwiiu sunwrdcr sunwrdcu sunwscmr sunwscmu sunwspsvr sunwspsvu sunwdtrc"
+
 #
 # STAGE0_DEBS - the content of InstallCD miniroot
 #               (generally speaking, this is Installer requirements)
@@ -17,7 +33,7 @@ STAGE0_DEBS="screen dialog debootstrap wget sunwsshu sunwsshdu sunwesu sunwixgbe
 #
 LOCAL_ARCHIVE_DEBS=" \
 		screen dialog vim file cpio tree bzip2 joe unzip genisoimage \
-		nmc nlm-eval nms nms-dev nmv nmv-theme-nexenta \
+		nmc nms nms-dev nmv nmv-theme-nexenta \
 		alien nexenta-pkgcmd sunwlibc \
 		sunwndmpu sunwndmpr ndmpcopy \
 		sunwsmbfsu \
@@ -52,6 +68,9 @@ profiles="1"
 dot_screenrc="nza-dot-screenrc"
 release_file="nza-release.txt"
 apt_sources="http://apt.nexentastor.org hardy-testing main contrib non-free"
+plugin_sources="http://nexenta.com/apt-plugins elatte-stable main contrib non-free"
+builtin_plugins_dir="$extra_dir/extradebs"
+builtin_plugins="nlm-eval nms-delorean nmc-delorean"
 ks_min_mem_required="512"
 ks_rootdisk_type="zfs"
 ks_rootdisks=

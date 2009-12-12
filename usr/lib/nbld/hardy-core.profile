@@ -1,13 +1,32 @@
 #
-# Nexenta Core Platform 2.x Profile
+# Nexenta Core Platform 3.x Profile
 #
+
+#
+# REQ_DEBS
+#
+#
+REQ_DEBS="pciutils nexenta-keyring zlib1g libnspr4-0d libnss3-1d gnupg sunwpiclr \
+	sunwdtrc sunwdtrp sunwrcmdc nexenta-sunw pkg-config libkrb53 libstdc++6-4.2-dev"
+
+#
+# MINIMAL_CMN_DEBS
+#
+#
+MINIMAL_CMN_DEBS="vim sunwsshu sunwsshdu bzip2 mkisofs sudo sed sunwcsu"
 
 #
 # STAGE0_DEBS - the content of InstallCD miniroot
 #               (generally speaking, this is Installer requirements)
 #
 STAGE0_DEBS="screen dialog debootstrap wget sunwsshu sunwsshdu sunwesu \
-    file cpio genisoimage"
+	     file cpio genisoimage"
+
+#
+# STAGE0_EXCLUDE_DEBS -
+#
+#
+STAGE0_EXCLUDE_DEBS="alien sunwmpsvplr sunwmpathadm sunwamt-lms python nexenta-pkgcmd dpkg-dev debhelper libdb4.2 tasksel tasksel-data libhal-dev libhal-storage-dev libsigc++-1.2-dev python2.5 sunwmmsr sunwmmsu myamanet-rf aptitude sunwdtrc info manpages sunwrcmdc sunwfmd sunwpkgcmdsu sunwdtrp libssl0.9.7 man-db nano sunwsmbsu sunwsmbsr sunwsmbskr patch sunwdrmr sunwdsdr sunwdsdu sunwiscsir sunwiscsiu sunwima sunwimac sunwimacr sunwimar sunwmpapi sunwmpapir sunwmdb sunwmdbr sunwxwdv sunwtnetd sunwhea sunwiir sunwiiu sunwrdcr sunwrdcu sunwscmr sunwscmu sunwspsvr sunwspsvu sunwdtrc"
 
 #
 # LOCAL_ARCHIVE_DEBS - the content of on-ISO APT repository
