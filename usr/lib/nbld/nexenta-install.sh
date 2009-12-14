@@ -2283,7 +2283,6 @@ configure_network()
 				break
 			fi
 		fi
-		-a "x$_KS_use_ipv6" != x && break
 	done
 
 	if test $staticif != 0; then
