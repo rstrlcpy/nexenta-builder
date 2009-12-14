@@ -54,7 +54,6 @@ install_profile="$rootdir$hddrepo/defaults"
 pkglist="$NBLD_TMP/debootstrap-pkglist.tmp"
 
 product_title="NexentaOS"
-dot_screenrc="elatte-dot-screenrc"
 release_file="release.txt"
 apt_sources="http://apt.gnusolaris.org elatte-testing main contrib non-free"
 
