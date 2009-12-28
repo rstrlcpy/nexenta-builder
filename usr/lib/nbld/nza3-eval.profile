@@ -1,5 +1,5 @@
 #
-# NexentaStor 3.x Profile (Unified Storage Appliance)
+# NexentaStor 3.x Profile (ZFS Storage Appliance)
 #
 
 #
@@ -54,15 +54,15 @@ LOCAL_ARCHIVE_DEBS=" \
 #
 product_title="NexentaStor"
 model_id="STOR_UNIFIED"
-model_name="Unified Storage Appliance"
+model_name="ZFS Storage Appliance"
 os_version="v.3.0"
 sw_version="v.3.0.0"
-grub_n_title="Nexenta Storage Appliance"
-grub_s_title="Nexenta Storage Appliance"
+grub_n_title="NexentaStor Appliance"
+grub_s_title="NexentaStor Appliance"
 rootsize1="1024"
 profile1="appliance"
 lines1="3200"
-desc1="Unified Storage Appliance installation profile"
+desc1="NexentaStor Appliance installation profile"
 longdesc1=""
 profiles="1"
 dot_screenrc="nza-dot-screenrc"
