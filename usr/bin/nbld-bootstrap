@@ -449,9 +449,10 @@ if test "x$mode" = xinstall; then
 	echo "Initial local repository APT update ... "
 	chroot $environ apt-get update
 
-	echo "Preparing mdisco/hwdisco ... "
+	echo "Preparing mdisco/hwdisco/hddisco ... "
 	cp $customdir/mdisco $rootdir$hddrepo
 	cp $customdir/hwdisco.pl $rootdir$hddrepo/hwdisco
+	cp $customdir/hddisco $rootdir$hddrepo
 
 	echo "Preparing install scripts... "
 	cp $customdir/$dist.bootstrap $rootdir$hddrepo

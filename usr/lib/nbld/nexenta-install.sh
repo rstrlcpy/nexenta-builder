@@ -3528,7 +3528,7 @@ get_lun_by_device_id()
 {
 	perl -e '
 		my $found;
-        	for my $l (`hddisco`) {
+        	for my $l (`/usr/nexenta/hddisco`) {
 	        	if ($l =~ /^=(c\d+.*d\d+)/) {
 	           		$found = $1;
 	           		next;
