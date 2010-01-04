@@ -3534,7 +3534,7 @@ get_lun_by_device_id()
 	           		next;
 			}
 			if ($l =~ /^device_id\s+(\S+)/) {
-		      		if ($1 eq $ARGV[0]) {
+		      		if ($1 =~ /\@$ARGV[0]$/) {
 		      			print $found;
 		      			last;
 				}
