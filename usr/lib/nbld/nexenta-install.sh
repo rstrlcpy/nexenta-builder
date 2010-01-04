@@ -1160,11 +1160,14 @@ autopart_ask()
 	rlist=$(cat $TMP_FILE)
 	rm -f $TMP_FILE >/dev/null
 	if test "x$auto_install" = "x1"; then
-		# TODO: Need to add code for select disks
-		result_disk_pool="$(echo $syspool_luns | sed -e "s/_/ /g")"
+		for dev_id in `echo $syspool_luns | sed -e "s/~~/ /g"`; do
+			result_disk_pool="$result_disk_pool $(get_lun_by_device_id $dev_id)"
+		done
 		printlog "Selected disk(s) for auto partitioning: $(echo $result_disk_pool)"
 		if test "x$syspool_spare" != "x"; then
-			result_disk_spare="$(echo $syspool_spare | sed -e "s/_/ /g" )"
+			for dev_id in `echo $syspool_spare | sed -e "s/~~/ /g"`; do
+				result_disk_spare="$result_disk_spare $(get_lun_by_device_id $dev_id)"
+			done
 			printlog "Selected disk(s) for hot-spare: $(echo $result_disk_spare)"
 		fi
 		rm -f $TMP_FILE $TMP_DISKSIZE_FILE
@@ -3519,6 +3522,24 @@ create_swap()
 extract_args()
 {
 	echo "$(/usr/sbin/prtconf -v /devices|/usr/bin/sed -n "/$1/{;n;p;}"|/usr/bin/sed -e "s/^\s*value=\|'//g")"
+}
+
+get_lun_by_device_id() 
+{
+	perl -e '
+		my $found;
+        	for my $l (`hddisco`) {
+	        	if ($l =~ /^=(c\d+.*d\d+)/) {
+	           		$found = $1;
+	           		next;
+			}
+			if ($l =~ /^device_id\s+(\S+)/) {
+		      		if ($1 eq $ARGV[0]) {
+		      			print $found;
+		      			last;
+				}
+			}
+		}' $1
 }
 
 ############# main ###############
