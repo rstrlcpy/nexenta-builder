@@ -36,7 +36,7 @@ LOCAL_ARCHIVE_DEBS=" \
     screen dialog file cpio tree bzip2 sudo vim genisoimage \
     gcc g++ util-linux libpq5 getopt\
     alien nexenta-pkgcmd \
-    dput devscripts devzone\
+    dput devscripts \
     sunwscpu \
     sunwsprot \
     sunwgssdh sunwspnego \
