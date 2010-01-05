@@ -68,4 +68,5 @@ ks_rootdisks=
 ks_auto_reboot="0"
 ks_use_grub_mbr="1"
 ks_autopart_manual="0"
+ks_autopart_use_swap_zvol="1"
 mode_type="install"

@@ -1,3 +1,9 @@
+nexenta-builder (2.3.3) hardy; urgency=low
+
+  * using zvol as a swap by default now
+
+ -- Nexenta Systems <maintainer@nexenta.com>  Tue, 05 Jan 2010 10:24:51 -0800
+
 nexenta-builder (2.3.2) hardy; urgency=low
 
   * Add du fix to nbld-livdcd for correct filesize 

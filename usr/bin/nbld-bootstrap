@@ -415,6 +415,7 @@ if test "x$mode" = xinstall; then
 	test "x$ks_min_mem_required" != x && echo "_KS_min_mem_required='$ks_min_mem_required'" >> $install_profile
 	test "x$ks_autopart_export_home" != x && echo "_KS_autopart_export_home='$ks_autopart_export_home'" >> $install_profile
 	test "x$ks_autopart_manual" != x && echo "_KS_autopart_manual='$ks_autopart_manual'" >> $install_profile
+	test "x$ks_autopart_use_swap_zvol" != x && echo "_KS_autopart_use_swap_zvol='$ks_autopart_use_swap_zvol'" >> $install_profile
 	test "x$ks_need_network" != x && echo "_KS_need_network='$ks_need_network'" >> $install_profile
 	if test "x$ks_startup_wizard" != x; then
 	        echo "_KS_startup_wizard='$ks_startup_wizard'" >> $install_profile
@@ -522,6 +523,14 @@ export BOOTSTRAP_BASE=\$(cat \$1/var/tmp/base.lst)
 debootstrap --arch solaris-i386 --components=main,contrib,non-free --keep-debootstrap-dir \\
     $dist \$1 file://\$2 \$2/$dist.bootstrap &> /tmp/install-base-debootstrap.log
 
+for pid in \`ps -ef|awk '/devfsadmd/ {print \$2}'\`; do
+	if pfiles \$pid 2>/dev/null | grep \$1 >/dev/null; then
+		kill -9 \$pid 2>/dev/null
+		break
+	fi
+done
+sleep 2
+umount \$1/devices 2>/dev/null
 umount -f \$1\$2 2>/dev/null
 if test "x\$3" = "x1"; then
 	umount -f \$1/var/cache/apt/archives
@@ -634,6 +643,19 @@ else
 fi
 
 echo "Polishing ... "
+
+# special fix for bootstraping machine
+for pid in `ps -ef|awk '/devfsadmd/ {print $2}'`; do
+	if pfiles $pid 2>/dev/null | grep $rootdir >/dev/null; then
+		kill -9 $pid
+		break
+	fi
+done
+sleep 2
+umount $rootdir/devices
+
+rm -f $rootdir/etc/zfs/zpool.cache
+
 # Fixing shadow...
 chroot $environ pwconv
 sed -i -e "s/^root:\*:/root::/" $rootdir/etc/shadow

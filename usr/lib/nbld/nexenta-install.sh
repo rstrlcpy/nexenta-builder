@@ -153,18 +153,18 @@ callback()
 welcome_head()
 {
 	$DIALOG --title " Welcome " --msgbox "
-                 Welcome to the $TITLE Installer.
+               Welcome to the $TITLE Installer!
 
-     If you intend on installing $TITLE onto a removable drive
+     If you intend to install $TITLE onto a removable drive
      (e.g. USB memory stick, portable hard drive, etc.), please
      make sure that the drive is currently inserted, powered on,
-     and isn't write protected before proceeding any further.
+     and is not write protected before proceeding any further.
 
      You can press 'CTRL-A :quit' at anytime to quit the installer.
      Use SPACEBAR to select an entry, and TAB-UP-DOWN keys to navigate.
      Use only UP-DOWN arrow keys to navigate between input fields.
      You can also cycle through the Installer, Shell or Log by
-     pressing F1-F2-F3 keys.
+     pressing F1-F2-F3 (or ESC-1,2,3) keys.
 
   ** IMPORTANT: Please backup any important data before continuing **
 
@@ -246,7 +246,7 @@ find_zpool_by_disk_and_destroy()
 	for p in `zpool list -H|awk '{print $1'}`; do
 		if zpool status $p|grep $disk >/dev/null; then
 			if test "x$force_destroy" != x1; then
-				$DIALOG --title " Warning! "  --yesno "\n  Disk '$disk' is part of ZFS Poll '$p'.\n     Destroy '$p' and proceed?" 7 50
+				$DIALOG --title " Warning! "  --yesno "\n  Disk '$disk' is part of ZFS Pool '$p'.\n     Destroy '$p' and proceed?" 7 50
 				if test $? == $DIALOG_OK; then
 					zpool destroy -f $p
 					return 0
@@ -1017,34 +1017,48 @@ autopart()
 	fi
 	fdisk -B ${d}p0 2>/dev/null
 
-	echo p > $AUTOPART_CMD_FILE
-	echo 0 >> $AUTOPART_CMD_FILE
-	echo root >> $AUTOPART_CMD_FILE
-	echo wm >> $AUTOPART_CMD_FILE
-	echo 3 >> $AUTOPART_CMD_FILE
-	if test $cyls -gt $(($root_cyls+$min_export_cyls)) -a "x$_KS_autopart_export_home" != x0 -a $fstype = "ufs"; then
-		echo ${root_cyls}c >> $AUTOPART_CMD_FILE
-		printlog "Slice0: / ${root_cyls} cylinders"
-		echo 1 >> $AUTOPART_CMD_FILE
-		echo home >> $AUTOPART_CMD_FILE
+	if boolean_check $_KS_autopart_use_swap_zvol; then
+		echo p > $AUTOPART_CMD_FILE
+		echo 0 >> $AUTOPART_CMD_FILE
+		echo root >> $AUTOPART_CMD_FILE
 		echo wm >> $AUTOPART_CMD_FILE
-		echo $(($root_cyls+4)) >> $AUTOPART_CMD_FILE
-		echo $(($cyls-$swap_cyls-$root_cyls-10))c >> $AUTOPART_CMD_FILE
-		printlog "Slice1: /export/home $(($cyls-$swap_cyls-$root_cyls-10)) cylinders"
+		echo 3 >> $AUTOPART_CMD_FILE
+		echo $(($cyls-4))c >> $AUTOPART_CMD_FILE
+		printlog "Slice0: / $(($cyls-4)) cylinders"
+		echo q >> $AUTOPART_CMD_FILE
+		echo label >> $AUTOPART_CMD_FILE
+		echo 0 >> $AUTOPART_CMD_FILE
+		echo q >> $AUTOPART_CMD_FILE
 	else
-		echo $(($cyls-$swap_cyls-8))c >> $AUTOPART_CMD_FILE
-		printlog "Slice0: / $(($cyls-$swap_cyls-8)) cylinders"
+		echo p > $AUTOPART_CMD_FILE
+		echo 0 >> $AUTOPART_CMD_FILE
+		echo root >> $AUTOPART_CMD_FILE
+		echo wm >> $AUTOPART_CMD_FILE
+		echo 3 >> $AUTOPART_CMD_FILE
+		if test $cyls -gt $(($root_cyls+$min_export_cyls)) -a "x$_KS_autopart_export_home" != x0 -a $fstype = "ufs"; then
+			echo ${root_cyls}c >> $AUTOPART_CMD_FILE
+			printlog "Slice0: / ${root_cyls} cylinders"
+			echo 1 >> $AUTOPART_CMD_FILE
+			echo home >> $AUTOPART_CMD_FILE
+			echo wm >> $AUTOPART_CMD_FILE
+			echo $(($root_cyls+4)) >> $AUTOPART_CMD_FILE
+			echo $(($cyls-$swap_cyls-$root_cyls-10))c >> $AUTOPART_CMD_FILE
+			printlog "Slice1: /export/home $(($cyls-$swap_cyls-$root_cyls-10)) cylinders"
+		else
+			echo $(($cyls-$swap_cyls-8))c >> $AUTOPART_CMD_FILE
+			printlog "Slice0: / $(($cyls-$swap_cyls-8)) cylinders"
+		fi
+		echo 7 >> $AUTOPART_CMD_FILE
+		echo swap >> $AUTOPART_CMD_FILE
+		echo wu >> $AUTOPART_CMD_FILE
+		echo $(($cyls-$swap_cyls-5)) >> $AUTOPART_CMD_FILE
+		echo ${swap_cyls}c >> $AUTOPART_CMD_FILE
+		printlog "Slice7: swap ${swap_cyls} cylinders"
+		echo q >> $AUTOPART_CMD_FILE
+		echo label >> $AUTOPART_CMD_FILE
+		echo 0 >> $AUTOPART_CMD_FILE
+		echo q >> $AUTOPART_CMD_FILE
 	fi
-	echo 7 >> $AUTOPART_CMD_FILE
-	echo swap >> $AUTOPART_CMD_FILE
-	echo wu >> $AUTOPART_CMD_FILE
-	echo $(($cyls-$swap_cyls-5)) >> $AUTOPART_CMD_FILE
-	echo ${swap_cyls}c >> $AUTOPART_CMD_FILE
-	printlog "Slice7: swap ${swap_cyls} cylinders"
-	echo q >> $AUTOPART_CMD_FILE
-	echo label >> $AUTOPART_CMD_FILE
-	echo 0 >> $AUTOPART_CMD_FILE
-	echo q >> $AUTOPART_CMD_FILE
 
 	format -ef $AUTOPART_CMD_FILE -d $d >/dev/null 2>$AUTOPART_FMT_ERR
 	if test $? != 0; then
@@ -1071,11 +1085,18 @@ autopart()
 			fi
 		fi
 	else
-		if test "x$slice_root" = x; then
-			slice_root=$disk
-			slice_swap="$(echo $disk|sed -e 's/s0/s7/')"
+		if boolean_check $_KS_autopart_use_swap_zvol; then
+			if test "x$slice_root" = x; then
+				slice_root=$d
+				slice_swap="syspool/swap"
+			fi
 		else
-			slice_swap="$slice_swap $(echo $disk|sed -e 's/s0/s7/')"
+			if test "x$slice_root" = x; then
+				slice_root=$disk
+				slice_swap="$(echo $disk|sed -e 's/s0/s7/')"
+			else
+				slice_swap="$slice_swap $(echo $disk|sed -e 's/s0/s7/')"
+			fi
 		fi
 	fi
 
@@ -1183,7 +1204,8 @@ autopart_ask()
 			CHECK_INFO="$CHECK_INFO\n"
 		fi
 
-		echo "$DIALOG_WITH_ESC $manual_cmd --no-cancel --title \" Fresh Installation \" --checklist \"$CHECK_INFO\nPlease select disk(s) (no more than 3) to be automatically partitioned:\" 0 0 4 $rlist" >$TMP_FILE
+		echo "$DIALOG_WITH_ESC $manual_cmd --no-cancel --title \" Fresh Installation \" --checklist \"$CHECK_INFO\nPlease select disk(s) (no more than 3) to be automatically partitioned:\" 0 0 0 $rlist" >$TMP_FILE
+
 		. $TMP_FILE 2>$DIALOG_RES
 		local rc=$?
 
@@ -1265,8 +1287,9 @@ autopart_ask()
 					return 0
 				fi
 				while true; do
-					CHECK_INFO="\nPlease select hot spare disk(s) for the $TITLE system volume.\n\\Z1WARNING\\Zn: $TITLE Operating System will be installed onto the system volume, and all existing data on the selected disk(s) will be lost during the installation process!"
-					echo "$DIALOG $manual_cmd --title \" Fresh Installation \" --checklist \"$CHECK_INFO\nPlease select one or more hot spare disk(s):\" 0 0 0 $rlist" >$TMP_FILE
+					CHECK_INFO="\nPlease select hot spare disk(s) for the $TITLE system volume.\n\\Z1WARNING\\Zn: $TITLE Operating System will be installed onto the system volume, and all existing data on the selected disk(s) will be lost during the installation process!\nPress ESC to go back."
+					echo "$DIALOG_WITH_ESC $manual_cmd --title \" Fresh Installation \" --checklist \"$CHECK_INFO\nPlease select one or more hot spare disk(s):\" 0 0 0 $rlist" >$TMP_FILE
+
 					. $TMP_FILE 2>$DIALOG_RES
 					local rc=$?
 
@@ -1378,7 +1401,7 @@ check_upgrade()
 		return 1
 	fi
 
-	CHECK_INFO="\nInstall has detected that the following drives are eligible for upgrade. Upgrade allows you to retain your data, including any customized system files.\n\nIf you choose not to upgrade, select Install to begin with a fresh installation; note however, that you will lose all data on the drive by doing so. Press CTRL-C at anytime to quit the installer.\n"
+	CHECK_INFO="\nInstall has detected that the following disks are eligible for upgrade. Upgrade allows you to retain your data, including any customized system files.\n\nIf you choose not to upgrade, select Install to begin with a fresh installation; note however, that you will lose all data on the drive by doing so. Press CTRL-C at anytime to quit the installer.\n"
 
 	rlist=""
 	IFS=$newline
@@ -2187,7 +2210,12 @@ configure_network()
 	# Bootstrap /etc/inet/hosts entry
 	node_name="$hostname"
 	node_fqnd="$node_name.$domainname"
-	hosts_entry=$'127.0.0.1\t'$node_name$'\t'$node_fqnd$'\tloghost'
+	ipaddress="127.0.0.1"
+	if test "x$_KS_ifaces" != x; then
+		ipaddress=${_KS_iface_ip[0]}
+
+	fi
+	hosts_entry=$ipaddress$'\t'$node_name$'\t'$node_fqnd$'\tloghost'
 	echo "$hosts_entry" >> $TMPDEST/etc/inet/hosts
 	rm -f $TMPDEST/etc/inet/ipnodes; ln -s ./hosts $TMPDEST/etc/inet/ipnodes
 	printlog "FQND $node_name.$domainname is added to /etc/inet/hosts"
@@ -2437,6 +2465,7 @@ customize_hdd_install()
 	local user1000=$(cat /etc/passwd|grep "x:1000:"|awk -F: '{print $1}')
 	test "x$user1000" != x && userdel $user1000 2>/dev/null
 	userdel $user 2> /dev/null
+	rm -f /etc/passwd.lock
 	useradd -u 1000 -d /export/home/$user -g staff -s /bin/bash $user
 
 	cp /etc/passwd /etc/passwd.$$
@@ -2810,9 +2839,13 @@ vfstab_setup()
 #	test x$slice_export_home != x &&
 #	echo "$ZPOOL_HOME	$(fsckdev $slice_export_home)	/export/home	zfs	2 yes	-" >> $TMPDEST/etc/vfstab
 
-	for sswap in `echo $slice_swap|sed -e "s/ /\n/g"`; do
-	echo "$(mntdev $sswap)	-		-	swap	-	no	-" >> $TMPDEST/etc/vfstab
-	done
+	if boolean_check $_KS_autopart_use_swap_zvol; then
+		echo "/dev/zvol/dsk/$slice_swap	-		-	swap	-	no	-" >> $TMPDEST/etc/vfstab
+	else
+		for sswap in `echo $slice_swap|sed -e "s/ /\n/g"`; do
+			echo "$(mntdev $sswap)	-		-	swap	-	no	-" >> $TMPDEST/etc/vfstab
+		done
+	fi
 
 	printlog "Installed /etc/vfstab"
 
@@ -3514,7 +3547,13 @@ extract_lic_text()
 create_swap()
 {
 	for sswap in `echo $slice_swap|sed -e "s/ /\n/g"`; do
-		swap -a $sswap 2>/dev/null 1>&2
+		if boolean_check $_KS_autopart_use_swap_zvol; then
+			local rawswap="/dev/zvol/dsk/$sswap";
+			zfs create -V ${AUTOPART_SWAP_SIZE}m $sswap
+			swap -a $rawswap 2>/dev/null 1>&2
+		else
+			swap -a $sswap 2>/dev/null 1>&2
+		fi
 	done
 }
 
