@@ -3839,18 +3839,18 @@ cp $LOGFILE $TMPDEST/root
 if [ $UPGRADE -eq 0 ]; then
 	# Trigger first time startup wizard if specified via Kick-Start profile
 	if test "x$_KS_startup_wizard" != x; then
-		if test "x$auto_install" != "x1"; then
-			chmod 755 $TMPDEST/usr/bin/$_KS_startup_wizard
-			echo "/usr/bin/screen -q -T xterm -s /usr/bin/$_KS_startup_wizard" > $TMPDEST/$FIRSTSTART
-			if test "x$_KS_show_wizard_license" = x1; then
-				if test -f "$REPO/$_KS_license_text"; then
-					cp $REPO/$_KS_license_text $TMPDEST/etc/license_text
-					chmod 644 $TMPDEST/etc/license_text
-				fi
-				echo $(extract_lic_file $_KS_license_text) > $TMPDEST/$LICENSELOC
+		wizard_opt=""
+		test "x$auto_install" = "x1" && wizard_opt=$(extract_args nic_primary)
+		chmod 755 $TMPDEST/usr/bin/$_KS_startup_wizard
+		echo "/usr/bin/screen -q -T xterm -s '/usr/bin/$_KS_startup_wizard $wizard_opt'" > $TMPDEST/$FIRSTSTART
+		if test "x$_KS_show_wizard_license" = x1; then
+			if test -f "$REPO/$_KS_license_text"; then
+				cp $REPO/$_KS_license_text $TMPDEST/etc/license_text
+				chmod 644 $TMPDEST/etc/license_text
 			fi
-			printlog "First time startup wizard '/usr/bin/$_KS_startup_wizard' enabled."
+			echo $(extract_lic_file $_KS_license_text) > $TMPDEST/$LICENSELOC
 		fi
+		printlog "First time startup wizard '/usr/bin/$_KS_startup_wizard' enabled."
 		if test "x$_KS_model" != x; then
 			cp $REPO/$_KS_model $TMPDEST/usr/lib/perl5/NZA
 		fi
