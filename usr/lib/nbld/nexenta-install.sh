@@ -3839,10 +3839,10 @@ cp $LOGFILE $TMPDEST/root
 if [ $UPGRADE -eq 0 ]; then
 	# Trigger first time startup wizard if specified via Kick-Start profile
 	if test "x$_KS_startup_wizard" != x; then
-		wizard_opt=""
-		test "x$auto_install" = "x1" && wizard_opt=$(extract_args nic_primary)
+		wizard_env="NIC_PRIMARY="
+		test "x$auto_install" = "x1" && wizard_env="NIC_PRIMARY=$(extract_args nic_primary)"
 		chmod 755 $TMPDEST/usr/bin/$_KS_startup_wizard
-		echo "/usr/bin/screen -q -T xterm -s '/usr/bin/$_KS_startup_wizard $wizard_opt'" > $TMPDEST/$FIRSTSTART
+		echo "$wizard_env /usr/bin/screen -q -T xterm -s /usr/bin/$_KS_startup_wizard" > $TMPDEST/$FIRSTSTART
 		if test "x$_KS_show_wizard_license" = x1; then
 			if test -f "$REPO/$_KS_license_text"; then
 				cp $REPO/$_KS_license_text $TMPDEST/etc/license_text
