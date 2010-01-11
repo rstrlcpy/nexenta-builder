@@ -2611,7 +2611,7 @@ reboot_msg_ks()
 	test "x$_KS_autopart_export_home" != x0 -a $ROOTDISK_TYPE = "ufs" && \
 					    conf="$conf     * ZFS volume 'home' mounted at: /export/home\n"
 
-	test "x$conf" != x && applied="\nFollowing Auto Configuration has been applied:\n\n$conf"
+	test "x$conf" != x && applied="\nThe following configuration has been applied:\n\n$conf"
 
 	$DIALOG --title " Successful Installation " --msgbox "\n
     $msg.\n$applied\n
