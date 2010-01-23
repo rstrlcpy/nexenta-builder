@@ -1,3 +1,9 @@
+nexenta-builder (2.5) hardy; urgency=low
+
+  * interim changes and pnfs profile
+
+ -- Nexenta Systems <maintainer@nexenta.com>  Sat, 23 Jan 2010 14:48:10 -0800
+
 nexenta-builder (2.3.3) hardy; urgency=low
 
   * using zvol as a swap by default now
