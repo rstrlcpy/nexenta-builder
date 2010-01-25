@@ -431,6 +431,7 @@ if test "x$mode" = xinstall; then
 	        mv /tmp/model.$$ $rootdir$hddrepo/Model.pm
 	        echo "_KS_model='Model.pm'" >> $install_profile
 		cp $customdir/machinesig $rootdir$hddrepo
+		chmod 744 $rootdir$hddrepo/machinesig
 	fi
 	if test "x$ks_license_text" != x; then
 		if test -f $customdir/$ks_license_text; then

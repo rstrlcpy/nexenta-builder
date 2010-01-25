@@ -97,12 +97,12 @@ result_disk_pool=""
 result_disk_spare=""
 
 auto_install=""
-
+machinesig=""
 dialog_cmd() {
-	echo dialog\ --backtitle\ $TITLE-Installer\ --keep-window\ --colors\ --no-signals\ --no-escape
+	echo dialog\ --backtitle\ $TITLE-Installer$machine\ --keep-window\ --colors\ --no-signals\ --no-escape
 }
 dialog_cmd_with_escape() {
-	echo dialog\ --backtitle\ $TITLE-Installer\ --keep-window\ --colors\ --no-signals
+	echo dialog\ --backtitle\ $TITLE-Installer$machine\ --keep-window\ --colors\ --no-signals
 }
 DIALOG_WITH_ESC="$(dialog_cmd_with_escape)"
 DIALOG="$(dialog_cmd)"
@@ -3589,6 +3589,9 @@ loadkeys $TMP_FILE
 source $DEFPROFILE
 DEFAULT_PROFILE=${_KS_profile_name[$_KS_profile_selected]}
 TITLE=$_KS_product_title
+if test "x$TITLE" = xNexentaStor; then
+	machinesig="-`$REPO/machinesig`"
+fi
 DIALOG="$(dialog_cmd)"
 DIALOG_WITH_ESC="$(dialog_cmd_with_escape)"
 
