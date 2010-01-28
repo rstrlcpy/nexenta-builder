@@ -99,10 +99,10 @@ result_disk_spare=""
 auto_install=""
 machinesig=""
 dialog_cmd() {
-	echo dialog\ --backtitle\ $TITLE-Installer$machine\ --keep-window\ --colors\ --no-signals\ --no-escape
+	echo dialog\ --backtitle\ $TITLE-Installer$machinesig\ --keep-window\ --colors\ --no-signals\ --no-escape
 }
 dialog_cmd_with_escape() {
-	echo dialog\ --backtitle\ $TITLE-Installer$machine\ --keep-window\ --colors\ --no-signals
+	echo dialog\ --backtitle\ $TITLE-Installer$machinesig\ --keep-window\ --colors\ --no-signals
 }
 DIALOG_WITH_ESC="$(dialog_cmd_with_escape)"
 DIALOG="$(dialog_cmd)"
