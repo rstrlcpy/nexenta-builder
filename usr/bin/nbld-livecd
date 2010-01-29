@@ -428,7 +428,7 @@ function customize_mini
 	if [ "${MODE}" != "livecd" ]; then
 		cp ${DIALOGRC} $1/root/.dialogrc
 		if cat ${FAKEROOT}/${REPO}/defaults | grep "nlm-eval:" >/dev/null; then
-			sed -i -e "s/NexentaStor/Developer Edition/" $1/root/.screenrc
+			sed -i -e "s/NexentaStor/Community Edition/" $1/root/.screenrc
 		elif cat ${FAKEROOT}/${REPO}/defaults | grep "nlm-com:" >/dev/null; then
 			sed -i -e "s/NexentaStor/Enterprise Edition/" $1/root/.screenrc
 		fi
