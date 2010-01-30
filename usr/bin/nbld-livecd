@@ -620,6 +620,7 @@ function create_grub
 
 	if [ -f ${MENU} ]; then
 		copy_file ${MENU} ${BOOT_DIR}/grub/menu.lst 0644 root:root
+		sed -e "s/__autoversion__/$os_version, software $sw_version/" -i ${BOOT_DIR}/grub/menu.lst
 	fi
 
 	if [ -f ${MEMTEST} ]; then
@@ -1042,6 +1043,16 @@ if [ ! -d ${CUSTOM_DIR} ]; then
 elif [ ! -d ${FAKEROOT} ]; then
 	echo "Error: ${FAKEROOT} does not exist"
 	exit 1
+fi
+
+if test -f ${CUSTOM_DIR}/${NBLD_DEFAULT_MODE}.profile; then
+	. ${CUSTOM_DIR}/${NBLD_DEFAULT_MODE}.profile
+elif test -f ${NBLD_DEFAULT_MODE}.profile; then
+	. ${NBLD_DEFAULT_MODE}.profile
+else
+	echo "Error: ${NBLD_DEFAULT_MODE}.profile not found."
+	exit 1
+
 fi
 
 if [ -d ${FAKEROOT}/${REPO} ]; then

@@ -47,11 +47,11 @@ splashimage=/boot/grub/splash.xpm.gz
 #
 #   kernel /platform/i86pc/multiboot <boot-args> -B prop1=val1,prop2=val2,...
 
-title Install NexentaStor via serial port COM1 (v2.1, software v2.1.2)
+title Install NexentaStor via serial port COM1 (__autoversion__)
 	root (cd)
 	kernel$ /platform/i86pc/kernel/$ISADIR/unix -B atapi-cd-dma-enabled=0 -B console=ttya
 	module$ /platform/i86pc/miniroot
-title Install NexentaStor via keyboard/monitor (v2.1, software v2.1.2)
+title Install NexentaStor via keyboard/monitor (__autoversion__)
 	root (cd)
 	kernel$ /platform/i86pc/kernel/$ISADIR/unix -B atapi-cd-dma-enabled=0
 	module$ /platform/i86pc/miniroot

@@ -34,6 +34,7 @@ LOCAL_ARCHIVE_DEBS=" \
 # (see nbld-bootstrap source code for details)
 #
 product_title="NexentaCore"
+os_version="v3.0"
 rootsize1="1024"
 profile1="hardy-core"
 lines1="3000"
