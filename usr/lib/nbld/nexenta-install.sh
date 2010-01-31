@@ -3589,7 +3589,7 @@ loadkeys $TMP_FILE
 source $DEFPROFILE
 DEFAULT_PROFILE=${_KS_profile_name[$_KS_profile_selected]}
 TITLE=$_KS_product_title
-if test "x$TITLE" = xNexentaStor; then
+if test -f $REPO/machinesig; then
 	machinesig="-`$REPO/machinesig`"
 fi
 DIALOG="$(dialog_cmd)"
