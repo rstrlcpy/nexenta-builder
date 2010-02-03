@@ -6,7 +6,7 @@
 # REQ_DEBS
 #
 #
-REQ_DEBS="pciutils nexenta-keyring lib64z1 gnupg sunwpiclr sunwdtrc sunwdtrp sunwrcmdc nexenta-sunw"
+REQ_DEBS="pciutils nexenta-keyring zlib1g gnupg sunwpiclr sunwdtrc sunwdtrp sunwrcmdc nexenta-sunw"
 
 #
 # MINIMAL_CMN_DEBS
@@ -18,22 +18,21 @@ MINIMAL_CMN_DEBS="vim sunwsshu sunwsshdu bzip2 mkisofs sudo"
 # STAGE0_EXCLUDE_DEBS
 #
 #
-STAGE0_EXCLUDE_DEBS="alien myamanet-rf aptitude sunwdtrc rpm info manpages locales sunwrcmdc sunwfmd sunwpkgcmdsu sunwdtrp libssl0.9.7 libsnmp9 librpm4 man-db debhelper libldap-2.2-7 sasl2-bin nano nvi sunwsmbsu sunwsmbsr sunwsmbskr audioctl patch sunwdrmr sunwdsdr sunwdsdu sunwiscsir sunwiscsiu sunwima sunwimac sunwimacr sunwimar sunwmpapi sunwmpapir sunwmdb sunwmdbr sunwxwdv sunwtnetd sunwhea sunwiir sunwiiu sunwrdcr sunwrdcu sunwscmr sunwscmu sunwspsvr sunwspsvu sunwxvmr sunwxvmu sunwxvmdomr sunwxvmdomu libasn1-6-heimdal libgssapi4-heimdal libkrb5-17-heimdal libroken16-heimdal"
-
+STAGE0_EXCLUDE_DEBS="alien sunwmpsvplr sunwmpathadm python nexenta-pkgcmd dpkg-dev debhelper libdb4.2 tasksel tasksel-data libhal-dev libhal-storage-dev libsigc++-1.2-dev python2.5 sunwmmsr sunwmmsu myamanet-rf aptitude sunwdtrc info manpages sunwrcmdc sunwfmd sunwpkgcmdsu sunwdtrp libssl0.9.7 man-db nano sunwsmbsu sunwsmbsr sunwsmbskr patch sunwdrmr sunwdsdr sunwdsdu sunwiscsir sunwiscsiu sunwima sunwimac sunwimacr sunwimar sunwmpapi sunwmpapir sunwmdb sunwmdbr sunwxwdv sunwtnetd sunwhea sunwiir sunwiiu sunwrdcr sunwrdcu sunwscmr sunwscmu sunwspsvr sunwspsvu sunwdtrc"
 
 #
 # STAGE0_DEBS - the content of InstallCD miniroot
 #               (generally speaking, this is Installer requirements)
 #
 STAGE0_DEBS="screen dialog debootstrap wget sunwsshu sunwsshdu sunwesu sunwixgbe \
-	     file cpio mkisofs sed sunwcsu"
+	     file cpio genisoimage sed sunwcsu"
 
 #
 # LOCAL_ARCHIVE_DEBS - the content of on-ISO APT repository
 #                      (what will be installed by default)
 #
 LOCAL_ARCHIVE_DEBS=" \
-		screen dialog vim file cpio tree bzip2 joe unzip mkisofs \
+		screen dialog vim file cpio tree bzip2 joe unzip genisoimage \
 		nmc nms nms-dev nmv nmv-theme-nexenta \
 		alien nexenta-pkgcmd sunwlibc \
 		sunwndmpu sunwndmpr ndmpcopy \
@@ -66,8 +65,9 @@ lines1="3200"
 desc1="NexentaStor Appliance installation profile"
 longdesc1=""
 profiles="1"
+dot_screenrc="nza-dot-screenrc"
 release_file="nza-release.txt"
-apt_sources="http://nexenta.com/apt-nza elatte-stable main contrib non-free"
+apt_sources="http://apt.nexentastor.org hardy-testing main contrib non-free"
 plugin_sources="http://nexenta.com/apt-plugins elatte-stable main contrib non-free"
 builtin_plugins_dir="$extra_dir/extradebs"
 builtin_plugins="nlm-com nmc-storagelink nms-storagelink nms-delorean nmc-delorean nms-autosync nmc-autosync nmv-autosync nms-comstar"
