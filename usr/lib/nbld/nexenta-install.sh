@@ -2932,6 +2932,7 @@ cleanup_after_install()
 	rm -f $TMPDEST/var/cache/apt/*.bin > /dev/null 2>&1
 	rm -f $TMPDEST/var/cache/apt/archives/*.deb > /dev/null 2>&1
 	rm -rf $TMPDEST/var/cache/apt/archives > /dev/null 2>&1
+	rm -f $TMPDEST/etc/skel/.profile.dpkg-dist > /dev/null 2>&1
 	mkdir -p $TMPDEST/var/cache/apt/archives/partial
 	rm -rf $TMPDEST/debootstrap > /dev/null 2>&1
 
