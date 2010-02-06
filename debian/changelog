@@ -1,8 +1,9 @@
 nexenta-builder (2.5.1) hardy; urgency=low
 
   * Bug-fix.. root appears twice in sudoers (Closes: #57)
+  * Bug-fix.. dont copy .hg files (Closes: #58)
 
- -- Anil Gulecha <anil.verve@gmail.com>  Sat, 06 Feb 2010 06:32:09 -0800
+ -- Anil Gulecha <anil.verve@gmail.com>  Sat, 06 Feb 2010 06:40:00 -0800
 
 nexenta-builder (2.5) hardy; urgency=low
 
