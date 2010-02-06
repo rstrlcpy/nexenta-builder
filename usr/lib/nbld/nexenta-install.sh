@@ -2479,7 +2479,7 @@ customize_hdd_install()
 	find $TMPDEST/etc/skel -name ".*" -type f -exec cp {} $TMPDEST/export/home/$user/ \;
 	chown -R $user:staff $TMPDEST/export/home/$user
 	echo "$user    ALL=(ALL) ALL" >> $TMPDEST/etc/sudoers
-	echo "root    ALL=(ALL) ALL" >> $TMPDEST/etc/sudoers
+#	echo "root    ALL=(ALL) ALL" >> $TMPDEST/etc/sudoers
 
 	printlog "Added user: $user and assigned new password"
 
