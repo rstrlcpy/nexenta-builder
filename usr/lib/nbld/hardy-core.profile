@@ -34,7 +34,7 @@ STAGE0_EXCLUDE_DEBS="alien sunwmpsvplr sunwmpathadm sunwamt-lms python nexenta-p
 #
 LOCAL_ARCHIVE_DEBS=" \
     screen dialog file cpio tree bzip2 sudo vim genisoimage \
-    gcc g++ util-linux libpq5 getopti python2.4\
+    gcc g++ util-linux libpq5 getopt python2.4\
     alien nexenta-pkgcmd \
     dput devscripts \
     sunwscpu \
