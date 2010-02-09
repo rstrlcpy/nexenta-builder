@@ -433,7 +433,13 @@ if test "x$mode" = xinstall; then
 	fi
 	if test "x$ks_machinesig" != x; then
 		cp $customdir/$ks_machinesig $rootdir$hddrepo/machinesig
+		bin_dir="/usr/local/bin"
 		chmod 744 $rootdir$hddrepo/machinesig
+		if ! test -d $rootdir$bin_dir; then
+			mkdir -p $rootdir$bin_dir
+		fi
+		cp $customdir/nabat-config $rootdir$bin_dir/nabat-config
+		chmod 744 $rootdir$bin_dir/nabat-config
 	fi
 	if test "x$ks_license_text" != x; then
 		if test -f $customdir/$ks_license_text; then
