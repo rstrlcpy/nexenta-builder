@@ -2951,7 +2951,7 @@ customize_sources()
 	echo "deb-src $_KS_apt_sources" >> $TMPDEST/etc/apt/sources.list
 	if test "x$_KS_plugin_sources" != x; then
 		echo >> $TMPDEST/etc/apt/sources.list
-		echo "# Third-party and open source NexentaStor plugins sources" >> $TMPDEST/etc/apt/sources.list
+		echo "# Third-party and commercial NexentaStor plugins sources" >> $TMPDEST/etc/apt/sources.list
 		echo "deb $_KS_plugin_sources" >> $TMPDEST/etc/apt/sources.list
 		echo "deb-src $_KS_plugin_sources" >> $TMPDEST/etc/apt/sources.list
 	fi
