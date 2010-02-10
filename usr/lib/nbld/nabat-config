@@ -292,6 +292,7 @@ if($result[1]) {
 		goto dns_err;
 	}
 	$dns_ip_2 = $result[1];
+	$dns_ip_2 = "'$dns_ip_2'";
 }
 
 # Preparation of the information collected to show the user
