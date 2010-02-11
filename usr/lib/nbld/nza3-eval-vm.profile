@@ -26,7 +26,7 @@ LOCAL_ARCHIVE_DEBS=" \
 		sunwntpu sunwntpr \
 		sunwftpu sunwftpr sunwtftp sunwtftpr \
 		sunwnisr sunwnisu \
-		sunwiscsitgtr sunwiscsitgtu sunwisnsr sunwisnsadm \
+		sunwisnsr sunwisnsadm \
 		sunwsshu sunwsshdu sunwesu sunwtoo \
 		rsync mtx snmpd rcs star \
 		samba samba-common winbind smbclient \
