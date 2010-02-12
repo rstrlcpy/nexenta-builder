@@ -1,3 +1,9 @@
+nexenta-builder (2.5.4) hardy; urgency=low
+
+  * excluded libsigc++-dev
+
+ -- Erast Benson <erast@gnusolaris.org>  Fri, 12 Feb 2010 15:07:45 -0800
+
 nexenta-builder (2.5.3) hardy; urgency=low
 
   * Added Python 2.4 into hardy-core profile (pyzfs needs this)

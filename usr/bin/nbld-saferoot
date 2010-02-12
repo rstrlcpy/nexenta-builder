@@ -93,7 +93,7 @@ function cleanup
 	lofiadm -d ${RAMDISK_FILE} 2>/dev/null
 	rm -Rf ${RAMDISK_FILE} ${RAMDISK_FILE}.gz ${RAMDISK_MNT} 2> /dev/null
 	rm -f ${TMP_FILE} 2> /dev/null
-#	rm -Rf ${MINIROOT_STAGING} 2> /dev/null
+	rm -Rf ${MINIROOT_STAGING} 2> /dev/null
 }
 
 function create_dir

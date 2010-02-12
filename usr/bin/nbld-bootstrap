@@ -639,7 +639,7 @@ else
 
 		# remove what is not needed...
 		chroot $environ mount /proc
-		chroot $environ apt-get -y remove $STAGE0_EXCLUDE_DEBS 2>/dev/null 1>&2
+		chroot $environ apt-get -y remove $STAGE0_EXCLUDE_DEBS
 		if ! test -f $rootdir/usr/bin/vi; then
 			ln -s vedit $rootdir/usr/bin/vi
 		fi
