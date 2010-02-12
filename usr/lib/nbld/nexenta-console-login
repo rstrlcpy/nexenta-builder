@@ -35,7 +35,7 @@
 # svc:/system/console-login> setprop ttymon/terminal_type = "xterm"
 # svc:/system/console-login> exit
 
-PATH=/bin:/usr/sbin:/usr/bin:$PATH
+PATH=/bin:/usr/sbin:/usr/bin:/usr/local/bin:$PATH
 EDITOR=vi
 LOGNAME=root
 HOME=/root
