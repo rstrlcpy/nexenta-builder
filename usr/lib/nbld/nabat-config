@@ -379,14 +379,14 @@ for my $nic (keys %nics_configured) {
 	push @nics, $nic;
 	next if($nics_configured{$nic}->{primary} eq '1');
 	if (!$nics_secondary) {
-		$nics_secondary = 	"\t".$nic."_ip\t\t=> '".$nics_configured{$nic}->{ipaddr}."',\n".
-					"\t".$nic."_netmask\t\t=> '".$nics_configured{$nic}->{netmask}."',\n".
-					"\t".$nic."_mac\t\t=> '".$nics_configured{$nic}->{nic_mac}."',\n";
+		$nics_secondary = 	"\t'".$nic."_ip'\t\t=> '".$nics_configured{$nic}->{ipaddr}."',\n".
+					"\t'".$nic."_netmask'\t=> '".$nics_configured{$nic}->{netmask}."',\n".
+					"\t'".$nic."_mac'\t\t=> '".$nics_configured{$nic}->{nic_mac}."',\n";
 	} else {
 		$nics_secondary = 	$nics_secondary.
-					"\t".$nic."_ip\t\t=> '".$nics_configured{$nic}->{ipaddr}."',\n".
-	                                "\t".$nic."_netmask\t\t=> '".$nics_configured{$nic}->{netmask}."',\n".
-                                        "\t".$nic."_mac\t\t=> '".$nics_configured{$nic}->{nic_mac}."',\n";
+					"\t'".$nic."_ip'\t\t=> '".$nics_configured{$nic}->{ipaddr}."',\n".
+	                                "\t'".$nic."_netmask'\t=> '".$nics_configured{$nic}->{netmask}."',\n".
+                                        "\t'".$nic."_mac'\t\t=> '".$nics_configured{$nic}->{nic_mac}."',\n";
 	}
 }
 
@@ -398,7 +398,8 @@ $dns_ip_2 = 'undef' if($dns_ip_2 eq "Not Selected");
 
 open(FILE, ">$MACHINE_CONFIG_FILE");
 print FILE <<EOF;
-my %auto_config_mut_record = (
+package MUT_AUTO_CFG;
+%MUT_AUTO_CFG::AUTO = (
 	'enabled'       	=> 1,
 	'nlm_com_key'		=> undef,
 	'nlm_eval_key'		=> undef,
