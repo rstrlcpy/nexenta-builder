@@ -1204,7 +1204,7 @@ autopart_ask()
 			CHECK_INFO="$CHECK_INFO\n"
 		fi
 
-		echo "$DIALOG_WITH_ESC $manual_cmd --no-cancel --title \" Fresh Installation \" --checklist \"$CHECK_INFO\nPlease select disk(s) (no more than 3) to be automatically partitioned:\" 0 0 0 $rlist" >$TMP_FILE
+		echo "$DIALOG_WITH_ESC $manual_cmd --no-cancel --title \" Fresh Installation \" --checklist \"$CHECK_INFO\nPlease select disk(s) (no more than 3) to be automatically partitioned:\" 0 0 5 $rlist" >$TMP_FILE
 
 		. $TMP_FILE 2>$DIALOG_RES
 		local rc=$?
@@ -1288,7 +1288,7 @@ autopart_ask()
 				fi
 				while true; do
 					CHECK_INFO="\nPlease select hot spare disk(s) for the $TITLE system volume.\n\\Z1WARNING\\Zn: $TITLE Operating System will be installed onto the system volume, and all existing data on the selected disk(s) will be lost during the installation process!\nPress ESC to go back."
-					echo "$DIALOG_WITH_ESC $manual_cmd --title \" Fresh Installation \" --checklist \"$CHECK_INFO\nPlease select one or more hot spare disk(s):\" 0 0 0 $rlist" >$TMP_FILE
+					echo "$DIALOG_WITH_ESC $manual_cmd --title \" Fresh Installation \" --checklist \"$CHECK_INFO\nPlease select one or more hot spare disk(s):\" 0 0 5 $rlist" >$TMP_FILE
 
 					. $TMP_FILE 2>$DIALOG_RES
 					local rc=$?
