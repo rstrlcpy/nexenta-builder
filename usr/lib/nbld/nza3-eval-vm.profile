@@ -16,7 +16,7 @@ STAGE0_DEBS="screen dialog debootstrap wget sunwsshu sunwsshdu sunwesu sunwixgbe
 LOCAL_ARCHIVE_DEBS=" \
 		screen dialog vim file cpio tree bzip2 joe unzip genisoimage \
 		nmc nlm-eval nms nms-dev nmv nmv-theme-nexenta \
-		alien nexenta-pkgcmd sunwlibc \
+		alien nexenta-pkgcmd sunwlibc lib64z1-dev \
 		sunwndmpu sunwndmpr ndmpcopy \
 		sunwsmbfsu \
 		sunwstmf \
