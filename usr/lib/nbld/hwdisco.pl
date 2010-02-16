@@ -466,7 +466,7 @@ sub read_devs()
 			chomp ($line);
 
 			($drvname) = $line =~ /^(\S+)\s+\"$pci_ids(\.\d+)?\"/;
-			($drvname) = $line =~ /^(\S+)\s+\"$pciex_ids(\.\d+)?\"/;
+			($drvname) = $line =~ /^(\S+)\s+\"$pciex_ids(\.\d+)?\"/ if (!defined $drvname);
 			($drvname) = $line =~ /^(\S+)\s+\"$pci_subids\"/ if (!defined $drvname);
 			($drvname) = $line =~ /^(\S+)\s+\"$pciex_subids\"/ if (!defined $drvname);
 			($drvname) = $line =~ /^(\S+)\s+\"$pci_fullids\"/ if (!defined $drvname);
