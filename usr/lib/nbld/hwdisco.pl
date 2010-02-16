@@ -417,6 +417,8 @@ sub read_devs()
 				$cname="USB";
 			} elsif ( $code_2 eq "00" ) {
 				$cname="Firewire";
+			} elsif ( $code_2 eq "04" ) {
+				$cname="Storage";
 			}
 		} elsif ($code_1 eq "06" ) {
 			if ( $code_2 eq "07" ) {
@@ -432,8 +434,14 @@ sub read_devs()
 
 		my $pci_ids = "pci$devs[$i][$VENDOR_ID]\,$devs[$i][$DEVICE_ID]";
 
+		my $pciex_ids = "pciex$devs[$i][$VENDOR_ID]\,$devs[$i][$DEVICE_ID]";
+
 		my $pci_subids = '';
 		$pci_subids = "pci$devs[$i][$SUBSYSTEM_VENDOR_ID]\,$devs[$i][$SUBSYSTEM_ID]"
+			if (defined $devs[$i][$SUBSYSTEM_VENDOR_ID] && defined $devs[$i][$SUBSYSTEM_ID]);
+
+		my $pciex_subids = '';
+		$pciex_subids = "pciex$devs[$i][$SUBSYSTEM_VENDOR_ID]\,$devs[$i][$SUBSYSTEM_ID]"
 			if (defined $devs[$i][$SUBSYSTEM_VENDOR_ID] && defined $devs[$i][$SUBSYSTEM_ID]);
 
 		my $pci_fullids = '';
@@ -458,7 +466,9 @@ sub read_devs()
 			chomp ($line);
 
 			($drvname) = $line =~ /^(\S+)\s+\"$pci_ids(\.\d+)?\"/;
+			($drvname) = $line =~ /^(\S+)\s+\"$pciex_ids(\.\d+)?\"/;
 			($drvname) = $line =~ /^(\S+)\s+\"$pci_subids\"/ if (!defined $drvname);
+			($drvname) = $line =~ /^(\S+)\s+\"$pciex_subids\"/ if (!defined $drvname);
 			($drvname) = $line =~ /^(\S+)\s+\"$pci_fullids\"/ if (!defined $drvname);
 			($drvname) = $line =~ /^(\S+)\s+\"$pciclass_1\"/ if (!defined $drvname);
 			($drvname) = $line =~ /^(\S+)\s+\"$pciclass_2\"/ if (!defined $drvname);
