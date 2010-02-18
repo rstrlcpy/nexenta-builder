@@ -28,14 +28,14 @@ system("clear");
 start:
 system("rm -f $MACHINE_CONFIG_FILE");
 
-# Request information about disk subsystem
+# Request information about disks subsystem
 #
 my %syspool_luns = ();
 my %syspool_spare = ();
 my %data_volume = ();
 my %test_volume = ();
 while(1) {
-	info_box($dialog_cmd, "Detecting avavilable disks...");
+	info_box($dialog_cmd, "Detecting available disks...");
 	my $disks_info = get_disks_info();
 	my @tmp = ();
 	for my $disk (keys %$disks_info) {
@@ -44,12 +44,12 @@ while(1) {
 	my $rlist = join(' ', @tmp);
 	my @result = checklist_box($dialog_cmd, 
 			    "Disk subsystem", 
-			    "\nPlease select disk(s) (no more than 3 equal-size disks) to be use as \'syspool\'", 
+			    "\nPlease select disk(s) (no more than 3 same-size disks) to be used as a \'syspool\'", 
 			    $rlist, 
 			    $NEXT_BUTTON, $EXIT_BUTTON);
 	if (scalar @result == 0) {
 		msg_box($dialog_cmd, 
-			"\nDisks are not selected.\nPlease select one or more disks.",
+			"\nNo disks are selected.\nPlease select one or more disks.",
 			$ERROR);
 		next;
 	}
@@ -74,12 +74,12 @@ while(1) {
 			$rlist = join(' ', @tmp);
 			@result = checklist_box($dialog_cmd, 
 					    "Disk subsystem", 
-					    "\nPlease select disk(s) to be use as \'hot-spare\' for \'syspool\'", 
+					    "\nPlease select disk(s) to be used as \'hot-spare\' for the \'syspool\'", 
 					    $rlist, 
 					    $NEXT_BUTTON, $CANCEL_BUTTON);
 			if (scalar @result == 0) {
 				msg_box($dialog_cmd, 
-					"\nDisks are not selected.\nPlease select one or more disks.",
+					"\nNo disks are selected.\nPlease select one or more disks.",
 					$ERROR);
 				next;
 			}
@@ -94,7 +94,7 @@ while(1) {
 	} 
 	if (!scalar keys %$disks_info) {
 		msg_box($dialog_cmd, 
-			"\nTo create a 'data' volume not found free discs.\nPlease reconfigure disk subsystem.",
+			"\nNo free disks found to create 'data' volume.\nPlease reconfigure disk subsystem.",
 			$ERROR);
 		next;
 	}
@@ -111,7 +111,7 @@ while(1) {
 				    $NEXT_BUTTON, $EXIT_BUTTON);
 		if (scalar @result == 0) {
 			msg_box($dialog_cmd, 
-				"\nDisks are not selected.\nPlease select one or more disks.",
+				"\nNo disks are selected.\nPlease select one or more disks.",
 				$ERROR);
 			next;
 		}
@@ -125,9 +125,9 @@ while(1) {
 	}
 	if (!scalar keys %$disks_info) {
 		msg_box($dialog_cmd, 
-			"\nTo create a 'test' volume not found free discs.\nPlease reconfigure disk subsystem.",
+			"\nNo free disks found to create a 'test' volume.\nPlease reconfigure disk subsystem.",
 			$ERROR);
-		next;
+		last;
 	}
 	while(1) {
 		@tmp = ();
@@ -137,12 +137,12 @@ while(1) {
 		$rlist = join(' ', @tmp);
 		@result = checklist_box($dialog_cmd, 
 				    "Disk subsystem", 
-				    "\nPlease select disk(s) to be use as \'test-volume\'", 
+				    "\nPlease select disk(s) to be used as \'test-volume\'", 
 				    $rlist, 
 				    $NEXT_BUTTON, $EXIT_BUTTON);
 		if (scalar @result == 0) {
 			msg_box($dialog_cmd, 
-				"\nDisks are not selected.\nPlease select one or more disks.",
+				"\nNo disks are selected.\nPlease select one or more disks.",
 				$ERROR);
 			next;
 		}
@@ -170,13 +170,13 @@ while(1) {
 	my $rlist = join(' ', @tmp);
 	my $res = radiolist_box($dialog_cmd, 
 			    "Network subsystem", 
-			    "\nPlease select NIC to be use as \'primary\' for NABAT", 
+			    "\nPlease select NIC to be used as \'primary\' for NABAT", 
 			    $rlist, 
 			    $NEXT_BUTTON, $EXIT_BUTTON);
 	exit 0 if ($res eq 'exit');
 	if (!$res) {
 		msg_box($dialog_cmd, 
-			"\nNIC are not selected.\nPlease select one NIC.",
+			"\nNo NIC is selected.\nPlease select a NIC.",
 			$ERROR);
 		next;
 	}
@@ -192,7 +192,7 @@ while(1) {
 	exit 0 if(!$result[0]);
 	if(!check_ip_format($result[0]) || !check_ip_format($result[1])) {
 		msg_box($dialog_cmd, 
-			"\nThe format of IP or NETMASK is not correct.",
+			"\nIncorrect format of IP or NETMASK.",
 			$ERROR);
 		next;
 	}
@@ -203,7 +203,7 @@ while(1) {
 	$nics_info->{$nic} = undef;
 	delete $nics_info->{$nic};
 	last if (!scalar keys %$nics_info);
-	last if (msg_box_yes_no_ask($dialog_cmd, "Do you want to add other NIC to NABAT?", 
+	last if (msg_box_yes_no_ask($dialog_cmd, "Do you want to add additional NICs to NABAT?", 
 				    $QUESTION, 0, 70, 7));
 	while(1) {
 		@tmp = ();
@@ -213,13 +213,13 @@ while(1) {
 		$rlist = join(' ', @tmp);
 		$res = radiolist_box($dialog_cmd, 
 				    "Network subsystem", 
-				    "\nPlease select NIC to be use in NABAT", 
+				    "\nPlease select NIC to be used in NABAT", 
 				    $rlist, 
 				    $NEXT_BUTTON, $CANCEL_BUTTON);
 		last if ($res eq 'exit');
 		if (!$res) {
 			msg_box($dialog_cmd, 
-				"\nNIC are not selected.\nPlease select one NIC.",
+				"\nNo NIC is selected.\nPlease select a NIC.",
 				$ERROR);
 			next;
 		}
@@ -232,7 +232,7 @@ while(1) {
 		last if(!$result[0]);
 		if(!check_ip_format($result[0]) || !check_ip_format($result[1])) {
 			msg_box($dialog_cmd, 
-				"\nThe format of IP or NETMASK is not correct.",
+				"\nIncorrect format of IP or NETMASK.",
 				$ERROR);
 			next;
 		}
@@ -243,7 +243,7 @@ while(1) {
 		$nics_info->{$nic} = undef;
 		delete $nics_info->{$nic};
 		last if (!scalar keys %$nics_info);
-		last if (msg_box_yes_no_ask($dialog_cmd, "Do you want to add other NIC to NABAT?", 
+		last if (msg_box_yes_no_ask($dialog_cmd, "Do you want to add additional NICs to NABAT?", 
 					    $QUESTION, 0, 70 ,7));
 	}
 	last;
@@ -260,7 +260,7 @@ my @result = input_form($dialog_cmd,
 exit 0 if(!$result[0]);
 if(!check_ip_format($result[0])) {
 	msg_box($dialog_cmd, 
-		"\nThe format of IP of 'GATEWAY' is not correct.",
+		"\nIncorrect 'GATEWAY' IP format.",
 		$ERROR);
 	goto gateway_err;
 }
@@ -278,7 +278,7 @@ push @form_data, "\"DNS IP 2:\" 4 2 \"\" 4 16 15 15";
 exit 0 if(!$result[0]);
 if(!check_ip_format($result[0])) {
 	msg_box($dialog_cmd, 
-		"\nThe format of IP of 'DNS 1' is not correct.",
+		"\nIncorrect IP format of 'DNS 1'.",
 		$ERROR);
 	goto dns_err;
 }
@@ -287,7 +287,7 @@ my $dns_ip_2 = "Not Selected";
 if($result[1]) {
 	if(!check_ip_format($result[1])) {
 		msg_box($dialog_cmd, 
-			"\nThe format of IP of 'DNS 2' is not correct.",
+			"\nIncorrect IP format of 'DNS 2'.",
 			$ERROR);
 		goto dns_err;
 	}
@@ -335,7 +335,7 @@ my $message = "
    dns primary.........: $dns_ip_1
    dns secondary.......: $dns_ip_2
 
-Do you want to change this configuration?";
+Do you want to reconfigure?";
 goto start if(!msg_box_yes_no_ask($dialog_cmd, $message, "Summary Information", 1, 70, 22));
 
 # Preparation of the information collected for output to a file, which will use NABAT.
@@ -429,7 +429,7 @@ close FILE;
 # Preparation network for temporary ssh connect between this machine and NABAT.
 #
 
-info_box($dialog_cmd, "Preparation network for temporary ssh connect between this machine and NABAT...");
+info_box($dialog_cmd, "Preparing network for temporary ssh connection between this machine and NABAT...");
 
 setup_network($nic_primary_name,
 	      $nics_configured{$nic_primary_name}->{ipaddr},
@@ -441,10 +441,10 @@ setup_network($nic_primary_name,
 system("echo root:nexenta | chpasswd -m");
 
 $message = "
-\nPlease create new machine on NABAT and enter '$nics_configured{$nic_primary_name}->{ipaddr}' in field 'IP ADDRESS'.
+\nPlease create new machine instance on NABAT and enter '$nics_configured{$nic_primary_name}->{ipaddr}' in 'IP ADDRESS' field.
 
 IMPORTANT: 
-Please do not poweroff this machine until the NABAT configures it.
+Please do not poweroff this machine until NABAT done configuring it.
 INFO:
 Please contact technical support and request a license key for this machine.
 Machine signature: '$machinesig'";
