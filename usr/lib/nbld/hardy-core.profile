@@ -26,7 +26,7 @@ STAGE0_DEBS="screen dialog debootstrap wget sunwsshu sunwsshdu sunwesu \
 # STAGE0_EXCLUDE_DEBS -
 #
 #
-STAGE0_EXCLUDE_DEBS="alien sunwmpsvplr sunwmpathadm sunwamt-lms python nexenta-pkgcmd dpkg-dev debhelper libdb4.2 tasksel tasksel-data libhal-dev libhal-storage-dev libsigc++-1.2-dev python2.5 sunwmmsr sunwmmsu myamanet-rf aptitude sunwdtrc info manpages sunwrcmdc sunwfmd sunwpkgcmdsu sunwdtrp libssl0.9.7 man-db nano sunwsmbsu sunwsmbsr sunwsmbskr patch sunwdrmr sunwdsdr sunwdsdu sunwiscsir sunwiscsiu sunwima sunwimac sunwimacr sunwimar sunwmpapi sunwmpapir sunwmdb sunwmdbr sunwxwdv sunwtnetd sunwhea sunwiir sunwiiu sunwrdcr sunwrdcu sunwscmr sunwscmu sunwspsvr sunwspsvu sunwdtrc"
+STAGE0_EXCLUDE_DEBS="alien sunwmpsvplr sunwmpathadm python nexenta-pkgcmd dpkg-dev debhelper libdb4.2 tasksel tasksel-data libhal-dev libhal-storage-dev libsigc++-1.2-dev python2.5 sunwmmsr sunwmmsu myamanet-rf aptitude sunwdtrc info manpages sunwrcmdc sunwfmd sunwpkgcmdsu sunwdtrp libssl0.9.7 man-db nano sunwsmbsu sunwsmbsr sunwsmbskr patch sunwdrmr sunwdsdr sunwdsdu sunwiscsir sunwiscsiu sunwima sunwimac sunwimacr sunwimar sunwmpapi sunwmpapir sunwmdb sunwmdbr sunwxwdv sunwtnetd sunwhea sunwiir sunwiiu sunwrdcr sunwrdcu sunwscmr sunwscmu sunwspsvr sunwspsvu sunwdtrc"
 
 #
 # LOCAL_ARCHIVE_DEBS - the content of on-ISO APT repository
