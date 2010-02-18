@@ -33,6 +33,7 @@ TITLE="NexentaOS"
 BOOT_ANYWHERE=${BOOT_ANYWHERE:-0}
 MEMSCRATCH=${MEMSCRATCH:-0}
 CURDIR=${PWD}
+EXTRADEBDIR=/.livecd/extradebs
 RMFORMAT_TMP=/tmp/rmformat.$$
 TMP_FILE=/tmp/installer.$$
 RM_LABEL="NEXENTA"
@@ -1896,6 +1897,18 @@ install_base()
 	$REPO/install-base.sh $TMPDEST $REPO $MEMSCRATCH &
 	progress_bar $lines install-base.sh $TMPDEST/debootstrap/debootstrap.log \
 		"$message... Please wait."
+	if test -d ${EXTRADEBDIR}; then
+		oneline_info "Installing the extra packages. Please wait..."
+		printlog "Installing extra deb packages...."
+		cp ${EXTRADEBDIR}/*.deb $TMPDEST/tmp
+		for deb_package in `ls -1 $TMPDEST/tmp/*.deb`; do
+			package=`basename $deb_package`
+			chroot $TMPDEST /usr/bin/env -i PATH=/sbin:/bin:/usr/sbin:$PATH LOGNAME=root HOME=/root TERM=xterm \
+				/usr/bin/dpkg --force-all -i /tmp/$package 2>> /tmp/extradebs.log 1>&2
+			printlog "Extra deb package: $package installed successfully"
+		done
+	fi
+
 }
 
 loopback_mnt()
