@@ -403,6 +403,7 @@ package MUT_AUTO_CFG;
 	'enabled'       	=> 1,
 	'nlm_com_key'		=> undef,
 	'nlm_eval_key'		=> undef,
+	'machinetype'		=> 'UNIX',
 	'description'		=> undef,
 	'vmhost'		=> undef,
 	'ssh_passwd'		=> 'nexenta',
