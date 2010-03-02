@@ -394,7 +394,11 @@ my $nic_list = join(' ', @nics);
 my $nic_primary_ip = $nics_configured{$nic_primary_name}->{ipaddr};
 my $nic_primary_netmask = $nics_configured{$nic_primary_name}->{netmask};
 my $nic_primary_mac = $nics_configured{$nic_primary_name}->{nic_mac};
-$dns_ip_2 = 'undef' if($dns_ip_2 eq "Not Selected");
+if($dns_ip_2 eq "Not Selected") {
+	$dns_ip_2 = 'undef';
+} else {
+	$dns_ip_2 = "'$dns_ip_2'"; 
+}
 
 open(FILE, ">$MACHINE_CONFIG_FILE");
 print FILE <<EOF;
@@ -415,7 +419,7 @@ package MUT_AUTO_CFG;
 	'machinesig'		=> '$machinesig',
 	'gateway'		=> '$gateway',
 	'dns_ip_1'		=> '$dns_ip_1',
-	'dns_ip_1'		=> $dns_ip_2,
+	'dns_ip_2'		=> $dns_ip_2,
 	'hostname'		=> '$nic_primary_ip',
 	'nic_list'		=> '$nic_list',
 	'nic_primary'		=> '$nic_primary_name',
