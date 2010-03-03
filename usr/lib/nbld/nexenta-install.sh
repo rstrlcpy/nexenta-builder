@@ -1267,7 +1267,14 @@ autopart_ask()
 				if test -f $RDMAP && grep $drive_node $RDMAP \
 				    >/dev/null; then
 					local rm_node=$(grep $drive_node $RDMAP | nawk -F: '{print $1}')
-					RM_DISK="${rm_node}"
+					part_id=`fdisk -W - $rm_node | \
+					         grep -v "^*" | grep -v "^$" | \
+						 awk '{print $1}'| grep -v '^0'`
+					if test "x$part_id" = x; then
+						RM_DISK=""
+					else
+						RM_DISK="${rm_node}"
+					fi
 #					BOOT_ANYWHERE=1
 				fi
 			fi
