@@ -2226,6 +2226,8 @@ configure_network()
 	echo "$domainname" > $TMPDEST/etc/defaultdomain
 	printlog "Domain Name is set to $domainname at /etc/defaultdomain"
 
+	echo "search $domainname" >> $TMPDEST/etc/resolv.conf
+	echo "domain $domainname" >> $TMPDEST/etc/resolv.conf
 
 	# Bootstrap /etc/inet/hosts entry
 	node_name="$hostname"
