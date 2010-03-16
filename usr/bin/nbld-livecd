@@ -121,8 +121,6 @@ BOOT_DIR=${ISO_STAGING}/boot
 PLATFORM_DIR=${ISO_STAGING}/platform/i86pc
 PLATFORM_PV_DIR=${ISO_STAGING}/platform/i86xpv
 MINIROOT_STAGING="$NBLD_STAGING/miniroot_staging.tmp"
-MINIROOT_STAGING_X86="$NBLD_STAGING/miniroot_staging.x86"
-MINIROOT_STAGING_X64="$NBLD_STAGING/miniroot_staging.x64"
 RAMDISK_FILE="$NBLD_TMP/miniroot.$$"
 RAMDISK_MNT="$NBLD_TMP/miniroot_mount.$$"
 REPO_FILE="$NBLD_TMP/repository.db.$$"
@@ -286,56 +284,55 @@ function bootstrap_repository
 
 function customize_mini
 {
-	mini=${1}
 	oldpwd=${PWD}
 
 	# This is where the LiveCD gets mounted at
-	mkdir ${mini}/.livecd
-	chown root:sys ${mini}/.livecd
+	mkdir $1/.livecd
+	chown root:sys $1/.livecd
 
-	echo "${VOLID}" > ${mini}/.volid
-	chown root:sys ${mini}/.volid
+	echo "${VOLID}" > $1/.volid
+	chown root:sys $1/.volid
 
 	# We need device reconfiguration
-	touch ${mini}/reconfigure
+	touch $1/reconfigure
 
 	# We need auto network reconfiguration on boot for LiveCD only
 	if [ "${MODE}" = "livecd" ]; then
-		touch ${mini}/etc/.UNCONFIGURED
+		touch $1/etc/.UNCONFIGURED
 	fi
 
 	# Tell NFS4 to not prompt us for default domain
-	touch ${mini}/etc/.NFS4inst_state.domain
+	touch $1/etc/.NFS4inst_state.domain
 
 	# Prepare system to use DNS
-	if [ -f ${mini}/etc/resolv.conf ]; then
-		rm ${mini}/etc/resolv.conf
+	if [ -f $1/etc/resolv.conf ]; then
+		rm $1/etc/resolv.conf
 	fi
-	touch ${mini}/etc/resolv.conf
-	cp ${mini}/etc/nsswitch.dns ${mini}/etc/nsswitch.conf
+	touch $1/etc/resolv.conf
+	cp $1/etc/nsswitch.dns $1/etc/nsswitch.conf
 	copy_file ${DHCP_EVENTHOOK} \
-	    ${mini}/etc/dhcp/`basename ${DHCP_EVENTHOOK}` 0755 root:sys
+	    $1/etc/dhcp/`basename ${DHCP_EVENTHOOK}` 0755 root:sys
 
 	# Bootstrap /etc/hosts entry
 	node_fqdn="${NODENAME}.localdomain"
 	hosts_entry="127.0.0.1\t${NODENAME}\t${node_fqdn}\tloghost"
-	echo "${hosts_entry}" >> ${mini}/etc/hosts
+	echo "${hosts_entry}" >> $1/etc/hosts
 
-	echo "${NODENAME}" > ${mini}/etc/nodename
-	chmod 0644 ${mini}/etc/nodename
-	chown root:root ${mini}/etc/nodename
+	echo "${NODENAME}" > $1/etc/nodename
+	chmod 0644 $1/etc/nodename
+	chown root:root $1/etc/nodename
 
-	echo "setprop prealloc-chunk-size 0x2000" >> ${mini}/boot/solaris/bootenv.rc
+	echo "setprop prealloc-chunk-size 0x2000" >> $1/boot/solaris/bootenv.rc
 
 	# Make sure root special device is known at boot time
-	echo "/devices/ramdisk:a\t-\t/\t\tufs\t1\tno\trw" >> ${mini}/etc/vfstab
+	echo "/devices/ramdisk:a\t-\t/\t\tufs\t1\tno\trw" >> $1/etc/vfstab
 
 	# Get us as much swap space as possible
-	echo "set tmpfs:tmpfs_minfree=1" >> ${mini}/etc/system
-	echo "set swapfs_minfree=0x40" >> ${mini}/etc/system
+	echo "set tmpfs:tmpfs_minfree=1" >> $1/etc/system
+	echo "set swapfs_minfree=0x40" >> $1/etc/system
 
 	# to avoid timeouts with some ATA controllers...
-	echo "set use_mp=0" >> ${mini}/etc/system
+	echo "set use_mp=0" >> $1/etc/system
 
 	#
 	# We don't want to keep accessing the disk(s) every
@@ -351,17 +348,17 @@ function customize_mini
 
 	# Copy over customized SMF manifests and methods
 	copy_file ${SYSIDTOOL_XML} \
-	    ${mini}/var/svc/manifest/system/`basename ${SYSIDTOOL_XML}` 0444 root:sys
+	    $1/var/svc/manifest/system/`basename ${SYSIDTOOL_XML}` 0444 root:sys
 
 	copy_file ${SYSIDTOOL_NET} \
-	    ${mini}/lib/svc/method/`basename ${SYSIDTOOL_NET}` 0555 root:bin
+	    $1/lib/svc/method/`basename ${SYSIDTOOL_NET}` 0555 root:bin
 
 	copy_file ${SYSIDTOOL_SYSTEM} \
-	    ${mini}/lib/svc/method/`basename ${SYSIDTOOL_SYSTEM}` 0555 root:bin
+	    $1/lib/svc/method/`basename ${SYSIDTOOL_SYSTEM}` 0555 root:bin
 
 	# Copy over our media discovery utility
 	if [ -f ${MDISCO} ]; then
-		copy_file ${MDISCO} ${mini}/sbin/`basename ${MDISCO}` 0755 root:bin
+		copy_file ${MDISCO} $1/sbin/`basename ${MDISCO}` 0755 root:bin
 	else
 		echo "\nError: ${MDISCO} not found"
 		fatal_error
@@ -369,32 +366,32 @@ function customize_mini
 
 	if [ "${MODE}" = "livecd" ]; then
 		# Set LiveCD root password to "livecd"
-		sed 's/^root:/root:pv80DlPSjDfZI/g' ${mini}/etc/shadow > ${TMP_FILE}
-		copy_file ${TMP_FILE} ${mini}/etc/shadow 0400 root:sys
+		sed 's/^root:/root:pv80DlPSjDfZI/g' $1/etc/shadow > ${TMP_FILE}
+		copy_file ${TMP_FILE} $1/etc/shadow 0400 root:sys
 		rm ${TMP_FILE}
 	else
 		# Set InstallCD root password to "empty"
-		sed 's/^root:/root:moAdagpFPw1iE/g' ${mini}/etc/shadow > ${TMP_FILE}
-		copy_file ${TMP_FILE} ${mini}/etc/shadow 0400 root:sys
+		sed 's/^root:/root:moAdagpFPw1iE/g' $1/etc/shadow > ${TMP_FILE}
+		copy_file ${TMP_FILE} $1/etc/shadow 0400 root:sys
 		rm ${TMP_FILE}
 	fi
 
 	# Set root shell to /bin/bash
-	sed 's/sbin\/sh/bin\/bash/g' ${mini}/etc/passwd > ${TMP_FILE}
-	copy_file ${TMP_FILE} ${mini}/etc/passwd 0644 root:sys
+	sed 's/sbin\/sh/bin\/bash/g' $1/etc/passwd > ${TMP_FILE}
+	copy_file ${TMP_FILE} $1/etc/passwd 0644 root:sys
 	rm ${TMP_FILE}
 
 	# Allow root login via SSH
-	if [ -f ${mini}/etc/ssh/sshd_config ]; then
+	if [ -f $1/etc/ssh/sshd_config ]; then
 		sed '/^PermitRootLogin/ s/no/yes/g' \
-		    ${mini}/etc/ssh/sshd_config > ${TMP_FILE}
-		copy_file ${TMP_FILE} ${mini}/etc/ssh/sshd_config 0644 root:sys
+		    $1/etc/ssh/sshd_config > ${TMP_FILE}
+		copy_file ${TMP_FILE} $1/etc/ssh/sshd_config 0644 root:sys
 		rm ${TMP_FILE}
 	fi
 
 	# Allow root login via telnet
-	sed -e 's/^CONSOLE/#CONSOLE/' ${mini}/etc/default/login > ${TMP_FILE}
-	copy_file ${TMP_FILE} ${mini}/etc/default/login 0644 root:sys
+	sed -e 's/^CONSOLE/#CONSOLE/' $1/etc/default/login > ${TMP_FILE}
+	copy_file ${TMP_FILE} $1/etc/default/login 0644 root:sys
 	rm ${TMP_FILE}
 
 	#
@@ -403,18 +400,18 @@ function customize_mini
 	# this file in order for us to discover and mount LiveCD
 	# on /.livecd, as well as mount /usr on top of that.
 	#
-	copy_file ${FS_ROOT_CODE} ${mini}/${USRMOUNT} 0555 root:bin
+	copy_file ${FS_ROOT_CODE} $1/${USRMOUNT} 0555 root:bin
 	sed -e "/^\. \/lib\/svc\/share\/fs_include\.sh/ a . ${USRMOUNT}" \
-	    ${mini}/lib/svc/method/fs-root > ${TMP_FILE}
+	    $1/lib/svc/method/fs-root > ${TMP_FILE}
 
-	cp ${TMP_FILE} ${mini}/lib/svc/method/fs-root
+	cp ${TMP_FILE} $1/lib/svc/method/fs-root
 	rm ${TMP_FILE}
 
 	# Hard-code timezone to US/Pacific
-	echo "zone_info=US/Pacific" > ${mini}/etc/rtc_config
-	echo "zone_lag=28800" >> ${mini}/etc/rtc_config
-	sed -e 's/PST8PDT/US\/Pacific/' < ${mini}/etc/default/init > ${TMP_FILE}
-	cp ${TMP_FILE} ${mini}/etc/default/init
+	echo "zone_info=US/Pacific" > $1/etc/rtc_config
+	echo "zone_lag=28800" >> $1/etc/rtc_config
+	sed -e 's/PST8PDT/US\/Pacific/' < $1/etc/default/init > ${TMP_FILE}
+	cp ${TMP_FILE} $1/etc/default/init
 	rm ${TMP_FILE}
 
 	#
@@ -423,95 +420,64 @@ function customize_mini
 	# GNU's uname at some point.
 	#
 	sed -e 's/sbin\/uname\ -S/bin\/hostname/' < \
-	    ${mini}/lib/svc/method/identity-node > ${TMP_FILE}
-	cp ${TMP_FILE} ${mini}/lib/svc/method/identity-node
+	    $1/lib/svc/method/identity-node > ${TMP_FILE}
+	cp ${TMP_FILE} $1/lib/svc/method/identity-node
 	rm ${TMP_FILE}
 
 	# Set up dialog RC file for InstallCD
 	if [ "${MODE}" != "livecd" ]; then
-		cp ${DIALOGRC} ${mini}/root/.dialogrc
+		cp ${DIALOGRC} $1/root/.dialogrc
 		if cat ${FAKEROOT}/${REPO}/defaults | grep "nlm-eval:" >/dev/null; then
-			sed -i -e "s/NexentaStor/Community Edition/" ${mini}/root/.screenrc
+			sed -i -e "s/NexentaStor/Community Edition/" $1/root/.screenrc
 		elif cat ${FAKEROOT}/${REPO}/defaults | grep "nlm-com:" >/dev/null; then
-			sed -i -e "s/NexentaStor/Enterprise Edition/" ${mini}/root/.screenrc
+			sed -i -e "s/NexentaStor/Enterprise Edition/" $1/root/.screenrc
 		fi
 	fi
 
-	cp ${CUSTOM_DIR}/DRIVER-INSTALL.txt ${mini}/
+	cp ${CUSTOM_DIR}/DRIVER-INSTALL.txt $1/
 
 	#
 	# Import all manifests at this time so that SMF doesn't
 	# re-import them during boot (this saves us some time).
 	#
-	bootstrap_repository ${mini}
+	bootstrap_repository $1
 
 	cd ${oldpwd}
 }
 
-function split_mini
-{
-	mkdir ${MINIROOT_STAGING_X86}
-	mkdir ${MINIROOT_STAGING_X64}
-
-	function has_32_version 
-	{
-		if [ -f `echo $1 | sed s:/amd64/:/:` ]; then
-		  return 0;
-		else
-		  return 1;
-		fi
-	}
-
-	echo "  cloning miniroot for 32/64bit split ... \c"
-	OLDPWD=${PWD}
-	cd ${MINIROOT_STAGING} &&	tar -cf - . | (cd ${MINIROOT_STAGING_X64}; tar -xf -)
-	cd ${MINIROOT_STAGING} &&	tar -cf - . | (cd ${MINIROOT_STAGING_X86}; tar -xf -)
-	cd ${OLDPWD}
-	echo "done"
-
-	echo "  stripping 64-bit libs from 32-bit miniroot and vice versa ... \c"
-	for item in `find ${MINIROOT_STAGING} -type d -name amd64 -exec find {} \;`; do
-	  if has_32_version $item; then
-			rm -rf `echo $item | sed s:${MINIROOT_STAGING}:${MINIROOT_STAGING_X86}:`;
-      # we can't just remove all 32-bit libs from the 64-bit miniroot
-			if echo $item | grep -q '\(platform\|kernel\)'; then
-					rm -rf `echo $item | sed s:${MINIROOT_STAGING}:${MINIROOT_STAGING_X64}: | sed s:/amd64/:/:`;
-			fi
-		fi
-	done
-	echo "done"
-
-	rmdir --ignore-fail-on-non-empty `find ${MINIROOT_STAGING_X86} -type d -name amd64`;
-}
-
 function create_mini
 {
-	echo "Creating miniroots"
+	if [ "${LIVE64}" != "y" ]; then
+		exclude64="-type d -name amd64 -prune -o"
+		exclude64_msg=" (excluding 64-bit)"
+	fi
+
+	echo "Creating miniroot${exclude64_msg}:"
 
 	# skip commented, blank lines and excluded entries
 	filelist=`egrep -v -e '^[ \t]*#|^[ \t]*$|^[ \t]*!' ${MINI_FILELIST}`
 
 	set -- ${filelist}
- 	backup=`echo "[$#/$#] ... " | sed 's/.//g'`
-	fwidth=`echo "$#\c" | wc -c`
+        backup=`echo "[$#/$#] ... " | sed 's/.//g'`
+        fwidth=`echo "$#\c" | wc -c`
 
 	mkdir -p ${MINIROOT_STAGING} || fatal_error
 
 	# Copy over contents of Debian miniroot into miniroot staging area
 	echo "  populating miniroot staging area \c"
-	cd ${FAKEROOT}
+ 	cd ${FAKEROOT}
 
 	i=1; n=$#
 	while [ $# -gt 0 ]; do
-			# Do the actual copy (skip SVN directories)
-			printf "[%${fwidth}s/%${fwidth}s] ... " $i $n
-			find $1 -print | \
-			    ${CPIO} -pdum ${MINIROOT_STAGING} 2> /dev/null
-	  	i=`expr $i + 1`
-			shift
-			if [ $# -ne 0 ]; then
-					echo "${backup}\c"
-			fi
+		# Do the actual copy (skip SVN directories)
+		printf "[%${fwidth}s/%${fwidth}s] ... " $i $n
+		find $1 ${exclude64} -print | \
+		    ${CPIO} -pdum ${MINIROOT_STAGING} 2> /dev/null
+		i=`expr $i + 1`
+		shift
+		if [ $# -ne 0 ]; then
+			echo "${backup}\c"
+		fi
 	done
 
 	chown -R root:sys ${MINIROOT_STAGING}/etc/init.d
@@ -552,34 +518,23 @@ function create_mini
 	# Customize miniroot
 	customize_mini ${MINIROOT_STAGING}
 
-	# Split miniroot into 32/64-bit versions
-	split_mini
-	compress_mini 64
-	compress_mini 32
-}
-
-function compress_mini 
-{
-	if [ ${1} = 64 ]; then
-		miniroot=${MINIROOT_STAGING_X64}
-	else
-		miniroot=${MINIROOT_STAGING_X86}
-	fi
-											
 	echo "  preparing ramdisk image ... \c"
 
 	total_size=0
 	# Find out the size of miniroot staging area
 	sync; sync; sync
 	sleep 5 #this should give du time to see the correct file size
-  du -sk ${miniroot} | read size name
-	((total_size += size))
+	for file in ${filelist}
+	do
+		du -sk ${MINIROOT_STAGING}/${file} | read size name
+		((total_size += size))
+	done
 
 	# Add some extra space for our root filesystem
 	if [ "${MODE}" = "livecd" ]; then
 		(( total_size += total_size * 50 / 100 ))
-  else
-		(( total_size += 10000 ))
+	else
+		(( total_size += total_size * 15 / 100 ))
 	fi
 
 	# Create a UFS image file and mount it using lofs
@@ -593,7 +548,7 @@ function compress_mini
 		echo "Cannot mount UFS image via loopback file system."
 		fatal_error
 	fi
- 	newfs -m0 ${lofidev} < /dev/null 2> /dev/null
+ 	newfs ${lofidev} < /dev/null 2> /dev/null
 	if [ $? -ne 0 ]; then
 		echo "Cannot create UFS file system on ${lofidev}."
 		fatal_error
@@ -604,8 +559,8 @@ function compress_mini
 	echo "done (${total_size} KB, uncompressed)"
 
 	# Copy over contents of miniroot staging area into ramdisk image
-	echo "  populating ramdisk image using ${miniroot} ... \c"
- 	cd ${miniroot}
+	echo "  populating ramdisk image using ${MINIROOT_STAGING} ... \c"
+ 	cd ${MINIROOT_STAGING}
 
 	find . -print | ${CPIO} -pdum ${RAMDISK_MNT} 2> /dev/null
 
@@ -625,21 +580,15 @@ function compress_mini
  	umount ${RAMDISK_MNT}
  	lofiadm -d ${RAMDISK_FILE}
  	rm -Rf ${RAMDISK_MNT}
-  rm -Rf ${miniroot}
+	rm -Rf ${MINIROOT_STAGING}
 
-  # Compress miniroot image
 	echo "  compressing ramdisk image ... \c"
-	if [ ${1} = 64 ]; then
-		mkdir ${PLATFORM_DIR}/amd64
-		gzip -9 -c ${RAMDISK_FILE} > ${PLATFORM_DIR}/amd64/miniroot
-		du -sk ${PLATFORM_DIR}/amd64/miniroot | read size name
-	else
- 		gzip -9 -c ${RAMDISK_FILE} > ${PLATFORM_DIR}/miniroot
-		du -sk ${PLATFORM_DIR}/miniroot | read size name
-	fi
-	echo "done (${size} KB, compressed)"
 
-	rm -Rf ${RAMDISK_FILE}
+	# Compress miniroot image
+ 	gzip -c ${RAMDISK_FILE} > ${PLATFORM_DIR}/miniroot
+	du -sk ${PLATFORM_DIR}/miniroot | read size name
+
+	echo "done (${size} KB, compressed)"
 }
 
 function create_grub
@@ -849,7 +798,12 @@ var/lib/dpkg/alien
 
 function create_usr
 {
-	echo "  creating CD-ROM based directories:"
+	if [ "${LIVE64}" != "y" ]; then
+		exclude64="-type d -name amd64 -prune -o"
+		exclude64_msg=" (excluding 64-bit)"
+	fi
+
+	echo "  creating CD-ROM based directories${exclude64_msg}:"
 
 	mkdir -p ${ISO_STAGING}/root
 	chown root:root ${ISO_STAGING}/root
@@ -857,7 +811,7 @@ function create_usr
 	cd ${FAKEROOT}
 
 	echo "    copying /usr ... \c"
- 	find usr -print | \
+ 	find usr ${exclude64} -print | \
 	    ${CPIO} -pdum ${ISO_STAGING}/root 2> /dev/null
 	echo "done"
 
@@ -866,7 +820,7 @@ function create_usr
 	nawk '{ print $1 }' | while read dirname; do
 		if [ -e ${dirname} ]; then
 			echo "    copying /${dirname} ... \c"
-			find ${dirname} -print | \
+			find ${dirname} ${exclude64} -print | \
 			    ${CPIO} -pdum ${ISO_STAGING}/root 2> /dev/null
 			echo "done"
 		fi
@@ -919,6 +873,11 @@ function pool_cleanup
 
 function create_usr_zfs
 {
+	if [ "${LIVE64}" != "y" ]; then
+		exclude64="amd64"
+		exclude64_msg="64-bit directories"
+	fi
+
 	if [ -f ${ZFS_VDEV} ]; then
 		rm -f ${ZFS_VDEV}
 	fi
@@ -974,6 +933,16 @@ function create_usr_zfs
 			fi
 		fi
 	done
+
+	if [ "${exclude64}" != "" ]; then
+		echo "    skipping ${exclude64_msg} ... \c"
+		if [ "${exclude}" = "" ]; then
+			exclude="-type d -name ${exclude64}"
+		else
+			exclude="${exclude} -o -type d -name ${exclude64}"
+		fi
+		echo "done"
+	fi
 
 	if [ "${exclude}" != "" ]; then
 		exclude="( ${exclude} ) -prune -o"
@@ -1136,7 +1105,7 @@ mkdir -p ${PLATFORM_PV_DIR} || fatal_error
 mkdir -p ${BOOT_DIR} || fatal_error
 echo "done"
 
-# Step 2: Create miniroot(s)
+# Step 2: Create miniroot
 create_mini
 
 # Step 3: Create ISO
