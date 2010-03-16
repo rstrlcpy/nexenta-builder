@@ -50,7 +50,11 @@ splashimage=/boot/grub/splash.xpm.gz
 title Install NexentaCore Platform (Hardy/__autoversion__)
 	root (cd)
 	kernel$ /platform/i86pc/kernel/$ISADIR/unix -B atapi-cd-dma-enabled=0
-	module$ /platform/i86pc/miniroot
+	module$ /platform/i86pc/$ISADIR/miniroot
+title Install NexentaCore Platform (Hardy/__autoversion__) 32bit
+  root (cd)
+  kernel$ /platform/i86pc/kernel/unix -B atapi-cd-dma-enabled=0
+  module$ /platform/i86pc/miniroot
 title Memory Subsystem Test (Hardware Verification)
 	root (cd)
 	kernel /boot/memtest86+.bin
