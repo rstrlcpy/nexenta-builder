@@ -2189,6 +2189,10 @@ echo \"Warning: Fake start-stop-daemon called, doing nothing\"" > "$TMPDEST/sbin
 	oneline_msgbox Information "Upgrade complete; please check log file before reboot ($upgrade_log)"
 }
 
+getrand_10_200() {
+	echo | gawk '{srand(systime()); print 10+int(190*rand())}'
+}
+
 configure_network()
 {
 	local numconfigured=0
@@ -2228,19 +2232,7 @@ configure_network()
 
 	echo "search $domainname" >> $TMPDEST/etc/resolv.conf
 	echo "domain $domainname" >> $TMPDEST/etc/resolv.conf
-
-	# Bootstrap /etc/inet/hosts entry
-	node_name="$hostname"
-	node_fqnd="$node_name.$domainname"
-	ipaddress="127.0.0.1"
-	if test "x$_KS_ifaces" != x; then
-		ipaddress=${_KS_iface_ip[0]}
-
-	fi
-	hosts_entry=$ipaddress$'\t'$node_name$'\t'$node_fqnd$'\tloghost'
-	echo "$hosts_entry" >> $TMPDEST/etc/inet/hosts
-	rm -f $TMPDEST/etc/inet/ipnodes; ln -s ./hosts $TMPDEST/etc/inet/ipnodes
-	printlog "FQND $node_name.$domainname is added to /etc/inet/hosts"
+	printlog "Domain Name is set to $domainname at /etc/resolv.conf"
 
 	ifconfig -a plumb >/dev/null 2>&1
 	iflist=`ifconfig -a|grep flags=|nawk -F: '{print $1}'|egrep -v lo0`
@@ -2260,7 +2252,7 @@ configure_network()
 			test $? != $DIALOG_OK && continue
 			use_dhcp=0
 		else
-			oneline_info "Configuring $ifname to use DHCP..."
+			oneline_info "Configuring $ifname ..."
 			use_dhcp=$_KS_use_dhcp
 		fi
 
@@ -2389,6 +2381,19 @@ configure_network()
 			printlog "No network interfaces configured. Touching /etc/.UNCONFIGURED"
 		fi
 	fi
+
+	# Bootstrap /etc/inet/hosts entry
+	node_name="$hostname"
+	node_fqnd="$node_name.$domainname"
+	ipaddress_0="127.0.0.1"
+	if test "x$_KS_ifaces" != x; then
+		ipaddress_0=${_KS_iface_ip[0]}
+
+	fi
+	hosts_entry=$ipaddress_0$'\t'$node_name$'\t'$node_fqnd$'\tloghost'
+	echo "$hosts_entry" >> $TMPDEST/etc/inet/hosts
+	rm -f $TMPDEST/etc/inet/ipnodes; ln -s ./hosts $TMPDEST/etc/inet/ipnodes
+	printlog "FQND $node_name.$domainname pointing to $ipaddress_0 added to /etc/inet/hosts"
 }
 
 customize_hdd_install()
@@ -3636,6 +3641,14 @@ for i in `ls /tmp/dest.* 2>/dev/null`; do umount $i 2>/dev/null; done
 
 # ignore Ctrl-C
 trap '' INT
+
+if test "x${_KS_iface_ip[0]}" = xrandom; then
+	ip3=$(getrand_10_200)
+	sleep 2
+	ip4=$(getrand_10_200)
+	_KS_iface_ip[0]="192.168.$ip3.$ip4"
+	_KS_iface_mask[0]="255.255.0.0"
+fi
 
 # Get parameters for full automatic installation
 if test "x$(extract_args auto_install)" != x; then
