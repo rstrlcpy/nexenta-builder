@@ -49,13 +49,6 @@ LOCAL_ARCHIVE_DEBS=" \
 		rsync mtx snmpd rcs star \
 		samba samba-common winbind smbclient \
 		vmware-tools"
-getrand() {
-	echo | gawk '{srand(systime()); print 10+int(190*rand())}'
-}
-ip3=`getrand`
-sleep 2
-ip4=`getrand`
-
 #
 # Various installer-specific settings
 # (see nbld-bootstrap source code for details)
@@ -96,8 +89,8 @@ ks_user_name="admin"
 ks_user_passwd="nexenta"
 ks_hostname="myhost"
 ks_domainname="mydomain"
-ks_iface_ip0="192.168.$ip3.$ip4"
-ks_iface_mask0="255.255.0.0"
+ks_iface_ip0="192.168.1.111"
+ks_iface_mask0="255.255.255.0"
 ks_ifaces="0"
 ks_need_network="1"
 ks_autopart_use_swap_zvol="1"
