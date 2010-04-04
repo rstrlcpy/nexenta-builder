@@ -1905,15 +1905,29 @@ install_base()
 	progress_bar $lines install-base.sh $TMPDEST/debootstrap/debootstrap.log \
 		"$message... Please wait."
 	if test -d ${EXTRADEBDIR}; then
-		oneline_info "Installing the extra packages. Please wait..."
-		printlog "Installing extra deb packages...."
-		cp ${EXTRADEBDIR}/*.deb $TMPDEST/tmp
-		for deb_package in `ls -1 $TMPDEST/tmp/*.deb`; do
-			package=`basename $deb_package`
-			chroot $TMPDEST /usr/bin/env -i PATH=/sbin:/bin:/usr/sbin:$PATH LOGNAME=root HOME=/root TERM=xterm \
-				/usr/bin/dpkg --force-all -i /tmp/$package 2>> /tmp/extradebs.log 1>&2
-			printlog "Extra deb package: $package installed successfully"
-		done
+		packages_full=$(find ${EXTRADEBDIR} -name *.deb)
+		if test "x$packages_full" != "x"; then 
+			oneline_info "Installing the extra packages. Please wait..."
+			packages=""
+			for package in $packages_full; do
+				packages="$packages $(basename $package)"
+			done
+			printlog "Installing extra deb packages: $packages"
+			cp ${EXTRADEBDIR}/*.deb $TMPDEST/tmp
+			chroot $TMPDEST /usr/bin/env -i PATH=/sbin:/bin:/usr/sbin:$PATH \
+				LOGNAME=root HOME=/root TERM=xterm \
+				/usr/bin/dpkg --force-conflicts --force-depends --force-confold --force-confdef \
+				-i `find /tmp -name *.deb` 2>>/tmp/extradebs_install.log 1>&2
+			printlog "Extra deb packages was successfully installed"
+		fi
+		if test -f ${EXTRADEBDIR}/remove-pkgs.list; then
+			oneline_info "Removing the extra packages. Please wait..."
+			printlog "Removing extra deb packages: $(cat ${EXTRADEBDIR}/remove-pkgs.list)"
+			chroot $TMPDEST /usr/bin/env -i PATH=/sbin:/bin:/usr/sbin:$PATH \
+			LOGNAME=root HOME=/root TERM=xterm \
+			/usr/bin/dpkg --force-all -P `cat ${EXTRADEBDIR}/remove-pkgs.list` \
+			2>>/tmp/extradebs_remove.log 1>&2
+		fi
 	fi
 
 }
