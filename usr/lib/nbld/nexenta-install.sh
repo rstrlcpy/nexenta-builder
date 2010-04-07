@@ -1919,18 +1919,34 @@ install_base()
 			cp ${EXTRADEBDIR}/*.deb $TMPDEST/var/tmp/extradebs
 			chroot $TMPDEST /usr/bin/env -i PATH=/sbin:/bin:/usr/sbin:$PATH \
 				LOGNAME=root HOME=/root TERM=xterm \
+				DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true \
 				/usr/bin/dpkg --force-conflicts --force-depends --force-confold --force-confdef \
 				-i $packages_chroot 2>>/tmp/extradebs_install.log 1>&2
+			if test -e ${EXTRADEBDIR}/postinst; then
+				cp ${EXTRADEBDIR}/postinst $TMPDEST/var/tmp/extradebs
+				chroot $TMPDEST /usr/bin/env -i PATH=/sbin:/bin:/usr/sbin:$PATH \
+					LOGNAME=root HOME=/root TERM=xterm bash \
+					/var/tmp/extradebs/postinst 2>>/tmp/extradebs_install.log 1>&2
+			fi
 			rm -rf $TMPDEST/var/tmp/extradebs
 			printlog "Extra deb packages was successfully installed"
 		fi
 		if test -f ${EXTRADEBDIR}/remove-pkgs.list; then
 			oneline_info "Removing the extra packages. Please wait..."
 			printlog "Removing extra deb packages: $(cat ${EXTRADEBDIR}/remove-pkgs.list)"
+			cp ${EXTRADEBDIR}/remove-pkgs.list $TMPDEST/var/tmp/remove-pkgs.list
 			chroot $TMPDEST /usr/bin/env -i PATH=/sbin:/bin:/usr/sbin:$PATH \
-			LOGNAME=root HOME=/root TERM=xterm \
-			/usr/bin/dpkg --force-all -P `cat ${EXTRADEBDIR}/remove-pkgs.list` \
-			2>>/tmp/extradebs_remove.log 1>&2
+				LOGNAME=root HOME=/root TERM=xterm \
+				/usr/bin/dpkg --force-all -P `cat /var/tmp/remove-pkgs.list` \
+				2>>/tmp/extradebs_remove.log 1>&2
+			rm -f $TMPDEST/var/tmp/remove-pkgs.list
+			if test -e ${EXTRADEBDIR}/postrm; then
+				cp ${EXTRADEBDIR}/postrm $TMPDEST/var/tmp
+				chroot $TMPDEST /usr/bin/env -i PATH=/sbin:/bin:/usr/sbin:$PATH \
+					LOGNAME=root HOME=/root TERM=xterm bash \
+					/var/tmp/postrm 2>>/tmp/extradebs_install.log 1>&2
+				rm -f $TMPDEST/var/tmp/postrm
+			fi
 		fi
 	fi
 
