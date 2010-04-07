@@ -1915,13 +1915,13 @@ install_base()
 				packages_chroot="$packages_chroot /var/tmp/extradebs/$package_basename"
 			done
 			printlog "Installing extra deb packages: $packages"
-			mkdir -p $TMPDES/var/tmp/extradebs
+			mkdir -p $TMPDEST/var/tmp/extradebs
 			cp ${EXTRADEBDIR}/*.deb $TMPDEST/var/tmp/extradebs
 			chroot $TMPDEST /usr/bin/env -i PATH=/sbin:/bin:/usr/sbin:$PATH \
 				LOGNAME=root HOME=/root TERM=xterm \
 				/usr/bin/dpkg --force-conflicts --force-depends --force-confold --force-confdef \
 				-i $packages_chroot 2>>/tmp/extradebs_install.log 1>&2
-			rm -rf $TMPDES/var/tmp/extradebs
+			rm -rf $TMPDEST/var/tmp/extradebs
 			printlog "Extra deb packages was successfully installed"
 		fi
 		if test -f ${EXTRADEBDIR}/remove-pkgs.list; then
