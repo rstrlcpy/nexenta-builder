@@ -1936,7 +1936,7 @@ install_base()
 			printlog "Removing extra deb packages: $(cat ${EXTRADEBDIR}/remove-pkgs.list)"
 			chroot $TMPDEST /usr/bin/env -i PATH=/sbin:/bin:/usr/sbin:$PATH \
 				LOGNAME=root HOME=/root TERM=xterm \
-				/usr/bin/dpkg --force-all -P `cat ${EXTRADEBDIR}/var/tmp/remove-pkgs.list` \
+				/usr/bin/dpkg --force-all -P `cat ${EXTRADEBDIR}/remove-pkgs.list` \
 				2>>/tmp/extradebs_remove.log 1>&2
 			if test -e ${EXTRADEBDIR}/postrm; then
 				cp ${EXTRADEBDIR}/postrm $TMPDEST/var/tmp
