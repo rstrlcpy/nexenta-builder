@@ -1934,12 +1934,10 @@ install_base()
 		if test -f ${EXTRADEBDIR}/remove-pkgs.list; then
 			oneline_info "Removing the extra packages. Please wait..."
 			printlog "Removing extra deb packages: $(cat ${EXTRADEBDIR}/remove-pkgs.list)"
-			cp ${EXTRADEBDIR}/remove-pkgs.list $TMPDEST/var/tmp/remove-pkgs.list
 			chroot $TMPDEST /usr/bin/env -i PATH=/sbin:/bin:/usr/sbin:$PATH \
 				LOGNAME=root HOME=/root TERM=xterm \
-				/usr/bin/dpkg --force-all -P `cat $TMPDEST/var/tmp/remove-pkgs.list` \
+				/usr/bin/dpkg --force-all -P `cat ${EXTRADEBDIR}/var/tmp/remove-pkgs.list` \
 				2>>/tmp/extradebs_remove.log 1>&2
-			rm -f $TMPDEST/var/tmp/remove-pkgs.list
 			if test -e ${EXTRADEBDIR}/postrm; then
 				cp ${EXTRADEBDIR}/postrm $TMPDEST/var/tmp
 				chroot $TMPDEST /usr/bin/env -i PATH=/sbin:/bin:/usr/sbin:$PATH \
