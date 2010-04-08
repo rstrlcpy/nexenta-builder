@@ -1937,7 +1937,7 @@ install_base()
 			cp ${EXTRADEBDIR}/remove-pkgs.list $TMPDEST/var/tmp/remove-pkgs.list
 			chroot $TMPDEST /usr/bin/env -i PATH=/sbin:/bin:/usr/sbin:$PATH \
 				LOGNAME=root HOME=/root TERM=xterm \
-				/usr/bin/dpkg --force-all -P `cat /var/tmp/remove-pkgs.list` \
+				/usr/bin/dpkg --force-all -P `cat $TMPDEST/var/tmp/remove-pkgs.list` \
 				2>>/tmp/extradebs_remove.log 1>&2
 			rm -f $TMPDEST/var/tmp/remove-pkgs.list
 			if test -e ${EXTRADEBDIR}/postrm; then
