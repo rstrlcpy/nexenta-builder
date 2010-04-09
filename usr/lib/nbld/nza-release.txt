@@ -1,4 +1,4 @@
-                         Nexenta Storage Appliance v3.0.0
+                         Nexenta Storage Appliance v3.0.1
 	   Copyright 2009 Nexenta Systems, Inc.  All Rights Reserved.
 	  Copyright 2009 Sun Microsystems, Inc.  All Rights Reserved.
 			Use is subject to license terms.
