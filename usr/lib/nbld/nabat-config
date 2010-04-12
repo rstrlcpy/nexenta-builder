@@ -405,8 +405,12 @@ print FILE <<EOF;
 package MUT_AUTO_CFG;
 %MUT_AUTO_CFG::AUTO = (
 	'enabled'       	=> 1,
-	'nlm_com_key'		=> undef,
-	'nlm_eval_key'		=> undef,
+	'nlm_keys'		=> {
+		'com-3.x'	=> undef,
+		'com-2.x'	=> undef,
+		'eval-3.x'	=> undef,
+		'eval-2.x'	=> undef,
+	},
 	'machinetype'		=> 'UNIX',
 	'description'		=> undef,
 	'vmhost'		=> undef,
