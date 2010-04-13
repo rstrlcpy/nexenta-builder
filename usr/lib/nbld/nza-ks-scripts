@@ -73,4 +73,11 @@ _KS_callback_post_install()
 
 	# adjust console-login to start wizard if enabled
 	sed -i -e "/^#.*console-login.*exit/ a unset SUN_PERSONALITY; TERM=sun-color; LOGNAME=root; HOME=\/root; SHELL=\/bin\/bash; export TERM LOGNAME HOME SHELL; if test -f $FIRSTSTART; then svcadm enable system-log \>\/dev\/null 2\>\&1; sleep 5; clear \>\/dev\/console; eval \`cat $FIRSTSTART\` \>\/dev\/console \<\/dev\/console 2\>\&1; rm -f $FIRSTSTART; fi" $TMPDEST/lib/svc/method/console-login
+
+	# COMSTAR sbd enclosure ID setup
+	machinesig=`/usr/nexenta/machinesig`
+	if ! grep $machinesig $TMPDEST/kernel/drv/stmf_sbd.conf >/dev/null; then
+		sed -i -e "/sbd-serial-no[ 	]*=[ 	]*/d" $TMPDEST/kernel/drv/stmf_sbd.conf
+		echo "sbd-serial-no=\"$machinesig\";" >> $TMPDEST/kernel/drv/stmf_sbd.conf
+	fi
 }
