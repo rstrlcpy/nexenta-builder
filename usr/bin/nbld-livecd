@@ -121,6 +121,9 @@ BOOT_DIR=${ISO_STAGING}/boot
 PLATFORM_DIR=${ISO_STAGING}/platform/i86pc
 PLATFORM_PV_DIR=${ISO_STAGING}/platform/i86xpv
 MINIROOT_STAGING="$NBLD_STAGING/miniroot_staging.tmp"
+MINIROOT_STAGING_32b="$NBLD_STAGING/miniroot_staging_32b.tmp"
+MINIROOT_STAGING_64b="$NBLD_STAGING/miniroot_staging_64b.tmp"
+FILES="$NBLD_TMP/files.$$"
 RAMDISK_FILE="$NBLD_TMP/miniroot.$$"
 RAMDISK_MNT="$NBLD_TMP/miniroot_mount.$$"
 REPO_FILE="$NBLD_TMP/repository.db.$$"
@@ -155,6 +158,7 @@ function cleanup
 	rm -Rf ${MINIROOT_STAGING} 2> /dev/null
 	rm -Rf ${ISO_STAGING} 2> /dev/null
 	rm -f ${TMP_FILE} 2> /dev/null
+	rm -f ${FILES} 2> /dev/null
 	unshare -F nfs ${FAKEROOT} >/dev/null 2>&1
 }
 
@@ -447,12 +451,7 @@ function customize_mini
 
 function create_mini
 {
-	if [ "${LIVE64}" != "y" ]; then
-		exclude64="-type d -name amd64 -prune -o"
-		exclude64_msg=" (excluding 64-bit)"
-	fi
-
-	echo "Creating miniroot${exclude64_msg}:"
+	echo "Creating miniroots...."
 
 	# skip commented, blank lines and excluded entries
 	filelist=`egrep -v -e '^[ \t]*#|^[ \t]*$|^[ \t]*!' ${MINI_FILELIST}`
@@ -471,7 +470,7 @@ function create_mini
 	while [ $# -gt 0 ]; do
 		# Do the actual copy (skip SVN directories)
 		printf "[%${fwidth}s/%${fwidth}s] ... " $i $n
-		find $1 ${exclude64} -print | \
+		find $1 -print | \
 		    ${CPIO} -pdum ${MINIROOT_STAGING} 2> /dev/null
 		i=`expr $i + 1`
 		shift
@@ -518,26 +517,76 @@ function create_mini
 	# Customize miniroot
 	customize_mini ${MINIROOT_STAGING}
 
-	echo "  preparing ramdisk image ... \c"
 
-	total_size=0
+	# Spliting miniroot
+	echo "  Spliting miniroot ..."
+	rm -rf ${MINIROOT_STAGING_32b} ${MINIROOT_STAGING_64b}
+	mkdir -p ${MINIROOT_STAGING_32b} ${MINIROOT_STAGING_64b}
+	cd ${MINIROOT_STAGING}
+	tar cf - . |(cd ${MINIROOT_STAGING_32b}; tar xf -)
+	tar cf - . |(cd ${MINIROOT_STAGING_64b}; tar xf -)
+
+	dirlist="kernel platform"
+	for line in $dirlist; do
+		find $line  -type d  -name amd64 -exec find {} \; >> ${FILES}
+	done
+	
+	echo "    Cleanup miniroots ... \c"
+	for line in `cat ${FILES}`; do
+#		echo $line
+		dirs=`dirname $line`
+		dirs_32=`dirname $dirs`
+		filename=`basename $line`
+		if [ -f ${MINIROOT_STAGING}/$dirs_32/$filename ]; then
+#			echo "removing $line from x86 miniroot"
+			rm -rf "${MINIROOT_STAGING_32b}/$line"
+#			echo "removing $dirs_32/$filename from x64 miniroot"
+			rm -rf "${MINIROOT_STAGING_64b}/$dirs_32/$filename"
+		fi
+	done
+	#make sure that all amd64 content is removed from 32 bit miniroot
+	rm -rf `find ${MINIROOT_STAGING_32b} -type d -name amd64 2>/dev/null`
+	echo "done"
+	
+#	find ${MINIROOT_STAGING_32b} -type d -name amd64 -exec rm -rf {} \;
+
+	# Tried to delete 32-bit library from 64-bit miniroot, but it not work... :-( (need to research)
+#	for file in `ls -1 ${MINIROOT_STAGING_64b}/lib`; do
+#		test -f ${MINIROOT_STAGING_64b}/lib/amd64/$file &&
+#			rm -f ${MINIROOT_STAGING_64b}/lib/$file
+#	done
+	rm -rf ${MINIROOT_STAGING_64b}/tmp/*
+	rm -rf ${MINIROOT_STAGING_32b}/tmp/*
+
 	# Find out the size of miniroot staging area
 	sync; sync; sync
 	sleep 5 #this should give du time to see the correct file size
-	for file in ${filelist}
-	do
-		du -sk ${MINIROOT_STAGING}/${file} | read size name
-		((total_size += size))
-	done
-
+	total_size_32b=`du -sk ${MINIROOT_STAGING_32b} | nawk '{print $1}'`
+	total_size_64b=`du -sk ${MINIROOT_STAGING_64b} | nawk '{print $1}'`
+	
 	# Add some extra space for our root filesystem
 	if [ "${MODE}" = "livecd" ]; then
-		(( total_size += total_size * 50 / 100 ))
+		(( total_size_32b += total_size_32b * 50 / 100 ))
+		(( total_size_64b += total_size_64b * 50 / 100 ))
 	else
-		(( total_size += total_size * 15 / 100 ))
+		(( total_size_32b += total_size_32b * 15 / 100 ))
+		(( total_size_64b += total_size_64b * 15 / 100 ))
 	fi
 
+	echo "  Create 32 bit miniroot..."
+	create_mini_stage2 ${MINIROOT_STAGING_32b} ${PLATFORM_DIR} $total_size_32b
+	echo "  Create 64 bit miniroot..."
+	create_mini_stage2 ${MINIROOT_STAGING_64b} "${PLATFORM_DIR}/amd64" $total_size_64b
+
+}
+
+function create_mini_stage2
+{
+	echo "    preparing ramdisk image ... \c"
 	# Create a UFS image file and mount it using lofs
+	DEST=$2
+	total_size=$3
+
  	mkfile ${total_size}k ${RAMDISK_FILE}
 	if [ $? -ne 0 ]; then
 		echo "Cannot create UFS image (${total_size} KB)."
@@ -559,9 +608,9 @@ function create_mini
 	echo "done (${total_size} KB, uncompressed)"
 
 	# Copy over contents of miniroot staging area into ramdisk image
-	echo "  populating ramdisk image using ${MINIROOT_STAGING} ... \c"
- 	cd ${MINIROOT_STAGING}
-
+	echo "    populating ramdisk image using $1 ... \c"
+ 	cd $1
+	
 	find . -print | ${CPIO} -pdum ${RAMDISK_MNT} 2> /dev/null
 
 	# clean up NLU environment on target, but keep on source
@@ -580,15 +629,17 @@ function create_mini
  	umount ${RAMDISK_MNT}
  	lofiadm -d ${RAMDISK_FILE}
  	rm -Rf ${RAMDISK_MNT}
-	rm -Rf ${MINIROOT_STAGING}
+	rm -Rf $1
 
-	echo "  compressing ramdisk image ... \c"
+	echo "    compressing ramdisk image ... \c"
 
 	# Compress miniroot image
- 	gzip -c ${RAMDISK_FILE} > ${PLATFORM_DIR}/miniroot
-	du -sk ${PLATFORM_DIR}/miniroot | read size name
+	test -d ${DEST} || mkdir -p ${DEST}
+ 	gzip -c ${RAMDISK_FILE} > ${DEST}/miniroot
+	du -sk ${DEST}/miniroot | read size name
 
 	echo "done (${size} KB, compressed)"
+
 }
 
 function create_grub

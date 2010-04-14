@@ -169,7 +169,7 @@ fi
 
 echo "Cleaning up $rootdir ... "
 test -d $rootdir && rm -rf $rootdir
-mkdir $rootdir
+mkdir -p $rootdir
 
 # $repo/incoming/input.conf must pre-exist, so debarchiver will use it
 test ! -f $repo/incoming/input.conf && \
@@ -685,6 +685,11 @@ if test "x$debug" != xyes; then
 else
 	cp $rootdir/debootstrap/debootstrap.log $latest_log
 fi
+# Cleanup logs and extra files
+rm -rf $rootdir/var/cache/debconf
+rm -rf $rootdir/var/log/bootstrap.log
+rm -rf $rootdir/var/log/dpkg.log
+rm -rf $rootdir/var/lib/dpkg/info
 #rm -rf $rootdir/tmp/*
 echo "NOTE: log file saved at $latest_log"
 

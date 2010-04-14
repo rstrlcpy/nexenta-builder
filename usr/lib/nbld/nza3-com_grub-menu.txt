@@ -50,11 +50,11 @@ splashimage=/boot/grub/splash.xpm.gz
 title Install NexentaStor via serial port COM1 (__autoversion__)
 	root (cd)
 	kernel$ /platform/i86pc/kernel/$ISADIR/unix -B atapi-cd-dma-enabled=0 -B console=ttya
-	module$ /platform/i86pc/miniroot
+	module$ /platform/i86pc/$ISADIR/miniroot
 title Install NexentaStor via keyboard/monitor (__autoversion__)
 	root (cd)
 	kernel$ /platform/i86pc/kernel/$ISADIR/unix -B atapi-cd-dma-enabled=0
-	module$ /platform/i86pc/miniroot
+	module$ /platform/i86pc/$ISADIR/miniroot
 title Memory Subsystem Test (Hardware Verification)
 	root (cd)
 	kernel /boot/memtest86+.bin
