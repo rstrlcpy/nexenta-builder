@@ -349,6 +349,13 @@ if test "x$mode" = xinstall; then
         fi
 	rm -Rf $rootdir/var/cache/stage0_archive
 	rm -f $rootdir/var/cache/apt/archive/*.deb
+	# a bug in apt-ftparchive, we need to rebuild it twice..
+	# keep just one well known .deb in the tmp..
+	cp $rootdir$hddrepo/incoming/$dist/sunwkvm_*.deb /tmp
+	debarchiver -o -x -i $rootdir$hddrepo/incoming ||
+		fatal "couldn't propagate $rootdir$hddrepo/incoming"
+	mv /tmp/sunwkvm_*.deb $rootdir$hddrepo/incoming/$dist
+	# rebuild it again..
 	debarchiver -o -x -i $rootdir$hddrepo/incoming ||
 		fatal "couldn't propagate $rootdir$hddrepo/incoming"
 
