@@ -1926,7 +1926,7 @@ install_base()
 				cp ${EXTRADEBDIR}/postinst $TMPDEST/var/tmp/extradebs
 				chroot $TMPDEST /usr/bin/env -i PATH=/sbin:/bin:/usr/sbin:$PATH \
 					LOGNAME=root HOME=/root TERM=xterm bash \
-					/var/tmp/extradebs/postinst 2>>/tmp/extradebs_install.log 1>&2
+					$TMPDEST/var/tmp/extradebs/postinst 2>>/tmp/extradebs_install.log 1>&2
 			fi
 			rm -rf $TMPDEST/var/tmp/extradebs
 			printlog "Extra deb packages was successfully installed"
