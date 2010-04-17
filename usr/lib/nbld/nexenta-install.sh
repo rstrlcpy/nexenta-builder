@@ -1922,14 +1922,16 @@ install_base()
 				DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true \
 				/usr/bin/dpkg --force-conflicts --force-depends --force-confold --force-confdef \
 				-i $packages_chroot 2>>/tmp/extradebs_install.log 1>&2
-			if test -e ${EXTRADEBDIR}/postinst; then
+			if test -f ${EXTRADEBDIR}/postinst; then
 				cp ${EXTRADEBDIR}/postinst $TMPDEST/var/tmp/extradebs
 				chroot $TMPDEST /usr/bin/env -i PATH=/sbin:/bin:/usr/sbin:$PATH \
 					LOGNAME=root HOME=/root TERM=xterm bash \
-					$TMPDEST/var/tmp/extradebs/postinst 2>>/tmp/extradebs_install.log 1>&2
+					/var/tmp/extradebs/postinst 2>>/tmp/extradebs_install.log 1>&2
+				printlog "Script postinst executed successfully"
 			fi
 			rm -rf $TMPDEST/var/tmp/extradebs
-			printlog "Extra deb packages was successfully installed"
+			printlog "Customization scripts output:\n`cat /tmp/extradebs_install.log`"
+			printlog "Extra deb packages were successfully installed"
 		fi
 		if test -f ${EXTRADEBDIR}/remove-pkgs.list; then
 			oneline_info "Removing the extra packages. Please wait..."
@@ -1938,13 +1940,16 @@ install_base()
 				LOGNAME=root HOME=/root TERM=xterm \
 				/usr/bin/dpkg --force-all -P `cat ${EXTRADEBDIR}/remove-pkgs.list` \
 				2>>/tmp/extradebs_remove.log 1>&2
-			if test -e ${EXTRADEBDIR}/postrm; then
+			if test -f ${EXTRADEBDIR}/postrm; then
 				cp ${EXTRADEBDIR}/postrm $TMPDEST/var/tmp
 				chroot $TMPDEST /usr/bin/env -i PATH=/sbin:/bin:/usr/sbin:$PATH \
 					LOGNAME=root HOME=/root TERM=xterm bash \
 					/var/tmp/postrm 2>>/tmp/extradebs_install.log 1>&2
+					printlog "Script postrm executed successfully"
 				rm -f $TMPDEST/var/tmp/postrm
 			fi
+			printlog "Customization scripts output:\n`cat /tmp/extradebs_remove.log`"
+			printlog "Extra deb packages were successfully removed"
 		fi
 	fi
 
