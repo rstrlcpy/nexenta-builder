@@ -196,9 +196,9 @@ welcome_ks()
 
 	test "x$_KS_hostname" != x &&       conf="$conf     * Host Name: $_KS_hostname\n"
 	test "x$_KS_domainname" != x &&     conf="$conf     * Domain Name: $_KS_domainname\n"
-	test "x$_KS_root_passwd" != x &&    conf="$conf     * Root Password: $_KS_root_passwd\n"
+	test "x$_KS_root_passwd" != x &&    conf="$conf     * Root Password: See User Guide\n"
 	test "x$_KS_user_name" != x &&      conf="$conf     * Default User Name: $_KS_user_name\n"
-	test "x$_KS_user_passwd" != x &&    conf="$conf     * Default User Password: $_KS_user_passwd\n"
+	test "x$_KS_user_passwd" != x &&    conf="$conf     * Default User Password: See User Guide\n"
 	test "x$_KS_time_zone" != x &&      conf="$conf     * Default Time Zone: $_KS_time_zone\n"
 	test "x$_KS_use_dhcp" != x &&       conf="$conf     * DHCP enabled: $(boolean2human $_KS_use_dhcp)\n"
 	test "x$_KS_use_ipv6" != x &&       conf="$conf     * IPv6 enabled: $(boolean2human $_KS_use_ipv6)\n"
@@ -2662,9 +2662,9 @@ reboot_msg_ks()
 
 	test "x$_KS_hostname" != x &&       conf="$conf     * Host Name: $_KS_hostname\n"
 	test "x$_KS_domainname" != x &&     conf="$conf     * Domain Name: $_KS_domainname\n"
-	test "x$_KS_root_passwd" != x &&    conf="$conf     * Root Password: $_KS_root_passwd\n"
+	test "x$_KS_root_passwd" != x &&    conf="$conf     * Root Password: See User Guide\n"
 	test "x$_KS_user_name" != x &&      conf="$conf     * Default User Name: $_KS_user_name\n"
-	test "x$_KS_user_passwd" != x &&    conf="$conf     * Default User Password: $_KS_user_passwd\n"
+	test "x$_KS_user_passwd" != x &&    conf="$conf     * Default User Password: See User Guide\n"
 	test "x$_KS_time_zone" != x &&      conf="$conf     * Default Time Zone: $_KS_time_zone\n"
 	test "x$_KS_use_ipv6" != x &&       conf="$conf     * IPv6 enabled: $(boolean2human $_KS_use_ipv6)\n"
 	test "x$_KS_use_dhcp" != x &&       conf="$conf     * DHCP enabled: $(boolean2human $_KS_use_dhcp)\n"
