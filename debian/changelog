@@ -1,3 +1,9 @@
+nexenta-builder (2.5.5) hardy; urgency=low
+
+  * Add zlib1g-dev to depends. Closes: #155 
+
+ -- Anil Gulecha <anil.verve@gmail.com>  Thu, 22 Apr 2010 03:21:42 -0700
+
 nexenta-builder (2.5.4) hardy; urgency=low
 
   * excluded libsigc++-dev

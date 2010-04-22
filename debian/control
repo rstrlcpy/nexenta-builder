@@ -5,7 +5,7 @@ Maintainer: Nexenta System <support@nexenta.com>
 
 Package: nexenta-builder
 Architecture: solaris-i386
-Depends: debarchiver, apt, debootstrap, mkisofs
+Depends: debarchiver, apt, debootstrap, mkisofs, zlib1g-dev
 Description: Nexenta ISO Builder Kit
  Bootstraps Nexenta Core Platform into customized ISO using
  APT repository as its input
