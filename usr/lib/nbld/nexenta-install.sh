@@ -34,6 +34,7 @@ BOOT_ANYWHERE=${BOOT_ANYWHERE:-0}
 MEMSCRATCH=${MEMSCRATCH:-0}
 CURDIR=${PWD}
 EXTRADEBDIR=/.livecd/extradebs
+EXTRADEB_PROFILE=$EXTRADEBDIR/defaults
 RMFORMAT_TMP=/tmp/rmformat.$$
 TMP_FILE=/tmp/installer.$$
 RM_LABEL="NEXENTA"
@@ -3656,6 +3657,9 @@ dumpkeys | grep padenter | sed -e 's/numl /all /g' > $TMP_FILE
 loadkeys $TMP_FILE
 
 source $DEFPROFILE
+if test -f ${EXTRADEB_PROFILE}; then
+	source ${EXTRADEB_PROFILE}
+fi
 DEFAULT_PROFILE=${_KS_profile_name[$_KS_profile_selected]}
 TITLE=$_KS_product_title
 if test -f $REPO/machinesig; then
