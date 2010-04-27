@@ -9,7 +9,7 @@
 
 pkill -9 dialog 2>/dev/null
 clear
-echo "Initializing Nexenta Installer. Please wait..."
+echo "Initializing Installer. Please wait..."
 
 LOGFILE=/tmp/nexenta-install.log
 rm -f $LOGFILE
@@ -20,7 +20,7 @@ printlog() {
 	echo "* $*" >&3
 }
 printlog "Press CTRL-C to refresh."
-printlog "Nexenta Installer started at '`date`'. Logging."
+printlog "Installer started at '`date`'. Logging."
 
 export LOGNAME=root
 export HOME=/root
@@ -463,7 +463,7 @@ part_item_format()
 part_fdisk_menu()
 {
 	local disk=$1
-	local TOP_INFO="\\nSelect partition on which you'd like to install Nexenta or Edit selected partition.\\n\\nPress Add/Delete if you'd like to add new partition or delete selected.\\n"
+	local TOP_INFO="\\nSelect partition on which you'd like to install software or Edit selected partition.\\n\\nPress Add/Delete if you'd like to add new partition or delete selected.\\n"
 	local HEAD_INFO="Id__Status___________Type___________Size(MB)___(%)\\n"
 	local rlist=""
 	local num=1
@@ -2614,7 +2614,7 @@ customize_common()
 	chmod 0555 $TMPDEST/lib/svc/method/nexenta-sysidtool-system
 	chown root:bin $TMPDEST/lib/svc/method/nexenta-sysidtool-system
 
-	printlog "Installed 'Nexenta' sysidtools SMF methods"
+	printlog "Installed sysidtools SMF methods"
 
 	#
 	# Work around GNU's "uname -S" problem; we use /bin/hostname
@@ -2728,7 +2728,7 @@ install_grub()
 	local mbr=""
 	if test "x$_KS_use_grub_mbr" = x; then
 		message_Yn_ask "
-	Installing GRUB on the master boot record overrides any boot manager currently installed on the disk '$disk'. The system will always boot from GRUB in the Nexenta partition regardless of which fdisk partition is active." "Install GRUB on the master boot record anyway? (recommended)"
+	Installing GRUB on the master boot record overrides any boot manager currently installed on the disk '$disk'. The system will always boot from GRUB in the OS partition regardless of which fdisk partition is active." "Install GRUB on the master boot record anyway? (recommended)"
 		if test $? != $DIALOG_OK; then
 			oneline_msgbox Warning "Master boot record is NOT updated! You will have to manually update your existing boot manager."
 		else
