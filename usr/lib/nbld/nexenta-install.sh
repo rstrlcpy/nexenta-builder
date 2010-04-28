@@ -92,8 +92,8 @@ TZ_ZONE_TABLE=$TZDIR/tab/zone_sun.tab
 TZ_for_date=""
 newline='
 '
-INFO_EXTRA1="Local time is now:       %s"
-INFO_EXTRA2="Universal Time is now:   %s"
+#INFO_EXTRA1="Local time is now:       %s"
+#INFO_EXTRA2="Universal Time is now:   %s"
 INFO_TZ="Therefore TZ='%s' will be used."
 result_disk_pool=""
 result_disk_spare=""
@@ -3432,44 +3432,13 @@ none          	\"Specify time zone using POSIX TZ format\"	off	\
 
 	while true; do
 
-		# Use the proposed TZ to output the current date relative to UTC.
-		# Loop until they agree in seconds.
-		# Give up after 8 unsuccessful tries.
-
-		extra_info1=
-		extra_info2=
-		for i in 1 2 3 4 5 6 7 8
-		do
-			TZdate=$(LANG=C TZ="$TZ_for_date" /bin/date)
-			UTdate=$(LANG=C TZ=UTC0 /bin/date)
-			TZsec=$(expr "$TZdate" : '.*:\([0-5][0-9]\)')
-			UTsec=$(expr "$UTdate" : '.*:\([0-5][0-9]\)')
-			case $TZsec in
-			$UTsec)
-				extra_info1=$(printf "$INFO_EXTRA1" "$TZdate")
-				extra_info2=$(printf "$INFO_EXTRA2" "$UTdate")
-				break
-			esac
-		done
-
-		$DIALOG --title " Time Zone " --yesno "\nThe following information has been given:\n\n$rlist\n$extra_info\n\n$extra_info1\n$extra_info2\n\nIs the above information OK?\n\n(Hint: by selecting 'No' you can adjust BIOS clocks too)" 19 64 2>$DIALOG_RES
+		$DIALOG --title " Time Zone " --yesno "\nThe following information has been given:\n\n The Current time zone selected is ---> $TZ\n\n" 19 64 2>$DIALOG_RES
 
 		if test $? = $DIALOG_OK; then
 			apply_tz $TZ
 			return 0
-		else
-			$DIALOG --ok-label "Apply" --cancel-label "Adjust TZ" --title " Input form " \
-				--form " Adjust BIOS clocks (using TZ='$TZ'): " 10 59 3 \
-				"Set local time to:" 2 2 "`TZ=$TZ date`" 2 21 31 31 2>$DIALOG_RES
-			if test $? == $DIALOG_OK; then
-				local newtime=$(cat $DIALOG_RES|head -1)
-				date -s "$newtime" >/dev/null 2>&1
-				printlog "BIOS clocks adjusted to $newtime"
-				continue
-			fi
-			return 1
-		fi
-	done
+		fi	
+		done
 	return 1
 }
 
