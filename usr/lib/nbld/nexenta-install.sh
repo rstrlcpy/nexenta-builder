@@ -3430,15 +3430,11 @@ none          	\"Specify time zone using POSIX TZ format\"	off	\
 
 	extra_info=$(printf "$INFO_TZ" "$TZ")
 
-	while true; do
-
-		$DIALOG --title " Time Zone " --yesno "\nThe following information has been given:\n\n The Current time zone selected is ---> $TZ\n\n" 19 64 2>$DIALOG_RES
-
-		if test $? = $DIALOG_OK; then
-			apply_tz $TZ
-			return 0
-		fi	
-		done
+	oneline_Yn_ask "The following information has been given:\n\n The Current time zone selected is ---> $TZ"
+	if test $? = $DIALOG_OK; then
+		apply_tz $TZ
+		return 0
+	fi
 	return 1
 }
 
