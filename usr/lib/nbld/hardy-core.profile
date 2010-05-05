@@ -43,7 +43,7 @@ LOCAL_ARCHIVE_DEBS=" \
     sunwntpu sunwntpr \
     sunwftpu sunwftpr sunwtftp sunwtftpr \
     sunwnisr sunwnisu \
-    sunwiscsitgtr sunwiscsitgtu sunwisnsr \
+    sunwisnsr \
     sunwsshu sunwsshdu sunwesu sunwtoo \
     sunwiir sunwiiu sunwrdcr sunwrdcu sunwscmr sunwscmu sunwspsvr sunwspsvu \
     sunwsmbfsu"
