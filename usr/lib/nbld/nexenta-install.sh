@@ -3007,6 +3007,8 @@ cleanup_after_install()
 	rm -rf $TMPDEST/var/cache/apt/archives > /dev/null 2>&1
 	rm -f $TMPDEST/etc/skel/.profile.dpkg-dist > /dev/null 2>&1
 	mkdir -p $TMPDEST/var/cache/apt/archives/partial
+	test -d $TMPDEST/var/log/apt || mkdir -p $TMPDEST/var/log/apt
+	cp $TMPDEST/debootstrap/debootstrap.log $TMPDEST/var/log/apt/debootstrap.log
 	rm -rf $TMPDEST/debootstrap > /dev/null 2>&1
 
 	test "x$slice_usr" != x && umount -f $TMPDEST/usr > /dev/null 2>&1
