@@ -3874,9 +3874,6 @@ configure_repository
 
 install_grub
 
-oneline_info "Updating Boot Archive..."
-update_boot_archive
-
 if test "x$slice_export_home" != x; then
 	zfs set mountpoint=/export/home $ZPOOL_HOME
 	mkdir -p $TMPDEST/etc/zfs
@@ -3884,8 +3881,7 @@ if test "x$slice_export_home" != x; then
 	printlog "Slice $slice_export_home enabled to use ZFS and mountpoint set to /export/home"
 fi
 
-printlog "Cleaning up leftovers..."
-
+printlog "Saving log file ..."
 cp $LOGFILE $TMPDEST/root
 
 if [ $UPGRADE -eq 0 ]; then
@@ -3915,9 +3911,6 @@ if [ $UPGRADE -eq 0 ]; then
 	       		echo $nlm_key > $TMPDEST/var/lib/nza/nlm.key
 		fi
 	fi
-	if test $ROOTDISK_TYPE = "zfs"; then
-		zfs snapshot $ZFS_ROOTFS@initial 2>/dev/null
-	fi
 fi
 
 if test -d ${EXTRADEBDIR}; then
@@ -3936,6 +3929,15 @@ if test -d $drvjobs; then
 		chroot $TMPDEST $chrootenv /usr/sbin/mount /proc
 		chroot $TMPDEST $chrootenv /var/tmp/queue.sh
 		chroot $TMPDEST $chrootenv /usr/sbin/umount /proc 2>/dev/null
+	fi
+fi
+
+oneline_info "Updating Boot Archive..."
+update_boot_archive
+
+if [ $UPGRADE -eq 0 ]; then
+	if test $ROOTDISK_TYPE = "zfs"; then
+		zfs snapshot $ZFS_ROOTFS@initial 2>/dev/null
 	fi
 fi
 
