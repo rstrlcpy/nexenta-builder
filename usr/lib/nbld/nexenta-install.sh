@@ -1909,6 +1909,8 @@ install_base()
 
 process_extradebs()
 {
+	chrootenv="/usr/bin/env -i PATH=/sbin:/bin:/usr/sbin:$PATH LOGNAME=root HOME=/root TERM=xterm"
+	chroot $TMPDEST $chrootenv /usr/sbin/mount /proc
 	packages_full=$(find ${EXTRADEBDIR} -name *.deb)
 	if test "x$packages_full" != "x"; then 
 		oneline_info "Installing the extra packages. Please wait..."
@@ -1957,6 +1959,7 @@ process_extradebs()
 		printlog "`cat /tmp/extradebs_remove.log`"
 		printlog "Extra deb packages were successfully removed"
 	fi
+	chroot $TMPDEST $chrootenv /usr/sbin/umount /proc 2>/dev/null
 }
 
 
