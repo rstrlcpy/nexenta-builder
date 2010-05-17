@@ -68,7 +68,7 @@ if test ! -f $FIRSTSTART; then
 		reboot -qn 2>/dev/null &
 		/sleep 1
 		/eject -f cdrom 2>/dev/null
-		echo "Rebooting into Nexenta now..." >/dev/msglog
+		echo "Rebooting into new root filesystem now..." >/dev/msglog
 		while /true; do /sleep 1; done
 		/uadmin 2 8 2>/dev/null
 	fi
