@@ -1154,7 +1154,8 @@ autopart_ask()
 			    sed -e 's;.*devices/;;' -e 's;:[a-z]\+;;')"
 			phys="$(echo $drv | sed -e 's/dsk/rdsk/' -e 's/s0/p0/')"
 			size="$(fdisk -G $phys | tail -1 | \
-			    awk '{print $1*$5*$6*$7/1024/1024}')"
+			    awk '{print $1*$5*$6*$7}')"
+			size="$(round_disk_size $size)"
 			p=$(grep "cmdk.*is.*$devpath" $TMPMESSAGES | \
 			    sed -e "s/.*cmdk\([0-9]\+\)\s* .*/\1/" | sort -u)
 			if test "x$p" = x; then
@@ -1166,7 +1167,7 @@ autopart_ask()
 				    sed -e "s/.*<\(.*\)>.*/\1/" -e "s/'//g" -e "s/Vendor //" -e "s/  Product / /"|tail -1)
 			fi
 			test "x$vendor" = x && vendor="Unknown Vendor"
-			vendor="$size"" MB ($vendor)"
+			vendor="$size"" GB ($vendor)"
 		fi
 
 		vendor=$(echo $vendor|sed -e 's/\s*)/)/')
@@ -1255,7 +1256,7 @@ autopart_ask()
 					disk_size=$(cat $TMP_DISKSIZE_FILE|grep $disk|awk '{print $2}')
 					if test "x$check_size" = x; then
 						check_size=$disk_size
-					elif test $check_size -ne $disk_size; then
+					elif ! compare_size $check_size $disk_size; then
 						if ! oneline_yN_ask "Warning! You have selected not-equal-sized disks. Proceed?"; then
 							rm -f $TMP_FILE $TMP_DISKSIZE_FILE
 							return 2
@@ -3617,6 +3618,25 @@ get_lun_by_device_id()
 				}
 			}
 		}' $1
+}
+
+round_disk_size()
+{
+	perl -e '
+		my $unrounded = $ARGV[0]/1024/1024/1024;
+		my $rounded = sprintf("%.2f", $unrounded); 
+		print $rounded;
+		' $1
+}
+
+compare_size() 
+{
+	perl -e '
+		if ($ARGV[1] <= ($ARGV[0] + 0.2) && $ARGV[1] >= ($ARGV[0] - 0.2)) {
+			exit 0;
+		}
+		exit 1;
+		' $1 $2
 }
 
 ############# main ###############
