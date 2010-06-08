@@ -3528,6 +3528,12 @@ check_requirements()
 	local rc=$?
 
 	if test $rc == 1; then
+		printlog "Missing Drivers Information:
+`cat $tmpfile`"
+		if test "x$_KS_disable_missing_drivers_warning" = x1; then
+			rm -f $tmpfile
+			return 0
+		fi
 		echo >> $tmpfile
 		echo "   Press 'Continue' if you'd like to continue installation" >> $tmpfile
 
