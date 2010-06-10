@@ -22,7 +22,8 @@ if [ -x /sbin/mdisco ]; then
 	echo "CD-ROM: \c" >/dev/msglog
 	if [ "${platform}" = "i86xpv" ]; then
 		sleep 10
-		dev_phys=`/sbin/mdisco 2>/dev/msglog`
+		dev_phys=`/sbin/mdisco -l 2>/dev/msglog`
+		dev_phys=`echo $dev_phys | uniq`
 	else
 		if test "x$install_srv" = x; then
 			dev_phys=`/sbin/mdisco -V ${livecd_volid} -l 2>/dev/msglog`

@@ -56,6 +56,7 @@ usr/bin/sed
 usr/bin/eject
 usr/bin/sleep
 usr/bin/grep
+usr/bin/uniq
 
 # We need these for device and media discovery
 usr/bin/pkill

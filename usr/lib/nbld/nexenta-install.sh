@@ -1121,7 +1121,7 @@ autopart_ask()
 	rmformat >/dev/null 2>&1
 	devfsadm -c disk >/dev/null 2>&1
 	sync; sleep 3
-	local cdrom=`$REPO/mdisco -l | sed -e 's/p0//g'`
+	local cdrom=`$REPO/mdisco -l | uniq | sed -e 's/p0//g'`
 
 	while test ! -f /var/adm/messages; do
 		sleep 1
@@ -1134,7 +1134,7 @@ autopart_ask()
 	if test "x$(extract_args iso_nfs_path)" != x; then
 		test "x$cdrom" = x && cdrom=" "
 	fi
-	$REPO/mdisco -ld | sed -e 's/p0/s0/g' | egrep -v -e "${cdrom}" | sort |\
+	$REPO/mdisco -ld | uniq | sed -e 's/p0/s0/g' | egrep -v -e "${cdrom}" | sort |\
 	while read drv; do
 		local vendor=""
 		local devpath=""
@@ -1387,13 +1387,13 @@ check_upgrade()
 	# mdisco cannot detect hard disks without rmformat?
 	rmformat >/dev/null 2>&1
 
-	local cdrom=`$REPO/mdisco -l | sed -e 's/p0//g'`
+	local cdrom=`$REPO/mdisco -l | uniq | sed -e 's/p0//g'`
 
 	mkdir $TMPDEST > /dev/null 2>&1
 	rm -f $UPMAP > /dev/null 2>&1
 	touch $UPMAP
 
-	$REPO/mdisco -ld | sort | sed -e 's/p0/s0/g' | egrep -v -e "${cdrom}" |
+	$REPO/mdisco -ld | uniq | sort | sed -e 's/p0/s0/g' | egrep -v -e "${cdrom}" |
 	while read drv; do
 		mount -F ufs $drv $TMPDEST > /dev/null 2>&1
 
@@ -1456,7 +1456,7 @@ check_upgrade()
 detect_removable()
 {
 	oneline_info "Detecting removable devices..."
-	local cdrom=`$REPO/mdisco -l | sed -e 's/p0//g' | sed -e 's/\/dev\/dsk\//\/dev\/rdsk\//g'`
+	local cdrom=`$REPO/mdisco -l | uniq | sed -e 's/p0//g' | sed -e 's/\/dev\/dsk\//\/dev\/rdsk\//g'`
 
 	rmformat 2> /dev/null | grep "Logical Node:" | egrep -v -e "${cdrom}" |
 	    grep "Logical Node:" > /dev/null 2>&1
@@ -1710,7 +1710,7 @@ partitions_detect()
 	local disk=$1
 	local output="/tmp/fstyp.output"
 	local output_fs="/tmp/fstyp_good.output"
-	local cdrom=`$REPO/mdisco -l | sed -e 's/p0//g' | sed -e 's/\/dev\/dsk\///g'`
+	local cdrom=`$REPO/mdisco -l | uniq | sed -e 's/p0//g' | sed -e 's/\/dev\/dsk\///g'`
 
 	devfsadm -c disk
 	local plist=""
