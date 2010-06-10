@@ -35,6 +35,7 @@ LOCAL_ARCHIVE_DEBS=" \
 		screen dialog vim file cpio tree bzip2 joe unzip genisoimage \
 		nmc nms nms-dev nmv nmv-theme-nexenta \
 		alien nexenta-pkgcmd sunwlibc lib64z1-dev python2.4 \
+		lib64stdc++6 \
 		sunwndmpu sunwndmpr ndmpcopy \
 		sunwsmbfsu \
 		sunwstmf \
