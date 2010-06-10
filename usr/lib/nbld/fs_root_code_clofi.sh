@@ -14,6 +14,7 @@ fs_type="hsfs"
 #
 if [ -x /sbin/mdisco ]; then
 	install_srv=`/usr/sbin/prtconf -v /devices|/usr/bin/sed -n '/iso_nfs_path/{;n;p;}'|/usr/bin/sed -e "s/^\s*value=\|'//g"`
+	iso_local=`/usr/sbin/prtconf -v /devices|/usr/bin/sed -n '/iso_local/{;n;p;}'|/usr/bin/sed -e "s/^\s*value=\|'//g"`
 	/sbin/mount -o remount /
 	/usr/sbin/devfsadm -c disk
 
@@ -26,10 +27,16 @@ if [ -x /sbin/mdisco ]; then
 		dev_phys=`echo $dev_phys | uniq`
 	else
 		if test "x$install_srv" = x; then
-			dev_phys=`/sbin/mdisco -V ${livecd_volid} -l 2>/dev/msglog`
-			if [ $? != 0 ]; then
-				sleep 10
-				dev_phys=`/sbin/mdisco -l 2>/dev/msglog`
+			if test "x$iso_local" != "x"; then
+				# TODO:
+				# select partition
+				echo "$iso_local\c" >/dev/msglog
+			else
+				dev_phys=`/sbin/mdisco -V ${livecd_volid} -l 2>/dev/msglog`
+				if [ $? != 0 ]; then
+					sleep 10
+					dev_phys=`/sbin/mdisco -l 2>/dev/msglog`
+				fi
 			fi
 		else
 			dev_phys=${install_srv}

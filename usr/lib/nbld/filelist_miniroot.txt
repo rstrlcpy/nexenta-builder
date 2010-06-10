@@ -73,6 +73,10 @@ usr/lib/sysevent
 usr/sbin/lofiadm
 usr/lib/fs
 
+# drivers for PCFS
+usr/kernel/fs/pcfs
+usr/kernel/fs/amd64/pcfs
+
 # and for ZFS
 #usr/lib/fs/zfs
 #usr/lib/libvolmgt.so.1
