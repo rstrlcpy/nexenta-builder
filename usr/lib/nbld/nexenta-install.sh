@@ -86,6 +86,10 @@ ZFS_ROOTPOOL="syspool"
 ZFS_ROOTFS="$ZFS_ROOTPOOL/rootfs-nmu-000"
 ROOTDISK_TYPE="ufs"
 
+ROOTPOOL_ZVOL_DIR="/dev/zvol/dsk/$ZFS_ROOTPOOL"
+rawdump="dump"
+savecore_dir="/var/crash/dump-dir"
+
 TZDIR=/usr/share/lib/zoneinfo
 TZ_COUNTRY_TABLE=$TZDIR/tab/country.tab
 TZ_ZONE_TABLE=$TZDIR/tab/zone_sun.tab
@@ -1952,7 +1956,7 @@ process_extradebs()
 			cp ${EXTRADEBDIR}/postrm $TMPDEST/var/tmp
 			chroot $TMPDEST /usr/bin/env -i PATH=/sbin:/bin:/usr/sbin:$PATH \
 				LOGNAME=root HOME=/root TERM=xterm bash \
-				/var/tmp/postrm 2>>/tmp/extradebs_install.log 1>&2
+				/var/tmp/postrm 2>>/tmp/extradebs_remove.log 1>&2
 				printlog "Script postrm executed successfully"
 			rm -f $TMPDEST/var/tmp/postrm
 		fi
@@ -3604,6 +3608,68 @@ create_swap()
 	done
 }
 
+create_dump()
+{
+	if boolean_check $_KS_autopart_use_swap_zvol; then
+		AUTOPART_DUMP_SIZE=$(calculate_dump_size)
+		if test "x$AUTOPART_DUMP_SIZE" = "x"; then
+			printlog "DUMP Device is not created: No free space on $ZFS_ROOTPOOL"
+			printlog "SWAP will be used as DUMP Device"
+			rawdump="swap"
+		else
+			zfs create -V ${AUTOPART_DUMP_SIZE}m $ZFS_ROOTPOOL/$rawdump
+			if [ $? -eq 0 ]; then
+				printlog "DUMP Device was successfully created."
+			else 
+				printlog "DUMP Device is not created"
+				printlog "SWAP will be used as DUMP Device"
+				rawdump="swap"
+			fi
+		fi
+	fi
+}
+
+calculate_dump_size()
+{
+	phys="$(echo $result_disk_pool | awk '{print $1}')"
+	phys="/dev/rdsk/${phys}s0"
+	size="$(fdisk -G $phys | tail -1 | awk '{print $1*$5*$6*$7}')"
+	perl -e '
+		my $syspool_size = $ARGV[0]/1024/1024;
+		my $memsize = $ARGV[1];
+		my $swap_size = $ARGV[2];
+		my $dump_size = int($memsize * 0.7);
+		if ($syspool_size - $dump_size - $swap_size - 1536 < int($syspool_size * 0.3)) {
+			print "";
+		} else {
+			print "$dump_size";
+		}
+	' $size $sysmem $AUTOPART_SWAP_SIZE
+}
+
+activate_dump()
+{
+	if boolean_check $_KS_autopart_use_swap_zvol; then
+		mount -F lofs /devices $TMPDEST/devices
+		mkdir -p $TMPDEST/$savecore_dir
+		mkdir -p $TMPDEST/$ROOTPOOL_ZVOL_DIR
+		local dump_link=`readlink $ROOTPOOL_ZVOL_DIR/$rawdump`
+		cd $TMPDEST/$ROOTPOOL_ZVOL_DIR && ln -s $dump_link $rawdump && cd -
+		if test "$rawdump" = "swap"; then
+			dumpadm -c curproc -d $rawdump -z on -r \
+				$TMPDEST -s $savecore_dir 1>/dev/null
+		else
+			dumpadm -c curproc -d $ROOTPOOL_ZVOL_DIR/$rawdump -z on -r \
+				$TMPDEST -s $savecore_dir 1>/dev/null
+		fi
+		if [ $? -eq 0 ]; then
+			printlog "Crash dump service was successfully activated."
+			printlog "Dump device: $rawdump"
+		else 
+			printlog "Crash dump service not activated."
+		fi
+	fi
+}
 
 extract_args()
 {
@@ -3880,6 +3946,7 @@ while true; do
 			esac
 			apply_profile
 			create_swap
+			create_dump
 			install_base
 			customize_hdd_install
 			break
@@ -3908,6 +3975,9 @@ if test "x$slice_export_home" != x; then
 	cp /etc/zfs/zpool.cache $TMPDEST/etc/zfs
 	printlog "Slice $slice_export_home enabled to use ZFS and mountpoint set to /export/home"
 fi
+
+oneline_info "Activating crash dump service..."
+activate_dump
 
 printlog "Saving log file ..."
 cp $LOGFILE $TMPDEST/root
