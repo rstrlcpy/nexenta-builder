@@ -88,7 +88,6 @@ ROOTDISK_TYPE="ufs"
 
 ROOTPOOL_ZVOL_DIR="/dev/zvol/dsk/$ZFS_ROOTPOOL"
 rawdump="dump"
-savecore_dir="/var/crash/dump-dir"
 
 TZDIR=/usr/share/lib/zoneinfo
 TZ_COUNTRY_TABLE=$TZDIR/tab/country.tab
@@ -3614,16 +3613,14 @@ create_dump()
 		AUTOPART_DUMP_SIZE=$(calculate_dump_size)
 		if test "x$AUTOPART_DUMP_SIZE" = "x"; then
 			printlog "DUMP Device is not created: No free space on $ZFS_ROOTPOOL"
-			printlog "SWAP will be used as DUMP Device"
-			rawdump="swap"
+			rawdump=""
 		else
 			zfs create -V ${AUTOPART_DUMP_SIZE}m $ZFS_ROOTPOOL/$rawdump
 			if [ $? -eq 0 ]; then
 				printlog "DUMP Device was successfully created."
 			else 
 				printlog "DUMP Device is not created"
-				printlog "SWAP will be used as DUMP Device"
-				rawdump="swap"
+				rawdump=""
 			fi
 		fi
 	fi
@@ -3650,18 +3647,19 @@ calculate_dump_size()
 activate_dump()
 {
 	if boolean_check $_KS_autopart_use_swap_zvol; then
+		if test "x$_KS_hostname" != x; then
+			savecore_dir="/var/crash/$_KS_hostname"
+		else
+			savecore_dir="/var/crash/myhost"
+		fi
 		mount -F lofs /devices $TMPDEST/devices
 		mkdir -p $TMPDEST/$savecore_dir
+		chmod 0700 $TMPDEST/$savecore_dir
 		mkdir -p $TMPDEST/$ROOTPOOL_ZVOL_DIR
 		local dump_link=`readlink $ROOTPOOL_ZVOL_DIR/$rawdump`
 		cd $TMPDEST/$ROOTPOOL_ZVOL_DIR && ln -s $dump_link $rawdump && cd -
-		if test "$rawdump" = "swap"; then
-			dumpadm -c curproc -d $rawdump -z on -r \
-				$TMPDEST -s $savecore_dir 1>/dev/null
-		else
-			dumpadm -c curproc -d $ROOTPOOL_ZVOL_DIR/$rawdump -z on -r \
-				$TMPDEST -s $savecore_dir 1>/dev/null
-		fi
+		dumpadm -c curproc -d $ROOTPOOL_ZVOL_DIR/$rawdump -z on -r \
+			$TMPDEST -s $savecore_dir 1>/dev/null
 		if [ $? -eq 0 ]; then
 			printlog "Crash dump service was successfully activated."
 			printlog "Dump device: $rawdump"
@@ -3976,8 +3974,10 @@ if test "x$slice_export_home" != x; then
 	printlog "Slice $slice_export_home enabled to use ZFS and mountpoint set to /export/home"
 fi
 
-oneline_info "Activating crash dump service..."
-activate_dump
+if test "x$rawdump" != x; then
+	oneline_info "Activating crash dump service..."
+	activate_dump
+fi
 
 printlog "Saving log file ..."
 cp $LOGFILE $TMPDEST/root
