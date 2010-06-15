@@ -14,14 +14,12 @@ usb_mountpoint="/mnt"
 mount_usb_flash()
 {
 	disk_devices=`mdisco -ld| sed -e 's/\/dev\/dsk\///'|grep -v \`mdisco -l|sed -e 's/\/dev\/dsk\///'\``
-	echo "disk_devices = $disk_devices"
 	for disk in $disk_devices; do
 		fdisk -G /dev/removable-media/rdsk/$disk 2>/dev/null 1>&2
 		if [ $? -eq 0 ]; then
 			removable_dev="$removable_dev $disk"
 		fi
 	done
-	echo "removable_media = $removable_dev"
 	
 	for rem_dev in $removable_dev; do
 		rem_dev=`echo $rem_dev | sed -e 's/p0/p1/'`
@@ -36,10 +34,6 @@ mount_usb_flash()
 	done
 
 }
-
-iso_local="/NexentaStor.iso"
-mount_usb_flash
-exit 0
 #
 # Mount directories from CD.
 #
