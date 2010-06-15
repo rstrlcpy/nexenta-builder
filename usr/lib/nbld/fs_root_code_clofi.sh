@@ -9,6 +9,37 @@
 livecd_mnt=/.livecd
 lofidev1=/dev/lofi/1
 fs_type="hsfs"
+usb_mountpoint="/mnt"
+
+mount_usb_flash()
+{
+	disk_devices=`mdisco -ld| sed -e 's/\/dev\/dsk\///'|grep -v \`mdisco -l|sed -e 's/\/dev\/dsk\///'\``
+	echo "disk_devices = $disk_devices"
+	for disk in $disk_devices; do
+		fdisk -G /dev/removable-media/rdsk/$disk 2>/dev/null 1>&2
+		if [ $? -eq 0 ]; then
+			removable_dev="$removable_dev $disk"
+		fi
+	done
+	echo "removable_media = $removable_dev"
+	
+	for rem_dev in $removable_dev; do
+		rem_dev=`echo $rem_dev | sed -e 's/p0/p1/'`
+		echo "rem_dev = $rem_dev"
+		mount -F pcfs /dev/removable-media/dsk/$rem_dev $usb_mountpoint 2>/dev/null 1>&2
+		if [ $? -eq 0 ]; then
+			ls -1 $usb_mountpoint/$iso_local 2>/dev/null 1>&2
+			if [ $? -eq 0 ]; then
+				break
+			fi
+		fi
+	done
+
+}
+
+iso_local="/NexentaStor.iso"
+mount_usb_flash
+exit 0
 #
 # Mount directories from CD.
 #
@@ -17,23 +48,21 @@ if [ -x /sbin/mdisco ]; then
 	iso_local=`/usr/sbin/prtconf -v /devices|/usr/bin/sed -n '/iso_local/{;n;p;}'|/usr/bin/sed -e "s/^\s*value=\|'//g"`
 	/sbin/mount -o remount /
 	/usr/sbin/devfsadm -c disk
-
 	read livecd_volid < /.volid
 	platform=`/bin/uname -i 2>/dev/msglog`
 	echo "CD-ROM: \c" >/dev/msglog
 	if [ "${platform}" = "i86xpv" ]; then
 		sleep 10
-		dev_phys=`/sbin/mdisco -l 2>/dev/msglog`
-		dev_phys=`echo $dev_phys | uniq`
+		dev_phys=`/sbin/mdisco -l 2>/dev/msglog | uniq`
 	else
 		if test "x$install_srv" = x; then
 			if test "x$iso_local" != "x"; then
-				# TODO:
-				# select partition
-				echo "$iso_local\c" >/dev/msglog
+				mount_usb_flash
+				devfsadm -C
+				dev_phys=`lofiadm -a $usb_mountpoint/$iso_local`
 			else
 				dev_phys=`/sbin/mdisco -V ${livecd_volid} -l 2>/dev/msglog`
-				if [ $? != 0 ]; then
+				if [ $? -ne 0 ]; then
 					sleep 10
 					dev_phys=`/sbin/mdisco -l 2>/dev/msglog`
 				fi
@@ -44,14 +73,14 @@ if [ -x /sbin/mdisco ]; then
 			`/sbin/ifconfig -a dhcp`
 		fi
 	fi
-	if [ $? != 0 ]; then
+	if [ $? -ne 0 ]; then
 		echo "discovery failed" >/dev/msglog
 	else
 		echo "${dev_phys}" >/dev/msglog
 		install_srv=`echo ${install_srv} | sed -e "s/^[0-9.]+://"`
 		while :; do
 			/sbin/mount -F ${fs_type} ${dev_phys} ${livecd_mnt} 2>/dev/msglog
-			if [ $? != 0 ]; then
+			if [ $? -ne 0 ]; then
 				if [ "$fs_type" = "hsfs" ]; then
 					rc=1; break
 				else
@@ -65,7 +94,7 @@ if [ -x /sbin/mdisco ]; then
 				rc=0; break
 			fi
 		done
-		if [ $rc != 0 ]; then
+		if [ $rc -ne 0 ]; then
 			echo "error mounting ${livecd_mnt} on ${dev_phys}" \
 			    >/dev/msglog
 		else
@@ -80,3 +109,4 @@ if [ -x /sbin/mdisco ]; then
 		fi
 	fi
 fi
+
