@@ -4002,7 +4002,7 @@ if [ $UPGRADE -eq 0 ]; then
 		fi
 	fi
 	if test "x$auto_install" = "x1"; then
-		touch /.pxe-provisioned
+		touch $TMPDEST/.pxe-provisioned
 		nlm_key="$(extract_args nlm_key | sed -e 's/_/-/g')";
 		if test "x$nlm_key" != x; then
 			test -d "$TMPDEST/var/lib/nza" && mkdir -p $TMPDEST/var/lib/nza
