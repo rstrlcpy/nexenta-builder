@@ -26,6 +26,7 @@ devices/pseudo
 etc
 !etc/gconf
 kernel
+mnt
 lib
 platform/i86pc/kernel
 platform/i86xpv/kernel

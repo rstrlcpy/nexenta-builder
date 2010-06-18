@@ -1125,6 +1125,10 @@ autopart_ask()
 	devfsadm -c disk >/dev/null 2>&1
 	sync; sleep 3
 	local cdrom=`$REPO/mdisco -l | uniq | sed -e 's/p0//g'`
+	local exclude_cdrom_cmd="egrep -v -e \"${cdrom}\" |"
+	if test "x$cdrom" = x; then
+		exclude_cdrom_cmd=""
+	fi
 
 	while test ! -f /var/adm/messages; do
 		sleep 1
@@ -1134,11 +1138,8 @@ autopart_ask()
 
 	rm -f $TMP_FILE $TMP_DISKSIZE_FILE>/dev/null
 	touch $TMP_FILE
-	if test "x$(extract_args iso_nfs_path)" != x; then
-		test "x$cdrom" = x && cdrom=" "
-	fi
-	$REPO/mdisco -ld | uniq | sed -e 's/p0/s0/g' | egrep -v -e "${cdrom}" | sort |\
-	while read drv; do
+	local drvs=$($REPO/mdisco -ld | uniq | sed -e 's/p0/s0/g' | $exclude_cdrom_cmd sort)
+	for drv in $drvs; do
 		local vendor=""
 		local devpath=""
 		local phys=""
@@ -1391,12 +1392,16 @@ check_upgrade()
 	rmformat >/dev/null 2>&1
 
 	local cdrom=`$REPO/mdisco -l | uniq | sed -e 's/p0//g'`
+	local exclude_cdrom_cmd="egrep -v -e \"${cdrom}\" |"
+	if test "x$cdrom" = x; then
+		exclude_cdrom_cmd=""
+	fi
 
 	mkdir $TMPDEST > /dev/null 2>&1
 	rm -f $UPMAP > /dev/null 2>&1
 	touch $UPMAP
 
-	$REPO/mdisco -ld | uniq | sort | sed -e 's/p0/s0/g' | egrep -v -e "${cdrom}" |
+	$REPO/mdisco -ld | uniq | sort | sed -e 's/p0/s0/g' | $exclude_cdrom_cmd \
 	while read drv; do
 		mount -F ufs $drv $TMPDEST > /dev/null 2>&1
 
@@ -1460,8 +1465,12 @@ detect_removable()
 {
 	oneline_info "Detecting removable devices..."
 	local cdrom=`$REPO/mdisco -l | uniq | sed -e 's/p0//g' | sed -e 's/\/dev\/dsk\//\/dev\/rdsk\//g'`
+	local exclude_cdrom_cmd="egrep -v -e \"${cdrom}\" |"
+	if test "x$cdrom" = x; then
+		exclude_cdrom_cmd=""
+	fi
 
-	rmformat 2> /dev/null | grep "Logical Node:" | egrep -v -e "${cdrom}" |
+	rmformat 2> /dev/null | grep "Logical Node:" | $exclude_cdrom_cmd \
 	    grep "Logical Node:" > /dev/null 2>&1
 
 	rm -f $RDMAP > /dev/null 2>&1
@@ -1471,7 +1480,7 @@ detect_removable()
 		return 1
 	fi
 
-	rmformat 2> /dev/null | grep "Logical Node:" | egrep -v -e "${cdrom}" |
+	rmformat 2> /dev/null | grep "Logical Node:" | $exclude_cdrom_cmd \
 	nawk '/Node:/ { print $4 }' | while read drv; do
 		rmdrive_info ${drv}
 	done
@@ -1714,12 +1723,16 @@ partitions_detect()
 	local output="/tmp/fstyp.output"
 	local output_fs="/tmp/fstyp_good.output"
 	local cdrom=`$REPO/mdisco -l | uniq | sed -e 's/p0//g' | sed -e 's/\/dev\/dsk\///g'`
+	local exclude_cdrom_cmd="egrep -v \"${cdrom}\" |"
+	if test "x$cdrom" = x; then
+		exclude_cdrom_cmd=""
+	fi
 
 	devfsadm -c disk
 	local plist=""
 	for f in `find /dev/dsk`; do
 		echo $f | grep -v $disk >/dev/null && continue
-		if echo $f | egrep -v "$cdrom" | egrep -v "s2$" | egrep -v "s8$" | egrep -v "s9$" | egrep "[0-9]s[0-9]" >/dev/null; then
+		if echo $f | $exclude_cdrom_cmd egrep -v "s2$" | egrep -v "s8$" | egrep -v "s9$" | egrep "[0-9]s[0-9]" >/dev/null; then
 			if fstyp $f 1>&2 2>$output 1>$output_fs; then
 				plist="$plist $f<$(slice_tag $f)>:unassigned"
 			elif ! cat $output | grep "cannot open" > /dev/null &&
