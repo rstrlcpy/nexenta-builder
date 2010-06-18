@@ -1124,11 +1124,7 @@ autopart_ask()
 	rmformat >/dev/null 2>&1
 	devfsadm -c disk >/dev/null 2>&1
 	sync; sleep 3
-	local cdrom=`$REPO/mdisco -l | uniq | sed -e 's/p0//g'`
-	local exclude_cdrom_cmd="egrep -v -e \"${cdrom}\" |"
-	if test "x$cdrom" = x; then
-		exclude_cdrom_cmd=""
-	fi
+	local cdrom=`$REPO/mdisco -l | uniq | sed -e 's/p0/s0/g'`
 
 	while test ! -f /var/adm/messages; do
 		sleep 1
@@ -1138,8 +1134,9 @@ autopart_ask()
 
 	rm -f $TMP_FILE $TMP_DISKSIZE_FILE>/dev/null
 	touch $TMP_FILE
-	local drvs=$($REPO/mdisco -ld | uniq | sed -e 's/p0/s0/g' | $exclude_cdrom_cmd sort)
+	local drvs=$($REPO/mdisco -ld | uniq | sed -e 's/p0/s0/g' | sort)
 	for drv in $drvs; do
+		echo $cdrom | grep $drv 2>/dev/null 1>&2 && continue
 		local vendor=""
 		local devpath=""
 		local phys=""
@@ -1391,20 +1388,16 @@ check_upgrade()
 	# mdisco cannot detect hard disks without rmformat?
 	rmformat >/dev/null 2>&1
 
-	local cdrom=`$REPO/mdisco -l | uniq | sed -e 's/p0//g'`
-	local exclude_cdrom_cmd="egrep -v -e \"${cdrom}\" |"
-	if test "x$cdrom" = x; then
-		exclude_cdrom_cmd=""
-	fi
+	local cdrom=`$REPO/mdisco -l | uniq | sed -e 's/p0/s0/g'`
 
 	mkdir $TMPDEST > /dev/null 2>&1
 	rm -f $UPMAP > /dev/null 2>&1
 	touch $UPMAP
 
-	$REPO/mdisco -ld | uniq | sort | sed -e 's/p0/s0/g' | $exclude_cdrom_cmd \
+	$REPO/mdisco -ld | uniq | sort | sed -e 's/p0/s0/g' |
 	while read drv; do
+		echo $cdrom | grep $drv 2>/dev/null 1>&2 && continue
 		mount -F ufs $drv $TMPDEST > /dev/null 2>&1
-
 		if [ $? -eq 0 ]; then
 			check_nexenta_drive $drv $TMPDEST
 			umount $TMPDEST > /dev/null 2>&1
@@ -1464,14 +1457,9 @@ check_upgrade()
 detect_removable()
 {
 	oneline_info "Detecting removable devices..."
-	local cdrom=`$REPO/mdisco -l | uniq | sed -e 's/p0//g' | sed -e 's/\/dev\/dsk\//\/dev\/rdsk\//g'`
-	local exclude_cdrom_cmd="egrep -v -e \"${cdrom}\" |"
-	if test "x$cdrom" = x; then
-		exclude_cdrom_cmd=""
-	fi
+	local cdrom=`$REPO/mdisco -l | uniq | sed -e 's/\/dev\/dsk\//\/dev\/rdsk\//g'`
 
-	rmformat 2> /dev/null | grep "Logical Node:" | $exclude_cdrom_cmd \
-	    grep "Logical Node:" > /dev/null 2>&1
+	rmformat 2>/dev/null 1>&2
 
 	rm -f $RDMAP > /dev/null 2>&1
 	touch $RDMAP
@@ -1480,8 +1468,9 @@ detect_removable()
 		return 1
 	fi
 
-	rmformat 2> /dev/null | grep "Logical Node:" | $exclude_cdrom_cmd \
+	rmformat 2> /dev/null | grep "Logical Node:" |
 	nawk '/Node:/ { print $4 }' | while read drv; do
+		echo $cdrom | grep $drv 2>/dev/null 1>&2 && continue
 		rmdrive_info ${drv}
 	done
 	return 0
