@@ -1125,6 +1125,11 @@ autopart_ask()
 	devfsadm -c disk >/dev/null 2>&1
 	sync; sleep 3
 	local cdrom=`$REPO/mdisco -l | uniq | sed -e 's/p0/s0/g'`
+	local iso_usb="$(extract_args iso_usb)"
+	if test "x$iso_usb" != x; then
+		iso_usb=`basename \`mount | egrep "^/mnt" | awk '{print $3}' | sed -e 's/p1/s0/'\``
+		iso_usb="/dev/rdsk/$iso_usb"
+	fi
 
 	while test ! -f /var/adm/messages; do
 		sleep 1
@@ -1136,6 +1141,7 @@ autopart_ask()
 	touch $TMP_FILE
 	local drvs=$($REPO/mdisco -ld | uniq | sed -e 's/p0/s0/g' | sort)
 	for drv in $drvs; do
+		test "$drv" = "$iso_usb" && continue
 		echo $cdrom | grep $drv 2>/dev/null 1>&2 && continue
 		local vendor=""
 		local devpath=""
