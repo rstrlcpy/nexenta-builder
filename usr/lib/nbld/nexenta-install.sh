@@ -3667,7 +3667,7 @@ activate_dump()
 		local dump_link=`readlink $ROOTPOOL_ZVOL_DIR/$rawdump`
 		cd $TMPDEST/$ROOTPOOL_ZVOL_DIR && ln -s $dump_link $rawdump && cd -
 		dumpadm -c curproc -d $ROOTPOOL_ZVOL_DIR/$rawdump -z on -r \
-			$TMPDEST -s $savecore_dir 1>/dev/null
+			$TMPDEST -s $savecore_dir -m 20% 1>/dev/null
 		if [ $? -eq 0 ]; then
 			printlog "Crash dump service was successfully activated."
 			printlog "Dump device: $rawdump"
