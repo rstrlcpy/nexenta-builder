@@ -53,6 +53,7 @@ LOCAL_ARCHIVE_DEBS=" \
 # Various installer-specific settings
 # (see nbld-bootstrap source code for details)
 #
+company_title="Nexenta"
 product_title="NexentaStor"
 model_id="STOR_UNIFIED"
 model_name="ZFS Storage Appliance"
