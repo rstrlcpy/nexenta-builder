@@ -2341,6 +2341,9 @@ configure_network()
 					ipaddress=${_KS_iface_ip[$ifnum]}
 					netmask=${_KS_iface_mask[$ifnum]}
 					static_ifnames[$ifnum]=$ifname
+				else
+					(( ifnum = ifnum + 1 ))
+					continue
 				fi
 			fi
 
