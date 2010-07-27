@@ -1010,6 +1010,8 @@ autopart()
 
 	local root_cyls=$(($AUTOPART_ROOT_SIZE*1024*1024/$csize))
 	local swap_cyls=$(($swap_bytes/$csize))
+	local add_cyls=$((1*1024*1024/$csize))
+	test "x$add_cyls" = "x0" && add_cyls=1
 	local min_export_cyls=$(($AUTOPART_MIN_EXPORT*1024*1024/$csize))
 	local d="$(echo $disk|sed -e 's;/dev/dsk/\(c[0-9]\+.*d[0-9]\+\).*;\1;')"
 
@@ -1028,8 +1030,13 @@ autopart()
 		echo root >> $AUTOPART_CMD_FILE
 		echo wm >> $AUTOPART_CMD_FILE
 		echo 3 >> $AUTOPART_CMD_FILE
-		echo $(($cyls-4))c >> $AUTOPART_CMD_FILE
-		printlog "Slice0: / $(($cyls-4)) cylinders"
+		echo $(($cyls-$add_cyls-8))c >> $AUTOPART_CMD_FILE
+		printlog "Slice0: / $(($cyls-$add_cyls-8)) cylinders"
+		echo 3 >> $AUTOPART_CMD_FILE
+		echo add >> $AUTOPART_CMD_FILE
+		echo wu >> $AUTOPART_CMD_FILE
+		echo $(($cyls-$add_cyls-5))
+		echo ${add_cyls}c >> $AUTOPART_CMD_FILE
 		echo q >> $AUTOPART_CMD_FILE
 		echo label >> $AUTOPART_CMD_FILE
 		echo 0 >> $AUTOPART_CMD_FILE
