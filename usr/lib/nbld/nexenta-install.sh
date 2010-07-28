@@ -1033,7 +1033,7 @@ autopart()
 		echo $(($cyls-$add_cyls-8))c >> $AUTOPART_CMD_FILE
 		printlog "Slice0: / $(($cyls-$add_cyls-8)) cylinders"
 		echo 3 >> $AUTOPART_CMD_FILE
-		echo add >> $AUTOPART_CMD_FILE
+		echo alternates >> $AUTOPART_CMD_FILE
 		echo wu >> $AUTOPART_CMD_FILE
 		echo $(($cyls-$add_cyls-5)) >> $AUTOPART_CMD_FILE
 		echo ${add_cyls}c >> $AUTOPART_CMD_FILE
