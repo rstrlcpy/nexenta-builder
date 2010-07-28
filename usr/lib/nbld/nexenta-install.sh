@@ -1035,7 +1035,7 @@ autopart()
 		echo 3 >> $AUTOPART_CMD_FILE
 		echo add >> $AUTOPART_CMD_FILE
 		echo wu >> $AUTOPART_CMD_FILE
-		echo $(($cyls-$add_cyls-5))
+		echo $(($cyls-$add_cyls-5)) >> $AUTOPART_CMD_FILE
 		echo ${add_cyls}c >> $AUTOPART_CMD_FILE
 		echo q >> $AUTOPART_CMD_FILE
 		echo label >> $AUTOPART_CMD_FILE
