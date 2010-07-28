@@ -1030,12 +1030,12 @@ autopart()
 		echo root >> $AUTOPART_CMD_FILE
 		echo wm >> $AUTOPART_CMD_FILE
 		echo 3 >> $AUTOPART_CMD_FILE
-		echo $(($cyls-$add_cyls-8))c >> $AUTOPART_CMD_FILE
+		echo $(($cyls-$add_cyls-4))c >> $AUTOPART_CMD_FILE
 		printlog "Slice0: / $(($cyls-$add_cyls-8)) cylinders"
 		echo 3 >> $AUTOPART_CMD_FILE
 		echo alternates >> $AUTOPART_CMD_FILE
 		echo wu >> $AUTOPART_CMD_FILE
-		echo $(($cyls-$add_cyls-5)) >> $AUTOPART_CMD_FILE
+		echo $(($cyls-$add_cyls-1)) >> $AUTOPART_CMD_FILE
 		echo ${add_cyls}c >> $AUTOPART_CMD_FILE
 		echo q >> $AUTOPART_CMD_FILE
 		echo label >> $AUTOPART_CMD_FILE
@@ -2349,8 +2349,7 @@ configure_network()
 					netmask=${_KS_iface_mask[$ifnum]}
 					static_ifnames[$ifnum]=$ifname
 				else
-					(( ifnum = ifnum + 1 ))
-					continue
+					break
 				fi
 			fi
 
@@ -2368,6 +2367,8 @@ configure_network()
 				break
 			fi
 		done
+
+		test "x$ipaddress" = x -a "x$netmask" = x && continue
 
 		if test $use_dhcp != 0; then
 			touch $TMPDEST/etc/hostname.$ifname
