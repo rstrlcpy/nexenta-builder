@@ -1014,6 +1014,7 @@ autopart()
 	test "x$add_cyls" = "x0" && add_cyls=1
 	local min_export_cyls=$(($AUTOPART_MIN_EXPORT*1024*1024/$csize))
 	local d="$(echo $disk|sed -e 's;/dev/dsk/\(c[0-9]\+.*d[0-9]\+\).*;\1;')"
+	local slice_s3=""
 
 	if test $fstype = "zfs"; then
 		zpool create -f -m legacy tmp $d || printlog "Cannot create temporary ZFS pool on disk '$d'"
@@ -1031,7 +1032,7 @@ autopart()
 		echo wm >> $AUTOPART_CMD_FILE
 		echo 3 >> $AUTOPART_CMD_FILE
 		echo $(($cyls-$add_cyls-4))c >> $AUTOPART_CMD_FILE
-		printlog "Slice0: / $(($cyls-$add_cyls-8)) cylinders"
+		printlog "Slice0: / $(($cyls-$add_cyls-4)) cylinders"
 		echo 3 >> $AUTOPART_CMD_FILE
 		echo alternates >> $AUTOPART_CMD_FILE
 		echo wu >> $AUTOPART_CMD_FILE
@@ -1041,6 +1042,7 @@ autopart()
 		echo label >> $AUTOPART_CMD_FILE
 		echo 0 >> $AUTOPART_CMD_FILE
 		echo q >> $AUTOPART_CMD_FILE
+		slice_s3="1"
 	else
 		echo p > $AUTOPART_CMD_FILE
 		echo 0 >> $AUTOPART_CMD_FILE
@@ -1083,7 +1085,9 @@ autopart()
 			return 1
 		fi
 	fi
-
+	if test "x$slice_s3" = x1; then
+		dd if=/dev/zero of=/dev/rdsk/${d}s3 2>/dev/null 1>&2
+	fi
 	if test $fstype = "ufs"; then
 		slice_root=$disk
 		slice_swap="$(echo $disk|sed -e 's/s0/s7/')"
