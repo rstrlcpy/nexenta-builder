@@ -2372,7 +2372,10 @@ configure_network()
 			fi
 		done
 
-		test "x$ipaddress" = x -a "x$netmask" = x && continue
+		if test "x$ipaddress" = x -a "x$netmask" = x; then
+			(( ifnum = ifnum + 1 ))
+			continue
+		fi
 
 		if test $use_dhcp != 0; then
 			touch $TMPDEST/etc/hostname.$ifname
