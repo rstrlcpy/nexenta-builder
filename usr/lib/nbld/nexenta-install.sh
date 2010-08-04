@@ -4039,7 +4039,7 @@ if [ $UPGRADE -eq 0 ]; then
 fi
 
 if test "x$machinesig" != x; then
-	machinesig -s $machinesig
+	$REPO/machinesig -s $machinesig
 fi
 
 if test -d ${EXTRADEBDIR}; then
