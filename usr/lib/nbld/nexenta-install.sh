@@ -4038,6 +4038,10 @@ if [ $UPGRADE -eq 0 ]; then
 	fi
 fi
 
+if test "x$machinesig" != x; then
+	machinesig -s $machinesig
+fi
+
 if test -d ${EXTRADEBDIR}; then
 	process_extradebs
 fi
