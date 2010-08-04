@@ -25,7 +25,7 @@ STAGE0_EXCLUDE_DEBS="alien sunwmpsvplr sunwmpathadm python nexenta-pkgcmd dpkg-d
 #               (generally speaking, this is Installer requirements)
 #
 STAGE0_DEBS="screen dialog debootstrap wget sunwsshu sunwsshdu sunwesu sunwixgbe \
-	     file cpio genisoimage sed sunwcsu"
+	     file cpio genisoimage sed sunwcsu machinesig"
 
 #
 # LOCAL_ARCHIVE_DEBS - the content of on-ISO APT repository
