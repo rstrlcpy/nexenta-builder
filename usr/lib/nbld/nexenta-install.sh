@@ -3749,6 +3749,9 @@ fi
 DEFAULT_PROFILE=${_KS_profile_name[$_KS_profile_selected]}
 TITLE=$_KS_product_title
 if test -f $REPO/machinesig; then
+	devfsadm -c disk 2>/dev/null 1>&2
+	rmformat 2>/dev/null 1>&2
+	sync
 	machinesig="-`$REPO/machinesig`"
 fi
 DIALOG="$(dialog_cmd)"
