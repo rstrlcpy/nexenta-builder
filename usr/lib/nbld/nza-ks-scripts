@@ -50,21 +50,6 @@ _KS_callback_post_install()
 	# Make sure no kernel/user logging goes to the /dev/console
 	sed -i -e "/\/dev\/sysmsg/d" $TMPDEST/etc/syslog.conf
 
-	# J.L. wrote:
-	#
-	#	I was getting a lot of these on sram:
-	#
-	#	klmops: NOTICE: lm_block_lock: nlm4, couldn't reserve svc thread: clnt
-	#
-	#	And asked on the nfs-discuss list. The default LOCKD_SERVERS=20 in / 
-	#	etc/default/nfs was likely too low (the client hitting this was a  
-	#       mail server) and so I increased this to 30. Likely we'll want to have  
-	#	to default set even higher for a NAS (512?)
-	sed -i -e "s/LOCKD_SERVERS.*=.*/LOCKD_SERVERS=512/" $TMPDEST/etc/default/nfs
-	#
-	# For reference see ticket HHV-441000 - same, need to increase NFSD servers
-	sed -i -e "s/NFSD_SERVERS.*=.*/NFSD_SERVERS=256/" $TMPDEST/etc/default/nfs
-
 	# accept negative timestamps over NFS
 	echo "set nfs:nfs_allow_preepoch_time = 1" >> $TMPDEST/etc/system
 
