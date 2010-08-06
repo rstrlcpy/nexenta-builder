@@ -102,12 +102,13 @@ result_disk_pool=""
 result_disk_spare=""
 
 auto_install=""
-machinesig=""
+msig=""
+msig_w=""
 dialog_cmd() {
-	echo dialog\ --backtitle\ $TITLE-Installer$machinesig\ --keep-window\ --colors\ --no-signals\ --no-escape
+	echo dialog\ --backtitle\ $TITLE-Installer$msig\ --keep-window\ --colors\ --no-signals\ --no-escape
 }
 dialog_cmd_with_escape() {
-	echo dialog\ --backtitle\ $TITLE-Installer$machinesig\ --keep-window\ --colors\ --no-signals
+	echo dialog\ --backtitle\ $TITLE-Installer$msig\ --keep-window\ --colors\ --no-signals
 }
 DIALOG_WITH_ESC="$(dialog_cmd_with_escape)"
 DIALOG="$(dialog_cmd)"
@@ -3752,7 +3753,8 @@ if test -f $REPO/machinesig; then
 	devfsadm -c disk 2>/dev/null 1>&2
 	rmformat 2>/dev/null 1>&2
 	sync
-	machinesig="-`$REPO/machinesig`"
+	msig_w=`$REPO/machinesig`
+	msig="-$msig_w"
 fi
 DIALOG="$(dialog_cmd)"
 DIALOG_WITH_ESC="$(dialog_cmd_with_escape)"
@@ -4041,8 +4043,8 @@ if [ $UPGRADE -eq 0 ]; then
 	fi
 fi
 
-if test "x$machinesig" != x; then
-	$REPO/machinesig -s $machinesig
+if test "x$msig_w" != x; then
+	$REPO/machinesig -s $msig_w
 fi
 
 if test -d ${EXTRADEBDIR}; then
