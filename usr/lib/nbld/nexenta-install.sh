@@ -1023,6 +1023,7 @@ autopart()
 		if ! zdb -l /dev/rdsk/${d}s0 | grep devid >/dev/null; then
 			printlog "Warning! Disk '$d' is not labeled correctly: devid is missing"
 		fi
+		dd if=/dev/zero of=/dev/rdsk/${d}p0 bs=512 count=10000 2>/dev/null 1>&2
 	fi
 	fdisk -B ${d}p0 2>/dev/null
 
@@ -3025,6 +3026,7 @@ update_boot_archive()
 	printlog "Boot archive created: /platform/i86pc/boot_archive"
 	cp -a $REPO/x86.miniroot-safe $TMPDEST/boot
 	printlog "Safe Boot archive created: /boot/x86.miniroot-safe"
+	rm -f $TMPDEST/etc/zfs/zpool.cache
 }
 
 cleanup_after_install()
