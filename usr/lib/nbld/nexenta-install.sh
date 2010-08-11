@@ -103,7 +103,6 @@ result_disk_spare=""
 
 auto_install=""
 msig=""
-msig_w=""
 dialog_cmd() {
 	echo dialog\ --backtitle\ $TITLE-Installer$msig\ --keep-window\ --colors\ --no-signals\ --no-escape
 }
@@ -3755,8 +3754,7 @@ if test -f $REPO/machinesig; then
 	devfsadm -c disk 2>/dev/null 1>&2
 	rmformat 2>/dev/null 1>&2
 	sync
-	msig_w=`$REPO/machinesig`
-	msig="-$msig_w"
+	msig="-`$REPO/machinesig`"
 fi
 DIALOG="$(dialog_cmd)"
 DIALOG_WITH_ESC="$(dialog_cmd_with_escape)"
@@ -4043,10 +4041,6 @@ if [ $UPGRADE -eq 0 ]; then
 	       		echo $nlm_key > $TMPDEST/var/lib/nza/nlm.key
 		fi
 	fi
-fi
-
-if test "x$msig_w" != x; then
-	$REPO/machinesig -s $msig_w
 fi
 
 if test -d ${EXTRADEBDIR}; then
