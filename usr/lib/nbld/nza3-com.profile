@@ -36,7 +36,7 @@ LOCAL_ARCHIVE_DEBS=" \
 		nmc nms nms-dev nmv nmv-theme-nexenta \
 		alien nexenta-pkgcmd sunwlibc lib64z1-dev python2.4 \
 		lib64stdc++6 \
-		sunwndmpu sunwndmpr ndmpcopy \
+		sunwndmpu sunwndmpr ndmpcopy smartmontools \
 		sunwsmbfsu \
 		sunwstmf \
 		sunwscpu \
