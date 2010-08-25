@@ -2594,11 +2594,11 @@ customize_hdd_install()
 
 	# We need device reconfiguration
 	touch $TMPDEST/reconfigure
-	printlog "Toching /reconfigure to force device reconfiguration"
+	printlog "Touching /reconfigure to force device reconfiguration"
 
 	# Tell NFS4 to not prompt us for default domain
 	touch $TMPDEST/etc/.NFS4inst_state.domain
-	printlog "Toching /etc/.NFS4inst_state.domain to NFS4 not to prompt for domain"
+	printlog "Touching /etc/.NFS4inst_state.domain to NFS4 not to prompt for domain"
 
 	# Prepare system to use DNS
 	touch $TMPDEST/etc/resolv.conf

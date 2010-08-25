@@ -500,7 +500,7 @@ EOF
 	mv $rootdir/etc/syslog.conf $rootdir/etc/syslog.conf.unmodified
 	cp $customdir/nexenta-syslog.conf $rootdir/etc/syslog.conf
 	chmod 644 $rootdir/etc/syslog.conf
-	cp $customdir/$release_file $rootdir/etc/release
+	test "x$release_file" != "x" && cp $customdir/$release_file $rootdir/etc/release
 	chmod 444 $rootdir/etc/release
 	echo "export TERM=sun-color" >> $rootdir/root/.bash_profile
 	cat << EOF > $rootdir$hddrepo/install-base.sh
