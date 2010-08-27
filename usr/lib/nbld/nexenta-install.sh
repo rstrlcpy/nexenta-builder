@@ -1204,12 +1204,21 @@ autopart_ask()
 	rm -f $TMP_FILE >/dev/null
 	if test "x$auto_install" = "x1"; then
 		for dev_id in `echo $syspool_luns | sed -e "s/~~/ /g"`; do
-			result_disk_pool="$result_disk_pool $(get_lun_by_device_id $dev_id)"
+			if test `echo $dev_id | egrep "^c[0-9]{1,2}\w*d[0-9]{1,2}$"`; then
+				result_disk_pool="$result_disk_pool $dev_id"
+			else
+				result_disk_pool="$result_disk_pool $(get_lun_by_device_id $dev_id)"
+			fi
 		done
 		printlog "Selected disk(s) for auto partitioning: $(echo $result_disk_pool)"
 		if test "x$syspool_spare" != "x"; then
 			for dev_id in `echo $syspool_spare | sed -e "s/~~/ /g"`; do
-				result_disk_spare="$result_disk_spare $(get_lun_by_device_id $dev_id)"
+				if test `echo $dev_id | egrep "^c[0-9]{1,2}\w*d[0-9]{1,2}$"`; then
+					result_disk_spare="$result_disk_spare $dev_id"
+				else
+					result_disk_spare="$result_disk_spare $(get_lun_by_device_id $dev_id)"
+				fi
+
 			done
 			printlog "Selected disk(s) for hot-spare: $(echo $result_disk_spare)"
 		fi
