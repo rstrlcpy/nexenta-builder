@@ -3769,11 +3769,28 @@ DIALOG="$(dialog_cmd)"
 DIALOG_WITH_ESC="$(dialog_cmd_with_escape)"
 
 rm -f $TMP_FILE
+ssh_enable=0
+if test "x$(extract_args ssh_enable)" != x; then
+	ssh_enable=1
+	ssh_port="$(extract_args ssh_port)"
+fi
 
 svcadm disable network/ipsec/ipsecalgs > /dev/null 2>&1
 svcadm disable network/ipsec/policy > /dev/null 2>&1
 svcadm disable system/name-service-cache > /dev/null 2>&1
 svcadm disable ssh > /dev/null 2>&1
+if test "x$ssh_enable" != "x0"; then
+	echo $ssh_port | egrep "^[0-9]+$" 2>/dev/null 1>&2
+	if test $? -eq 0 -a test $ssh_port -gt 1024;
+		egrep "^[[:space:]]*Port[[:space:]]+[0-9]+$" /etc/ssh/sshd_config 2>/dev/null 1>&2
+		if test $? -eq 0; then
+			sed -e "s/^\s*Port\s\+[0-9]\+/Port $ssh_port/" -i /etc/ssh/sshd_config
+		else
+			echo Port $ssh_port >> /etc/ssh/sshd_config
+		fi
+	fi
+	svcadm enable -s ssh > /dev/null 2>&1
+fi
 sleep 5
 svcadm disable system-log > /dev/null 2>&1
 svcadm enable -s system-log > /dev/null 2>&1
