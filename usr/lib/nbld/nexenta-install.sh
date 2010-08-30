@@ -3781,7 +3781,7 @@ svcadm disable system/name-service-cache > /dev/null 2>&1
 svcadm disable ssh > /dev/null 2>&1
 if test "x$ssh_enable" != "x0"; then
 	echo $ssh_port | egrep "^[0-9]+$" 2>/dev/null 1>&2
-	if test $? -eq 0 -a test $ssh_port -gt 1024;
+	if test $? -eq 0 -a $ssh_port -gt 1024; then
 		egrep "^[[:space:]]*Port[[:space:]]+[0-9]+$" /etc/ssh/sshd_config 2>/dev/null 1>&2
 		if test $? -eq 0; then
 			sed -e "s/^\s*Port\s\+[0-9]\+/Port $ssh_port/" -i /etc/ssh/sshd_config
