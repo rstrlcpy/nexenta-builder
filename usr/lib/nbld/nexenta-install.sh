@@ -1945,7 +1945,7 @@ process_extradebs()
 	chrootenv="/usr/bin/env -i PATH=/sbin:/bin:/usr/sbin:$PATH LOGNAME=root HOME=/root TERM=xterm"
 	chroot $TMPDEST $chrootenv /usr/sbin/mount /proc
 	packages_full=$(find ${EXTRADEBDIR} -name *.deb)
-	if test "x$packages_full" != "x"; then 
+	if test "x$packages_full" != "x"; then
 		oneline_info "Installing the extra packages. Please wait..."
 		packages=""
 		for package in $packages_full; do
@@ -2286,7 +2286,7 @@ configure_network()
 			$DIALOG --title " Input form " \
 				--form " Host identification: " 12 50 5 \
 				"Host name:" 2 2 myhost 2 16 30 30 \
-				"Domain name:" 4 2 mydomain 4 16 30 30 2>$DIALOG_RES
+				"Domain name:" 4 2 mydomain.com 4 16 30 30 2>$DIALOG_RES
 			hostname=$(cat $DIALOG_RES|head -1)
 			domainname=$(cat $DIALOG_RES|tail -1)
 			oneline_Yn_ask "Are you done with host identification?"
@@ -2299,7 +2299,7 @@ configure_network()
 	fi
 
 	test "x$hostname" = x && hostname="myhost"
-	test "x$domainname" = x && domainname="mydomain"
+	test "x$domainname" = x && domainname="mydomain.com"
 
 	# Create system's node name
 	echo "$hostname" > $TMPDEST/etc/nodename
@@ -3655,7 +3655,7 @@ create_dump()
 			zfs create -V ${AUTOPART_DUMP_SIZE}m $ZFS_ROOTPOOL/$rawdump
 			if [ $? -eq 0 ]; then
 				printlog "DUMP Device was successfully created."
-			else 
+			else
 				printlog "DUMP Device is not created"
 				rawdump=""
 			fi
@@ -3700,7 +3700,7 @@ activate_dump()
 		if [ $? -eq 0 ]; then
 			printlog "Crash dump service was successfully activated."
 			printlog "Dump device: $rawdump"
-		else 
+		else
 			printlog "Crash dump service not activated."
 		fi
 	fi
@@ -3711,7 +3711,7 @@ extract_args()
 	echo "$(/usr/sbin/prtconf -v /devices|/usr/bin/sed -n "/$1/{;n;p;}"|/usr/bin/sed -e "s/^\s*value=\|'//g")"
 }
 
-get_lun_by_device_id() 
+get_lun_by_device_id()
 {
 	perl -e '
 		my $found;
@@ -3733,12 +3733,12 @@ round_disk_size()
 {
 	perl -e '
 		my $unrounded = $ARGV[0]/1024/1024/1024;
-		my $rounded = sprintf("%.2f", $unrounded); 
+		my $rounded = sprintf("%.2f", $unrounded);
 		print $rounded;
 		' $1
 }
 
-compare_size() 
+compare_size()
 {
 	perl -e '
 		if ($ARGV[1] <= ($ARGV[0] + 0.2) && $ARGV[1] >= ($ARGV[0] - 0.2)) {
