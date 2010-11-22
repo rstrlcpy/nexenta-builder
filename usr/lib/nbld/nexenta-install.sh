@@ -102,12 +102,12 @@ result_disk_pool=""
 result_disk_spare=""
 
 auto_install=""
-msig=""
+MACHINESIG=""
 dialog_cmd() {
-	echo dialog\ --backtitle\ $TITLE-Installer$msig\ --keep-window\ --colors\ --no-signals\ --no-escape
+	echo dialog\ --backtitle\ $TITLE-Installer-$MACHINESIG\ --keep-window\ --colors\ --no-signals\ --no-escape
 }
 dialog_cmd_with_escape() {
-	echo dialog\ --backtitle\ $TITLE-Installer$msig\ --keep-window\ --colors\ --no-signals
+	echo dialog\ --backtitle\ $TITLE-Installer-$MACHINESIG\ --keep-window\ --colors\ --no-signals
 }
 DIALOG_WITH_ESC="$(dialog_cmd_with_escape)"
 DIALOG="$(dialog_cmd)"
@@ -1995,6 +1995,36 @@ process_extradebs()
 	chroot $TMPDEST $chrootenv /usr/sbin/umount /proc 2>/dev/null
 }
 
+msig_setup()
+{
+	while :; do
+		$DIALOG --title " Input form " \
+			--form " Machine Signature: " 10 30 3 \
+			"Msig:" 2 2 "$MACHINESIG" 2 10 10 9 2>$DIALOG_RES
+		if test $? == 0; then
+			local msig=$(dialog_res)
+			echo $msig | egrep "^[A-Z0-9]{9}$" 2>/dev/null 1>&2
+			if test $? == 0; then
+				if test "$msig" == $MACHINESIG; then
+					oneline_yN_ask "MACHINESIG will not be changed. Do you agree?"
+					test $? = $DIALOG_OK && break;
+					continue
+				fi
+				MACHINESIG=$msig
+				oneline_msgbox "Information" "New MACHINESIG: $MACHINESIG"
+				DIALOG="$(dialog_cmd)"
+				DIALOG_WITH_ESC="$(dialog_cmd_with_escape)"
+				break
+			else
+				oneline_msgbox Error "Entered MACHINESIG is incorrect"
+				continue
+			fi
+		else
+			oneline_msgbox "Information" "Will use MACHINESIG: $MACHINESIG"
+			break
+		fi
+	done
+}
 
 loopback_mnt()
 {
@@ -3763,7 +3793,7 @@ if test -f $REPO/machinesig; then
 	devfsadm -c disk 2>/dev/null 1>&2
 	rmformat 2>/dev/null 1>&2
 	sync
-	msig="-`$REPO/machinesig`"
+	export MACHINESIG="`$REPO/machinesig`"
 fi
 DIALOG="$(dialog_cmd)"
 DIALOG_WITH_ESC="$(dialog_cmd_with_escape)"
@@ -4003,6 +4033,9 @@ while true; do
 			create_swap
 			create_dump
 			install_base
+			if test "x$_KS_msig_setup_enable" != "x"; then
+				msig_setup
+			fi
 			customize_hdd_install
 			break
 		done
@@ -4090,6 +4123,8 @@ fi
 
 oneline_info "Updating Boot Archive..."
 update_boot_archive
+
+test -f $REPO/machinesig && $REPO/machinesig
 
 if [ $UPGRADE -eq 0 ]; then
 	if test $ROOTDISK_TYPE = "zfs"; then
