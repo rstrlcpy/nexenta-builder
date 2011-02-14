@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 #
-# Copyright 2006 Nexenta Systems, Inc.  All rights reserved.
+# Copyright 2006-2011 Nexenta Systems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -433,20 +433,28 @@ sub read_devs()
 		$devs[$i][$CLASS_NAME] = $cname;
 
 		my $pci_ids = "pci$devs[$i][$VENDOR_ID]\,$devs[$i][$DEVICE_ID]";
+		my $pci_ids_2 = $pci_ids; $pci_ids_2 =~ s/pci0?(.*),0?(.*)/pci$1,$2/;
 
 		my $pciex_ids = "pciex$devs[$i][$VENDOR_ID]\,$devs[$i][$DEVICE_ID]";
+		my $pciex_ids_2 = $pciex_ids; $pciex_ids_2 =~ s/pciex0?(.*),0?(.*)/pciex$1,$2/;
 
 		my $pci_subids = '';
-		$pci_subids = "pci$devs[$i][$SUBSYSTEM_VENDOR_ID]\,$devs[$i][$SUBSYSTEM_ID]"
-			if (defined $devs[$i][$SUBSYSTEM_VENDOR_ID] && defined $devs[$i][$SUBSYSTEM_ID]);
-
+		my $pci_subids_2 = '';
 		my $pciex_subids = '';
-		$pciex_subids = "pciex$devs[$i][$SUBSYSTEM_VENDOR_ID]\,$devs[$i][$SUBSYSTEM_ID]"
-			if (defined $devs[$i][$SUBSYSTEM_VENDOR_ID] && defined $devs[$i][$SUBSYSTEM_ID]);
-
+		my $pciex_subids_2 = '';
 		my $pci_fullids = '';
-		$pci_fullids = "pci$devs[$i][$VENDOR_ID]\,$devs[$i][$DEVICE_ID]\.$devs[$i][$SUBSYSTEM_VENDOR_ID]\.$devs[$i][$SUBSYSTEM_ID]"
-			if (defined $devs[$i][$SUBSYSTEM_VENDOR_ID] && defined $devs[$i][$SUBSYSTEM_ID]);
+		my $pci_fullids_2 = '';
+
+		if (defined $devs[$i][$SUBSYSTEM_VENDOR_ID] && defined $devs[$i][$SUBSYSTEM_ID]) {
+			$pci_subids = "pci$devs[$i][$SUBSYSTEM_VENDOR_ID]\,$devs[$i][$SUBSYSTEM_ID]";
+			$pci_subids_2 = $pci_subids; $pci_subids_2 =~ s/pci0?(.*),0?(.*)/pci$1,$2/;
+
+			$pciex_subids = "pciex$devs[$i][$SUBSYSTEM_VENDOR_ID]\,$devs[$i][$SUBSYSTEM_ID]";
+			$pciex_subids_2 = $pciex_subids; $pciex_subids_2 =~ s/pciex0?(.*),0?(.*)/pciex$1,$2/;
+
+			$pci_fullids = "pci$devs[$i][$VENDOR_ID]\,$devs[$i][$DEVICE_ID]\.$devs[$i][$SUBSYSTEM_VENDOR_ID]\.$devs[$i][$SUBSYSTEM_ID]";
+			$pci_fullids_2 = $pci_fullids; $pci_fullids_2 =~ s/pci0?(.*),0?(.*)\.0?(.*)\.0?(.*)/pci$1,$2.$3.$4/;
+		}
 
 		my $pciclass_1 = substr($devs[$i][$CLASS_CODE], 2);
 		$pciclass_1 = "pciclass,$pciclass_1";
@@ -466,10 +474,20 @@ sub read_devs()
 			chomp ($line);
 
 			($drvname) = $line =~ /^(\S+)\s+\"$pci_ids(\.\d+)?\"/;
+			($drvname) = $line =~ /^(\S+)\s+\"$pci_ids_2(\.\d+)?\"/ if (!defined $drvname);
+
 			($drvname) = $line =~ /^(\S+)\s+\"$pciex_ids(\.\d+)?\"/ if (!defined $drvname);
+			($drvname) = $line =~ /^(\S+)\s+\"$pciex_ids_2(\.\d+)?\"/ if (!defined $drvname);
+
 			($drvname) = $line =~ /^(\S+)\s+\"$pci_subids\"/ if (!defined $drvname);
+			($drvname) = $line =~ /^(\S+)\s+\"$pci_subids_2\"/ if (!defined $drvname);
+
 			($drvname) = $line =~ /^(\S+)\s+\"$pciex_subids\"/ if (!defined $drvname);
+			($drvname) = $line =~ /^(\S+)\s+\"$pciex_subids_2\"/ if (!defined $drvname);
+
 			($drvname) = $line =~ /^(\S+)\s+\"$pci_fullids\"/ if (!defined $drvname);
+			($drvname) = $line =~ /^(\S+)\s+\"$pci_fullids_2\"/ if (!defined $drvname);
+
 			($drvname) = $line =~ /^(\S+)\s+\"$pciclass_1\"/ if (!defined $drvname);
 			($drvname) = $line =~ /^(\S+)\s+\"$pciclass_2\"/ if (!defined $drvname);
 
