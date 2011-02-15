@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright 2005 Nexenta Systems, Inc.  All rights reserved.
+# Copyright 2005-2011 Nexenta Systems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 # $Id: nexenta-install.sh 114900 2006-12-07 19:07:17Z joe $
@@ -18,6 +18,9 @@ exec 3<>$LOGFILE
 exec 2>&3
 printlog() {
 	echo "* $*" >&3
+	if test "x$auto_install" = "x1"; then
+		echo "PXE-INST-MSG: $*" | /usr/nexenta/remote-logger "--host=$loghost" "--port=$logport"
+	fi
 }
 printlog "Press CTRL-C to refresh."
 printlog "Installer started at '`date`'. Logging."
@@ -3853,7 +3856,8 @@ if test "x$(extract_args auto_install)" != x; then
 	syspool_spare="$(extract_args syspool_spare)"
 	_KS_dns1="$(extract_args dns_ip_1)"
 	_KS_dns2="$(extract_args dns_ip_2)"
-
+	loghost="$(extract_args loghost)"
+	logport="$(extract_args logport)"
 fi
 
 installcd=$(cat /.volid 2>/dev/null)
@@ -4077,8 +4081,9 @@ if [ $UPGRADE -eq 0 ]; then
 	if test "x$_KS_startup_wizard" != x; then
 		wizard_env="NIC_PRIMARY="
 		test "x$auto_install" = "x1" && wizard_env="NIC_PRIMARY=$(extract_args nic_primary)"
+		test "x$auto_install" = "x1" && remote_log="echo 'PXE-INST-SUCCESS' | /usr/bin/remote-logger --host=$loghost --port=$logport;"
 		chmod 755 $TMPDEST/usr/bin/$_KS_startup_wizard
-		echo "$wizard_env /usr/bin/screen -q -T xterm -s /usr/bin/$_KS_startup_wizard" > $TMPDEST/$FIRSTSTART
+		echo "$remote_log $wizard_env /usr/bin/screen -q -T xterm -s /usr/bin/$_KS_startup_wizard" > $TMPDEST/$FIRSTSTART
 		if test "x$_KS_show_wizard_license" = x1; then
 			if test -f "$REPO/$_KS_license_text"; then
 				cp $REPO/$_KS_license_text $TMPDEST/etc/license_text
@@ -4093,6 +4098,7 @@ if [ $UPGRADE -eq 0 ]; then
 	fi
 	if test "x$auto_install" = "x1"; then
 		touch $TMPDEST/.pxe-provisioned
+		cp -a /usr/nexenta/remote-logger $TMPDEST/usr/bin/
 		nlm_key="$(extract_args nlm_key | sed -e 's/_/-/g')";
 		if test "x$nlm_key" != x; then
 			test -d "$TMPDEST/var/lib/nza" && mkdir -p $TMPDEST/var/lib/nza

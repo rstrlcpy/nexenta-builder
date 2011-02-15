@@ -255,7 +255,7 @@ fi
 
 cat << EOF
 ------------------------------------------------------------------------------
-Generating a $profile0 profile filelist... 
+Generating a $profile0 profile filelist...
 ------------------------------------------------------------------------------
 EOF
 pkglist="$NBLD_TMP/debootstrap-pkglist.profile0.tmp"
@@ -276,7 +276,7 @@ echo "Selected `echo $BOOTSTRAP_BASE|sed -e "s/\s/\n/g"|wc -l` base packages"
 
 cat << EOF
 ------------------------------------------------------------------------------
-Generating a $mode-mode  filelist... 
+Generating a $mode-mode  filelist...
 ------------------------------------------------------------------------------
 EOF
 pkglist="$NBLD_TMP/debootstrap-pkglist.mode.tmp"
@@ -301,7 +301,7 @@ echo $(echo $BOOTSTRAP_BASE_MINIMAL $BOOTSTRAP_BASE | sed -e "s/\s/\n/g"| sort -
 
 cat << EOF
 ------------------------------------------------------------------------------
-Bootstrapping $mode CD media... 
+Bootstrapping $mode CD media...
 ------------------------------------------------------------------------------
 EOF
 export BOOTSTRAP_REQUIRED BOOTSTRAP_BASE
@@ -432,6 +432,10 @@ if test "x$mode" = xinstall; then
 	        mv /tmp/model.$$ $rootdir$hddrepo/Model.pm
 	        echo "_KS_model='Model.pm'" >> $install_profile
 	fi
+
+	cp $customdir/remote-logger.pl $rootdir$hddrepo/remote-logger
+	chmod 744 $rootdir$hddrepo/remote-logger
+
 	if test "x$ks_machinesig" != x; then
 #		cp $customdir/$ks_machinesig $rootdir$hddrepo/machinesig
 		bin_dir="/usr/local/bin"
