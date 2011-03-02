@@ -48,8 +48,7 @@ LOCAL_ARCHIVE_DEBS=" \
 		sunwisnsr sunwisnsadm \
 		sunwsshu sunwsshdu sunwesu sunwtoo \
 		rsync mtx snmpd rcs star \
-		samba samba-common winbind smbclient \
-		python-ping libcrypt-cbc-perl"
+		samba samba-common winbind smbclient"
 #
 # Various installer-specific settings
 # (see nbld-bootstrap source code for details)
@@ -73,7 +72,7 @@ release_file=
 apt_sources="http://nexenta.com/apt-nza hardy-stable main contrib non-free"
 plugin_sources=
 builtin_plugins_dir="$extra_dir/extradebs"
-builtin_plugins="nlm-com nmc-storagelink nms-storagelink nms-delorean nmc-delorean nms-autosync nmc-autosync nmv-autosync remote-rep nms-comstar nmc-comstar nmv-comstar nms-autosmart nmc-autosmart nmv-autosmart nsdtrace nslock nms-ns-cluster"
+builtin_plugins="nlm-com nmc-storagelink nms-storagelink nms-delorean nmc-delorean nms-autosync nmc-autosync nmv-autosync remote-rep nms-comstar nmc-comstar nmv-comstar nms-autosmart nmc-autosmart nmv-autosmart"
 ks_min_mem_required="768"
 ks_rootdisk_type="zfs"
 ks_rootdisks=
