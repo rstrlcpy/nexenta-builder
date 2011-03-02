@@ -47,7 +47,7 @@ LOCAL_ARCHIVE_DEBS=" \
 		sunwnisr sunwnisu \
 		sunwisnsr sunwisnsadm \
 		sunwsshu sunwsshdu sunwesu sunwtoo \
-		rsync mtx snmpd rcs star \
+		rsync mtx snmpd rcs star snmp \
 		samba samba-common winbind smbclient"
 #
 # Various installer-specific settings
