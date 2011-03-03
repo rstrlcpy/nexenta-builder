@@ -10,7 +10,7 @@ default 0
 
 # menu timeout in second before default OS is booted
 # set to -1 to wait for user input
-timeout 30
+timeout 45
 
 # To enable grub serial console to ttya uncomment the following lines
 # and comment out the splashimage line below
