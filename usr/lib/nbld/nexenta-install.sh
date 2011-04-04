@@ -36,7 +36,11 @@ TITLE="NexentaOS"
 BOOT_ANYWHERE=${BOOT_ANYWHERE:-0}
 MEMSCRATCH=${MEMSCRATCH:-0}
 CURDIR=${PWD}
-EXTRADEBDIR=/.livecd/extradebs
+ISO_MOUNT_POINT=/.livecd
+EXTRADEBDIR=$ISO_MOUNT_POINT/extradebs
+PROFILE_DIR=$ISO_MOUNT_POINT/install_profiles
+PROFILE_BASE=machine
+PROFILE_STATUS=""
 EXTRADEB_PROFILE=$EXTRADEBDIR/defaults
 RMFORMAT_TMP=/tmp/rmformat.$$
 TMP_FILE=/tmp/installer.$$
@@ -3741,7 +3745,34 @@ activate_dump()
 
 extract_args()
 {
-	echo "$(/usr/sbin/prtconf -v /devices|/usr/bin/sed -n "/$1/{;n;p;}"|/usr/bin/sed -e "s/^\s*value=\|'//g")"
+	local request_prop=$1
+
+	if test "x$PROFILE_STATUS" = "x"; then
+		profile_name=$(get_auto_profile $PROFILE_DIR $PROFILE_BASE)
+		if test "x$profile_name" = "x"; then
+			PROFILE_STATUS="NOT_FOUND"
+		else
+			# Loading profile
+			source $profile_name
+			PROFILE_STATUS="LOADED"
+		fi
+	fi
+	# First we try to get prop value from kernel line
+	value=$(/usr/sbin/prtconf -v /devices|/usr/bin/sed -n "/$request_prop/{;n;p;}"|/usr/bin/sed -e "s/^\s*value=\|'//g")
+
+	# Second we try to get prop value from profile
+	# if it available and it not found at kernel line
+	if test "x$value" = "x" -a "x$PROFILE_STATUS" = "xLOADED"; then
+		value=$(deref_variable __PF_$request_prop)
+	fi
+
+	echo $value
+}
+
+deref_variable()
+{
+	eval var_name=\$$1
+	echo $var_name
 }
 
 get_lun_by_device_id()
@@ -3778,6 +3809,29 @@ compare_size()
 			exit 0;
 		}
 		exit 1;
+		' $1 $2
+}
+
+get_auto_profile()
+{
+	ifconfig -a | perl -e '
+		for my $line (<STDIN>) {
+			if ($line =~ m/ether\s+([0-9a-f:]+)/) {
+				my @res = ();
+				for my $field (split(/:/, $1)) {
+					if (length $field == 1) {
+						push @res, "0$field";
+					} else {
+						push @res, $field;
+					}
+				}
+				my $mac = join("", @res);
+				if (-f "$ARGV[0]/$ARGV[1].$mac") {
+					print "$ARGV[0]/$ARGV[1].$mac";
+					last;
+				}
+			}
+		}
 		' $1 $2
 }
 
