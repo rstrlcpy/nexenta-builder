@@ -3731,7 +3731,7 @@ activate_dump()
 		chmod 0700 $TMPDEST/$savecore_dir
 		mkdir -p $TMPDEST/$ROOTPOOL_ZVOL_DIR
 		local dump_link=`readlink $ROOTPOOL_ZVOL_DIR/$rawdump`
-		cd $TMPDEST/$ROOTPOOL_ZVOL_DIR && ln -s $dump_link $rawdump && cd -
+		cd $TMPDEST/$ROOTPOOL_ZVOL_DIR && ln -s $dump_link $rawdump && cd - 1>/dev/null 2>&1
 		dumpadm -c curproc -d $ROOTPOOL_ZVOL_DIR/$rawdump -z on -r \
 			$TMPDEST -s $savecore_dir -m 20% 1>/dev/null
 		if [ $? -eq 0 ]; then
