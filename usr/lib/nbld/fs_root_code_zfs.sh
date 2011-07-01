@@ -59,7 +59,7 @@ if [ -x /sbin/mdisco ]; then
 			fi
 		else
 			dev_phys=${install_srv}
-			fs_type="nfs -o ro"
+			fs_type="nfs -o ro,vers=3"
 			`/sbin/ifconfig -a dhcp`
 		fi
 	fi
