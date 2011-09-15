@@ -6,7 +6,7 @@
 #
 
 # default menu entry to boot
-default 0
+default 1
 
 # menu timeout in second before default OS is booted
 # set to -1 to wait for user input
