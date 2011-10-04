@@ -1,5 +1,5 @@
 #
-# Copyright 2005 Nexenta Systems, Inc.  All rights reserved.
+# Copyright 2010 Nexenta Systems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 # $Id: hdd_grub_menu.txt 17654 2006-03-10 20:40:48Z mac $
@@ -21,6 +21,7 @@ timeout 10
 
 # Uncomment the following line to enable GRUB splashimage on console
 splashimage=/boot/grub/splash.xpm.gz
+background 0000FF
 
 # To chainload another OS
 #
@@ -47,10 +48,14 @@ splashimage=/boot/grub/splash.xpm.gz
 #
 #   kernel /platform/i86pc/multiboot <boot-args> -B prop1=val1,prop2=val2,...
 
-title Install NexentaCore Platform (Hardy/__autoversion__)
+title Install Nexenta Core Platform (auto) (Siddy/__autoversion__)
 	root (cd)
-	kernel$ /platform/i86pc/kernel/$ISADIR/unix -B atapi-cd-dma-enabled=0
+	kernel$ /platform/i86pc/kernel/$ISADIR/unix
 	module$ /platform/i86pc/$ISADIR/miniroot
+title Install Nexenta Core Platform (32-bit) (Siddy/__autoversion__)
+	root (cd)
+	kernel$ /platform/i86pc/kernel/unix
+	module$ /platform/i86pc/miniroot
 title Memory Subsystem Test (Hardware Verification)
 	root (cd)
 	kernel /boot/memtest86+.bin

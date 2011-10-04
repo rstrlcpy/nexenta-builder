@@ -1,4 +1,4 @@
-		       NexentaOS GNU/OpenSolaris Alpha 7
-	   Copyright 2006 Nexenta Systems, Inc.  All Rights Reserved.
-	  Copyright 2006 Sun Microsystems, Inc.  All Rights Reserved.
-			Use is subject to license terms.
+		       NexentaOS 4.0 GNU/Illumos
+	  Copyright 2005-2011 Nexenta Systems, Inc.  All Rights Reserved.
+      Copyright (c) 2010 Oracle.  All Rights Reserved.
+               Use is subject to license terms.

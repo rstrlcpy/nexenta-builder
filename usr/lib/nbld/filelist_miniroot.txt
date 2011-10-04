@@ -1,5 +1,5 @@
 #
-# Copyright 2005 Nexenta Systems, Inc.  All rights reserved.
+# Copyright 2005-2011 Nexenta Systems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 # $Id: filelist_miniroot.txt 114066 2006-10-16 16:45:44Z root $
@@ -36,7 +36,6 @@ system
 tmp
 var
 !var/lib/apt
-!var/lib/dpkg
 !var/cache/man
 !var/lib/scrollkeeper
 root
@@ -46,8 +45,42 @@ usr/lib/locale
 
 # We need these because the system's hostname is set prior to /usr being mounted
 usr/bin/bash
+usr/bin/sh
 usr/bin/hostname
 usr/bin/uname
+usr/bin/more
+usr/bin/tail
+usr/bin/mail
+usr/bin/svcs
+
+usr/bin/i86/ksh93
+usr/bin/amd64/ksh93
+
+usr/lib/libshell.so.1
+usr/lib/libcmd.so.1
+usr/lib/libdll.so.1
+usr/lib/libast.so.1
+usr/lib/libsum.so.1
+usr/lib/libm.so.2
+usr/lib/libm.so
+usr/lib/libsmbios.so.1
+usr/lib/libexacct.so.1
+usr/lib/libmail.so.1
+usr/lib/amd64/libshell.so.1
+usr/lib/amd64/libcmd.so.1
+usr/lib/amd64/libdll.so.1
+usr/lib/amd64/libast.so.1
+usr/lib/amd64/libsum.so.1
+usr/lib/amd64/libm.so.2
+usr/lib/amd64/libm.so
+usr/lib/amd64/libsmbios.so.1
+usr/lib/amd64/libexacct.so.1
+usr/lib/amd64/libmail.so.1
+
+usr/lib/fm/libfmevent.so
+usr/lib/fm/libfmevent.so.1
+usr/lib/fm/amd64/libfmevent.so
+usr/lib/fm/amd64/libfmevent.so.1
 
 # Some misc stuff
 usr/bin/cp
@@ -58,17 +91,34 @@ usr/bin/eject
 usr/bin/sleep
 usr/bin/grep
 usr/bin/uniq
+usr/bin/iostat
 
 # We need these for device and media discovery
 usr/bin/pkill
 usr/sbin/prtconf
-usr/sbin/i86/prtconf
-usr/sbin/amd64/prtconf
+usr/lib/devfsadm
+usr/lib/sysevent
+
+# my added
+usr/sbin/i86
+usr/sbin/amd64
+
 usr/sbin/pmadm
 usr/sbin/devfsadm
 usr/sbin/reboot
-usr/lib/devfsadm
-usr/lib/sysevent
+
+usr/sbin/quota
+usr/sbin/format
+usr/sbin/modinfo
+usr/sbin/rem_drv
+usr/sbin/add_drv
+usr/sbin/poweroff
+
+usr/bin/ps
+usr/bin/amd64/ps
+usr/bin/i86/ps
+usr/bin/mdisco
+usr/bin/hddisco
 
 # and for lofs
 usr/sbin/lofiadm

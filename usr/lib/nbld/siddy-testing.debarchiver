@@ -2,7 +2,7 @@
 # Copyright 2005 Nexenta Systems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
-# $Id: elatte-unstable.debarchiver 111973 2006-07-10 18:45:02Z ErastBenson $
+# $Id: siddy-testing.debarchiver 111973 2006-07-10 18:45:02Z ErastBenson $
 #
 
 # $destdir = "/gnusolaris/dists";
@@ -12,7 +12,7 @@
 # $rmcmd = "rm -f";
 # $vrfycmd = "dscverify";
 # $cinstall = "installed";
-$distinputcriteria = ".*\\.deb";
+$distinputcriteria = ".*\\.deb\$";
 
 # Choose to enable or disable signature verification for packages uploaded
 # into $inputdir (not %distinputdirs).
@@ -27,9 +27,9 @@ $bzip = 1;
 
 # This one is used for debarchives that matches distinput criteria.
 %distinputdirs = (
-	stable => 'elatte-stable',
-	testing => 'elatte-testing',
-	unstable => 'elatte-unstable'
+	stable => 'siddy-stable',
+	testing => 'siddy-testing',
+	unstable => 'siddy-unstable'
 	);
 
 # What distributions that should exist.
@@ -42,9 +42,9 @@ $bzip = 1;
 #  two directories that are independent (and not mapped).
 %distmapping =
 	(
-	stable => 'elatte-stable',
-	testing => 'elatte-testing',
-	unstable => 'elatte-unstable'
+	stable => 'siddy-stable',
+	testing => 'siddy-testing',
+	unstable => 'siddy-unstable'
 	);
 
 # What architectures that should exist (automatically created).
@@ -64,9 +64,9 @@ $bzip = 1;
 # If you want additional information in the generated Release files you have
 # to set this hash-value.  Supported keys are origin, label, and description.
 
-%release = (	'origin' => "GNUSolaris",
-		'label' => "GNUSolaris",
-		'description' => "GNU/Solaris Elatte Development Branch");
+%release = (	'origin' => "Nexenta",
+		'label' => "Nexenta",
+		'description' => "NexentaOS Siddy Development Branch");
 
 # Where to put the apt-ftparchive cache files if --index is used.  Default
 # is /var/cache/debarchiver.  Must be a directory.

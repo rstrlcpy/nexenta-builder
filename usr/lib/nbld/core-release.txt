@@ -1,4 +1,4 @@
-		 NexentaCore GNU/OpenSolaris (Debian Platform)
-	   Copyright 2008 Nexenta Systems, Inc.  All Rights Reserved.
+		 NexentaCore GNU/Illumos (Debian Platform)
+	   Copyright 2005-2011 Nexenta Systems, Inc.  All Rights Reserved.
 	  Copyright 2008 Sun Microsystems, Inc.  All Rights Reserved.
 			Use is subject to license terms.

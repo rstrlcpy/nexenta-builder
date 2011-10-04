@@ -21,7 +21,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (C) 2005-2008 Nexenta Systems, Inc.
+# Copyright (C) 2005-2011 Nexenta Systems, Inc.
 # All rights reserved.
 #
 ##############################################################################
@@ -33,13 +33,13 @@
 #       in order to get things done even faster -- of course this
 #       depends on the amount of available tmpfs (swap) space.
 #
-NBLD_STAGING="/tmp/nbld-staging"
+NBLD_STAGING="/root/nbld-staging"
 
 #
 # Primary temporary location for APT bootstraping
 # NOTE: ensure it will have enough space - 1GB is desirable
 #
-NBLD_MINIROOT="/tmp/miniroot"
+NBLD_MINIROOT="/root/miniroot"
 
 #
 # Primary location for customization profiles, scripts, programs, etc
@@ -52,7 +52,7 @@ NBLD_LIBDIR="/usr/lib/nbld"
 #
 #  rsync --inplace --delete -avHr nexenta.org::repository/* /tank/ncp
 #
-NBLD_REPO="/tank/ncp2"
+NBLD_REPO="/root/ncp4-repo"
 
 #
 # Location used by default for storing temporary files and
@@ -64,7 +64,7 @@ NBLD_TMP="/tmp"
 #
 # Default distribution name, i.e. 'elatte', 'hardy', etc..
 #
-NBLD_DISTRO="hardy"
+NBLD_DISTRO="siddy"
 
 #
 # Default branch name, i.e. 'stable', 'testing' or 'unstable'
@@ -79,7 +79,7 @@ NBLD_DEBUG="no"
 #
 # Default profile or so called 'mode'
 #
-NBLD_DEFAULT_MODE="hardy-core"
+NBLD_DEFAULT_MODE="siddy-core"
 
 #
 # --------- DO NOT MODIFY THIS SECTION ------------

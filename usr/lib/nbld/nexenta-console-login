@@ -1,4 +1,4 @@
-#!/sbin/sh
+#!/bin/bash
 #
 # CDDL HEADER START
 #
@@ -35,28 +35,33 @@
 # svc:/system/console-login> setprop ttymon/terminal_type = "xterm"
 # svc:/system/console-login> exit
 
-PATH=/bin:/usr/sbin:/usr/bin:/usr/local/bin:$PATH
+#PATH=/bin:/usr/sbin:/usr/bin:/usr/local/bin:$PATH
+PATH=/usr/gnu/bin:/usr/bin:/sbin:/usr/sbin:/usr/local/bin:/usr/local/sbin
 EDITOR=vi
 LOGNAME=root
 HOME=/root
 PS1="\W> "
+TERMINFO=/usr/share/lib/terminfo
 TERM=sun-color
 SHELL=/bin/bash
 FIRSTSTART=/.nexenta-first-start
 TRYREBOOT=/.nexenta-try-reboot
-export PATH EDITOR LOGNAME HOME PS1 TERM SHELL
+export PATH EDITOR LOGNAME HOME PS1 TERM TERMINFO SHELL
 if test ! -f $FIRSTSTART; then
 	unset SUN_PERSONALITY
-	/usr/bin/screen -q -T xterm </dev/console >/dev/console 2>&1
+#	/usr/bin/screen -q -T xterm </dev/console >/dev/console 2>&1
+	/usr/bin/screen -q </dev/console >/dev/console 2>&1
 	/usr/bin/clear >/dev/console
 	sleep 1
 
 	if test -f $TRYREBOOT; then
 		touch $FIRSTSTART
 		cp /usr/sbin/uadmin /uadmin
-		cp /usr/sun/bin/sleep /sleep
+#		cp /usr/sun/bin/sleep /sleep
+		cp /usr/bin/sleep /sleep
 		cp /usr/bin/eject /eject
-		cp /usr/sun/bin/true /true
+#		cp /usr/sun/bin/true /true
+		cp /usr/bin/true /true
 		cp /usr/lib/libvolmgt.so.1 /lib
 		cp /usr/lib/libshell.so.1 /lib
 		cp /usr/lib/libast.so.1 /lib

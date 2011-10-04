@@ -1,4 +1,4 @@
-#!/sbin/sh
+#!/bin/bash
 #
 # Copyright 2006 Nexenta Systems, Inc.  All rights reserved.
 # Use is subject to license terms.
@@ -13,8 +13,8 @@ usb_mountpoint="/mnt"
 
 mount_usb_flash()
 {
-	cdrom_devices=`/sbin/mdisco -l | /usr/bin/sed -e 's/\/dev\/dsk\///'`
-	disk_devices=`/sbin/mdisco -ld | /usr/bin/sed -e 's/\/dev\/dsk\///'`
+	cdrom_devices=`/usr/bin/mdisco -l | /usr/bin/sed -e 's/\/dev\/dsk\///'`
+	disk_devices=`/usr/bin/mdisco -ld | /usr/bin/sed -e 's/\/dev\/dsk\///'`
 	for disk in $disk_devices; do
 		# Skip non-removable devices
 		ls -1 /dev/removable-media/rdsk/$disk 2>>/dev/null 1>&2
@@ -49,9 +49,9 @@ mount_usb_flash()
 #
 # Mount directories from CD.
 #
-if [ -x /sbin/mdisco ]; then
-	install_srv=`/usr/sbin/prtconf -v /devices|/usr/bin/sed -n '/iso_nfs_path/{;n;p;}'|/usr/bin/sed -e "s/^\s*value=\|'//g"`
-	iso_usb=`/usr/sbin/prtconf -v /devices|/usr/bin/sed -n '/iso_usb/{;n;p;}'|/usr/bin/sed -e "s/^\s*value=\|'//g"`
+if [ -x /usr/bin/mdisco ]; then
+	install_srv=`/usr/sbin/prtconf -v /devices|/usr/bin/sed -n '/iso_nfs_path/{;n;p;}'|/usr/bin/sed -e "s/^[[:space:]]*value=//" | /usr/bin/sed -e "s/'//g"`
+	iso_usb=`/usr/sbin/prtconf -v /devices|/usr/bin/sed -n '/iso_usb/{;n;p;}'|/usr/bin/sed -e "s/^[[:space:]]*value=//" | /usr/bin/sed -e "s/'//g"`
 	/sbin/mount -o remount /
 	/usr/sbin/devfsadm -c disk
 	read livecd_volid < /.volid
@@ -59,7 +59,7 @@ if [ -x /sbin/mdisco ]; then
 	echo "CD-ROM: \c" >/dev/msglog
 	if [ "${platform}" = "i86xpv" ]; then
 		sleep 10
-		dev_phys=`/sbin/mdisco -l 2>/dev/msglog | uniq`
+		dev_phys=`/usr/bin/mdisco -l 2>/dev/msglog | uniq`
 	else
 		if test "x$install_srv" = x; then
 			if test "x$iso_usb" != "x"; then
@@ -67,10 +67,10 @@ if [ -x /sbin/mdisco ]; then
 				/usr/sbin/devfsadm -C
 				dev_phys=`/usr/sbin/lofiadm -a $usb_mountpoint/$iso_usb`
 			else
-				dev_phys=`/sbin/mdisco -V ${livecd_volid} -l 2>/dev/msglog`
+				dev_phys=`/usr/bin/mdisco -V ${livecd_volid} -l 2>/dev/msglog`
 				if [ $? -ne 0 ]; then
 					sleep 10
-					dev_phys=`/sbin/mdisco -l 2>/dev/msglog`
+					dev_phys=`/usr/bin/mdisco -l 2>/dev/msglog`
 				fi
 			fi
 		else

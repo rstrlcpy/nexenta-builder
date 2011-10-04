@@ -128,9 +128,9 @@ function bootstrap_repository
 
 	# inetd-upgrade needs to be removed so to avoid dependencies
 	# failures show up on svcs -vx command.
-	rm -f ${alt_root}/var/svc/manifest/network/inetd-upgrade.xml
+	rm -f ${alt_root}/lib/svc/manifest/network/inetd-upgrade.xml
 
-	manifest_list=`find ${alt_root}/var/svc/manifest/* \
+	manifest_list=`find ${alt_root}/lib/svc/manifest/* \
 	    -type f -name "*.xml" -print`
 
 	set -- ${manifest_list}
@@ -164,7 +164,7 @@ function bootstrap_repository
 
 	plat=`uname -i`
 
-	cd ${alt_root}/var/svc/profile
+	cd ${alt_root}/etc/svc/profile
 	rm -f inetd_services.xml
 	ln -s inetd_generic.xml inetd_services.xml
 
@@ -180,9 +180,9 @@ function bootstrap_repository
 	sed -i -e "/system\/coreadm/{n; s/true/false/}" generic.xml
 	cd ${OLDPWD}
 
-	eval "${SVCENV} ${SVCCFG} apply ${alt_root}/var/svc/profile/generic.xml"
+	eval "${SVCENV} ${SVCCFG} apply ${alt_root}/etc/svc/profile/generic.xml"
 
-	eval "${SVCENV} ${SVCCFG} apply ${alt_root}/var/svc/profile/platform.xml"
+	eval "${SVCENV} ${SVCCFG} apply ${alt_root}/etc/svc/profile/platform.xml"
 
 	# Apply LiveCD profile
 	eval "${SVCENV} ${SVCCFG} apply ${SMF_PROFILE}"
@@ -242,7 +242,7 @@ function customize_mini
 
 	# Copy over customized SMF manifests and methods
 	copy_file ${SYSIDTOOL_XML} \
-	    $1/var/svc/manifest/system/`basename ${SYSIDTOOL_XML}` 0444 root:sys
+	    $1/lib/svc/manifest/system/`basename ${SYSIDTOOL_XML}` 0444 root:sys
 
 	copy_file ${SYSIDTOOL_NET} \
 	    $1/lib/svc/method/`basename ${SYSIDTOOL_NET}` 0555 root:bin

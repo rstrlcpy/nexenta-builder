@@ -680,11 +680,11 @@ return:
 sub get_disks_info {
 
 	system("rmformat >/dev/null 2>&1; devfsadm -c disk >/dev/null 2>&1; sync; sleep 3");
-	my @disks = `/usr/nexenta/mdisco -ld`;
+	my @disks = `/usr/bin/mdisco -ld`;
 	@disks = map {m/\/(c\d+\S*d\d+)/} @disks;
 	my %disks_info = ();
 	for my $disk (@disks) {
-		my @info = `/usr/nexenta/hddisco -d $disk`;
+		my @info = `/usr/bin/hddisco -d $disk`;
 		my $found;
 		my %info = ();
 		for my $line (@info) {

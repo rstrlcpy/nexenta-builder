@@ -6,7 +6,7 @@
 #
 
 # default menu entry to boot
-default 1
+default 0
 
 # menu timeout in second before default OS is booted
 # set to -1 to wait for user input
@@ -21,6 +21,7 @@ timeout 45
 
 # Uncomment the following line to enable GRUB splashimage on console
 splashimage=/boot/grub/splash.xpm.gz
+background 0000FF
 
 # To chainload another OS
 #
@@ -47,11 +48,11 @@ splashimage=/boot/grub/splash.xpm.gz
 #
 #   kernel /platform/i86pc/multiboot <boot-args> -B prop1=val1,prop2=val2,...
 
-title Install Appliance via serial port COM1 (__autoversion__)
+title Install HPC Appliance via serial port COM1 (__autoversion__)
 	root (cd)
 	kernel$ /platform/i86pc/kernel/$ISADIR/unix -B atapi-cd-dma-enabled=0 -B console=ttya
 	module$ /platform/i86pc/$ISADIR/miniroot
-title Install Appliance via keyboard/monitor (__autoversion__)
+title Install HPC Appliance via keyboard/monitor (__autoversion__)
 	root (cd)
 	kernel$ /platform/i86pc/kernel/$ISADIR/unix -B atapi-cd-dma-enabled=0
 	module$ /platform/i86pc/$ISADIR/miniroot

@@ -1,4 +1,4 @@
-#!/sbin/sh
+#!/bin/bash
 #
 #ident	"@(#)sysidtool-net.sh 1.23     05/05/10 SMI"
 #
@@ -10,7 +10,7 @@
 # Script to invoke sysidnet, which completes configuration of basic
 # network parameters.
 #
-# Copyright 2005 Nexenta Systems, Inc.  All rights reserved.
+# Copyright 2005-2011 Nexenta Systems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 # $Id: elatte-sysidtool-net 112552 2006-08-16 22:29:10Z erast $
@@ -67,7 +67,7 @@ config_interfaces() {
 	    > /dev/sysmsg
 
 	set -- $net_device_list
-	for i 
+	for i
 	do
 		echo " ${i}\c" > /dev/sysmsg
 
@@ -89,7 +89,7 @@ config_interfaces() {
 	echo `gettext "."` > /dev/sysmsg
 
 	set -- $net_device_list
-	for i 
+	for i
 	do
 		#
 		# don't print loopback address

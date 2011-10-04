@@ -1,4 +1,4 @@
-#!/sbin/sh
+#!/bin/bash
 #
 # Copyright 2005 Nexenta Systems, Inc.  All rights reserved.
 # Use is subject to license terms.
@@ -25,8 +25,8 @@ livecd_domount()
 #
 # Mount from LiveCD.
 #
-if [ -x /sbin/mdisco ]; then
-	install_srv=`/usr/sbin/prtconf -v /devices|/usr/bin/sed -n '/iso_nfs_path/{;n;p;}'|/usr/bin/sed -e "s/^\s*value=\|'//g"`
+if [ -x /usr/bin/mdisco ]; then
+	install_srv=`/usr/sbin/prtconf -v /devices|/usr/bin/sed -n '/iso_nfs_path/{;n;p;}'|/usr/bin/sed -e "s/^[[:space:]]*value=//g" | /usr/bin/sed -e "s/'//g"`
 	/sbin/mount -o remount /
 	/usr/sbin/devfsadm -c disk
 
@@ -38,10 +38,10 @@ if [ -x /sbin/mdisco ]; then
 		dev_phys=`/sbin/mdisco 2>/dev/msglog`
 	else
 		if test "x$install_srv" = x; then
-			dev_phys=`/sbin/mdisco -V ${livecd_volid} -l 2>/dev/msglog`
+			dev_phys=`/usr/bin/mdisco -V ${livecd_volid} -l 2>/dev/msglog`
 			if [ $? != 0 ]; then
 				sleep 10
-				dev_phys=`/sbin/mdisco -l 2>/dev/msglog`
+				dev_phys=`/usr/bin/mdisco -l 2>/dev/msglog`
 			fi
 		else
 			dev_phys=${install_srv}

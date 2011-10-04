@@ -12,7 +12,8 @@ clear
 echo "Initializing Installer. Please wait..."
 
 LOGFILE=/tmp/nexenta-install.log
-rm -f $LOGFILE
+test -f $LOGFILE && rm -f $LOGFILE
+
 
 exec 3<>$LOGFILE
 exec 2>&3
@@ -22,15 +23,21 @@ printlog() {
 		echo "PXE-INST-MSG: $*" | /usr/nexenta/remote-logger "--host=$loghost" "--port=$logport"
 	fi
 }
+
+CVERSION=`cat /etc/issue`
+
 printlog "Press CTRL-C to refresh."
+printlog "Version of system: $CVERSION"
 printlog "Installer started at '`date`'. Logging."
 
 export LOGNAME=root
 export HOME=/root
 export PS1="\W> "
-export TERMINFO=/usr/share/lib/terminfo
-export TERM=sun-color
-export PATH=/bin:/sbin:/usr/sbin:/usr/bin:$PATH
+#export TERMINFO=/usr/share/lib/terminfo
+export TERMINFO=/usr/gnu/share/terminfo
+#export TERM=sun-color
+export TERM=xterm-color
+export PATH=/usr/nexenta:/usr/gnu/bin:/bin:/sbin:/usr/sbin:/usr/bin:$PATH
 
 TITLE="NexentaOS"
 BOOT_ANYWHERE=${BOOT_ANYWHERE:-0}
@@ -61,6 +68,8 @@ RDMAP=/tmp/rmdrive.map.$$
 TMPMESSAGES=/tmp/messages.$$
 FIRSTSTART=/.nexenta-first-start
 LICENSELOC=/.license-location
+MDISCO="/usr/bin/mdisco"
+HDDISCO="/usr/bin/hddisco"
 testusr=n3x3nt4
 signature=`date '+%F-%N'`
 sysmem=`prtconf | grep 'Memory size:' | nawk '{ print $3 }'`
@@ -68,11 +77,18 @@ set -i reposize
 set -i spaceneeded
 DU=/usr/bin/du
 test -f /usr/gnu/bin/du && DU=/usr/gnu/bin/du
-reposize=`$DU $REPO/dists -B MB -c --summarize | grep total | sed -e 's/MB//g' | nawk '{ print $1 }'`
+
+test -f /usr/bin/awk && AWK=/usr/bin/awk
+test -f /usr/bin/mawk && AWK=/usr/bin/mawk
+test -f /usr/gnu/bin/awk && AWK=/usr/gnu/bin/awk
+LN=/usr/bin/ln
+
+reposize=`$DU $REPO/dists -B MB -c --summarize | grep total | sed -e 's/MB//g' | $AWK '{ print $1 }'`
 (( spaceneeded=reposize*3 ))
 DIALOG_OK=0
 DIALOG_CANCEL=1
 DIALOG_ESC=255
+DIALOG_TTY=1
 export KEEP_COLORS=1
 DIALOG_RES=/tmp/dialog_result.$$
 AUTOPART_SWAP_SIZE=$sysmem
@@ -111,10 +127,10 @@ result_disk_spare=""
 auto_install=""
 MACHINESIG=""
 dialog_cmd() {
-	echo dialog\ --backtitle\ $TITLE-Installer-$MACHINESIG\ --keep-window\ --colors\ --no-signals\ --no-escape
+	echo dialog\ --backtitle\ $TITLE-Installer-$MACHINESIG\ --keep-window\ --colors
 }
 dialog_cmd_with_escape() {
-	echo dialog\ --backtitle\ $TITLE-Installer-$MACHINESIG\ --keep-window\ --colors\ --no-signals
+	echo dialog\ --backtitle\ $TITLE-Installer-$MACHINESIG\ --keep-window\ --colors
 }
 DIALOG_WITH_ESC="$(dialog_cmd_with_escape)"
 DIALOG="$(dialog_cmd)"
@@ -255,7 +271,7 @@ find_zpool_by_disk_and_destroy()
 {
 	local disk=$1
 	local force_destroy=$2
-	for p in `zpool list -H|awk '{print $1'}`; do
+	for p in `zpool list -H| $AWK '{print $1'}`; do
 		if zpool status $p|grep $disk >/dev/null; then
 			if test "x$force_destroy" != x1; then
 				$DIALOG --title " Warning! "  --yesno "\n  Disk '$disk' is part of ZFS Pool '$p'.\n     Destroy '$p' and proceed?" 7 50
@@ -287,7 +303,7 @@ part_id()
 {
 	local id=$1
 
-	cat $PART_TABLE | awk -F: "/^\*.*$id/ {print \$2}" | sed -e "s/SUNIXOS/SOLARIS/" -e "s/^\s* //"
+	cat $PART_TABLE | $AWK -F: "/^\*.*$id/ {print \$2}" | sed -e "s/SUNIXOS/SOLARIS/" -e "s/^\s* //"
 }
 
 part_act()
@@ -302,7 +318,7 @@ part_act()
 
 part_list_all()
 {
-	cat $PART_TABLE | awk '!/^\*/ && !/^$/ {print $0}'
+	cat $PART_TABLE | $AWK '!/^\*/ && !/^$/ {print $0}'
 }
 
 part_delete()
@@ -439,7 +455,7 @@ part_disk_numsect()
 {
 	local disk=$1
 
-	echo $(fdisk -G /dev/rdsk/${disk}p0 | tail -1 | awk '{print 2+$1*$5*$6}')
+	echo $(fdisk -G /dev/rdsk/${disk}p0 | tail -1 | $AWK '{print 2+$1*$5*$6}')
 }
 
 part_size_mb()
@@ -447,7 +463,7 @@ part_size_mb()
 	local disk=$1
 	local numsect=$2
 
-	echo $(fdisk -G /dev/rdsk/${disk}p0 | tail -1 | awk "{print int($numsect*\$7/1024/1024)}")
+	echo $(fdisk -G /dev/rdsk/${disk}p0 | tail -1 | $AWK '{print int($numsect*\$7/1024/1024)}')
 }
 
 part_percent()
@@ -707,7 +723,7 @@ part_format_menu()
 	rm -f $AUTOPART_CMD_FILE $AUTOPART_FMT_ERR
 
 	local phys="/dev/rdsk/${disk}p0"
-	local csize="$(fdisk -G $phys | tail -1 | awk '{print $5*$6*$7}')"
+	local csize="$(fdisk -G $phys | tail -1 | $AWK '{print $5*$6*$7}')"
 	local slice
 	local sectnum=3
 	local cyls=0
@@ -721,8 +737,8 @@ part_format_menu()
 
 		test "x$item" = "xunassigned:0" && continue
 
-		local slice=$(echo $item|awk -F: '{print $1}'|sed -e "s/.*s\([0-9]\+\)/\1/")
-		local size=$(echo $item|awk -F: '{print $2}')
+		local slice=$(echo $item| $AWK -F: '{print $1}'|sed -e "s/.*s\([0-9]\+\)/\1/")
+		local size=$(echo $item| $AWK -F: '{print $2}')
 		local label="unassigned"
 		cyls=$(($size*1024*1024/$csize-2))
 
@@ -908,7 +924,7 @@ part_manual()
 			break
 		elif test $rc == 2; then
 			# Delete case
-			local num=$(dialog_res|awk '{print $2}')
+			local num=$(dialog_res| $AWK '{print $2}')
 			local id=$(part_id $(part_record $num id))
 			if oneline_yN_ask "Are you sure you want to delete Id #$num ($id) ?"; then
 				part_delete $num
@@ -951,10 +967,10 @@ autopart_zfs()
 
 	test $config = "pool" && config=""
 	test "x$3" = "x" && hot_spare_cmd=""
-	if ! zpool create -f -O compression=on -m legacy $ZFS_ROOTPOOL $config $s0_slices $hot_spare_cmd 2>$AUTOPART_FMT_ERR; then
+	if ! zpool create -f -O compression=on  $ZFS_ROOTPOOL $config $s0_slices $hot_spare_cmd 2>$AUTOPART_FMT_ERR; then
 		zpool destroy $ZFS_ROOTPOOL 2>/dev/null
 		sync
-		if ! zpool create -f -O compression=on -m legacy $ZFS_ROOTPOOL $config $s0_slices $hot_spare_cmd 2>$AUTOPART_FMT_ERR; then
+		if ! zpool create -f -O compression=on $ZFS_ROOTPOOL $config $s0_slices $hot_spare_cmd 2>$AUTOPART_FMT_ERR; then
 			oneline_msgbox Error "Cannot create ZFS 'root' pool using disk(s) $disks with error:\n\n $(cat $AUTOPART_FMT_ERR)\n"
 			return 1
 		fi
@@ -993,8 +1009,8 @@ autopart()
 	local disk="/dev/dsk/${1}s0"
 	local fstype=$2
 	local phys="$(echo $disk|sed -e 's/dsk/rdsk/' -e 's/s0/p0/')"
-	local cyls="$(fdisk -G $phys|tail -1|awk '{print $1-2}')"
-	local csize="$(fdisk -G $phys | tail -1 | awk '{print $5*$6*$7}')"
+	local cyls="$(fdisk -G $phys|tail -1| $AWK '{print $1-2}')"
+	local csize="$(fdisk -G $phys | tail -1 | $AWK '{print $5*$6*$7}')"
 	local root_min_size=${_KS_profile_rootsize[$_KS_profile_selected]}
 	local root_min_bytes=$(($root_min_size*1024*1024))
 	local swap_size=$AUTOPART_SWAP_SIZE
@@ -1143,10 +1159,10 @@ autopart_ask()
 	rmformat >/dev/null 2>&1
 	devfsadm -c disk >/dev/null 2>&1
 	sync; sleep 3
-	local cdrom=`$REPO/mdisco -l | uniq | sed -e 's/p0/s0/g'`
+	local cdrom=`$MDISCO -l | uniq | sed -e 's/p0/s0/g'`
 	local iso_usb="$(extract_args iso_usb)"
 	if test "x$iso_usb" != x; then
-		iso_usb=`basename \`mount | egrep "^/mnt" | awk '{print $3}' | sed -e 's/p1/s0/'\``
+		iso_usb=`basename \`mount | egrep "^/mnt" | $AWK '{print $3}' | sed -e 's/p1/s0/'\``
 		iso_usb="/dev/rdsk/$iso_usb"
 	fi
 
@@ -1158,7 +1174,7 @@ autopart_ask()
 
 	rm -f $TMP_FILE $TMP_DISKSIZE_FILE>/dev/null
 	touch $TMP_FILE
-	local drvs=$($REPO/mdisco -ld | uniq | sed -e 's/p0/s0/g' | sort)
+	local drvs=$($MDISCO -ld | uniq | sed -e 's/p0/s0/g' | sort)
 	for drv in $drvs; do
 		test "$drv" = "$iso_usb" && continue
 		echo $cdrom | grep $drv 2>/dev/null 1>&2 && continue
@@ -1170,17 +1186,17 @@ autopart_ask()
 		local disk="$(echo $drv|sed -e 's/.*\/\(c[0-9]\+.*\)s[0-9]\+$/\1/')"
 
 		if test -f $RDMAP && grep $drv $RDMAP >/dev/null; then
-			local bus=$(grep $drv $RDMAP|nawk -F: '{print $4}')
-			vendor=$(grep $drv $RDMAP|nawk -F: '{print $3}')
-			size=$(grep $drv $RDMAP|nawk -F: '{print $7}')
+			local bus=$(grep $drv $RDMAP| $AWK -F: '{print $4}')
+			vendor=$(grep $drv $RDMAP| $AWK -F: '{print $3}')
+			size=$(grep $drv $RDMAP| $AWK -F: '{print $7}')
 			test "x$vendor" = x && vendor="Unknown Vendor"
 			vendor="$size"" ($bus $vendor)"
 		else
-			devpath="$(ls -l $drv | awk '{print $11}' | \
+			devpath="$(ls -l $drv | $AWK '{print $11}' | \
 			    sed -e 's;.*devices/;;' -e 's;:[a-z]\+;;')"
 			phys="$(echo $drv | sed -e 's/dsk/rdsk/' -e 's/s0/p0/')"
 			size="$(fdisk -G $phys | tail -1 | \
-			    awk '{print $1*$5*$6*$7}')"
+			    $AWK '{print $1*$5*$6*$7}')"
 			size="$(round_disk_size $size)"
 			p=$(grep "cmdk.*is.*$devpath" $TMPMESSAGES | \
 			    sed -e "s/.*cmdk\([0-9]\+\)\s* .*/\1/" | sort -u)
@@ -1268,7 +1284,7 @@ autopart_ask()
 				drive_node="/dev/dsk/$(dialog_res)s0"
 				if test -f $RDMAP && grep $drive_node $RDMAP \
 				    >/dev/null; then
-					local rm_node=$(grep $drive_node $RDMAP | nawk -F: '{print $1}')
+					local rm_node=$(grep $drive_node $RDMAP | $AWK -F: '{print $1}')
 					RM_DISK="${rm_node}"
 #					BOOT_ANYWHERE=1
 				fi
@@ -1288,7 +1304,7 @@ autopart_ask()
 				return 2
 			elif echo "$(dialog_res)" | grep " " >/dev/null; then
 				for disk in `echo $(dialog_res)|sed -e "s/ /\n/g"`; do
-					disk_size=$(cat $TMP_DISKSIZE_FILE|grep $disk|awk '{print $2}')
+					disk_size=$(cat $TMP_DISKSIZE_FILE|grep $disk| $AWK '{print $2}')
 					if test "x$check_size" = x; then
 						check_size=$disk_size
 					elif ! compare_size $check_size $disk_size; then
@@ -1303,10 +1319,10 @@ autopart_ask()
 				drive_node="/dev/dsk/$(dialog_res)s0"
 				if test -f $RDMAP && grep $drive_node $RDMAP \
 				    >/dev/null; then
-					local rm_node=$(grep $drive_node $RDMAP | nawk -F: '{print $1}')
+					local rm_node=$(grep $drive_node $RDMAP | $AWK -F: '{print $1}')
 					part_id=`fdisk -W - $rm_node | \
 					         grep -v "^*" | grep -v "^$" | \
-						 awk '{print $1}'| grep -v '^0'`
+						 $AWK '{print $1}'| grep -v '^0'`
 					if test "x$part_id" = x; then
 						RM_DISK=""
 					else
@@ -1348,7 +1364,7 @@ autopart_ask()
 							oneline_msgbox Error "Please use SPACEBAR and Up/Down arrows to select one or more hot spare disk(s)."
 						else
 							for disk in `echo $(dialog_res)|sed -e "s/ /\n/g"`; do
-								disk_size=$(cat $TMP_DISKSIZE_FILE|grep $disk|awk '{print $2}')
+								disk_size=$(cat $TMP_DISKSIZE_FILE|grep $disk| $AWK '{print $2}')
 								if test $check_size -ne $disk_size; then
 									if ! oneline_yN_ask "Warning! You have selected not-equal-sized disks. Proceed?"; then
 										rm -f $TMP_FILE $TMP_DISKSIZE_FILE
@@ -1422,13 +1438,13 @@ check_upgrade()
 	# mdisco cannot detect hard disks without rmformat?
 	rmformat >/dev/null 2>&1
 
-	local cdrom=`$REPO/mdisco -l | uniq | sed -e 's/p0/s0/g'`
+	local cdrom=`$MDISCO -l | uniq | sed -e 's/p0/s0/g'`
 
 	mkdir $TMPDEST > /dev/null 2>&1
 	rm -f $UPMAP > /dev/null 2>&1
 	touch $UPMAP
 
-	$REPO/mdisco -ld | uniq | sort | sed -e 's/p0/s0/g' |
+	$MDISCO -ld | uniq | sort | sed -e 's/p0/s0/g' |
 	while read drv; do
 		echo $cdrom | grep $drv 2>/dev/null 1>&2 && continue
 		mount -F ufs $drv $TMPDEST > /dev/null 2>&1
@@ -1452,8 +1468,8 @@ check_upgrade()
 	IFS=$newline
 	for i in `cat $UPMAP|sort`; do
 		local status=0
-		local drive=$(echo $i|awk -F: '{print $1}')
-		local release=$(echo $i|awk -F: '{print $2}')
+		local drive=$(echo $i| $AWK -F: '{print $1}')
+		local release=$(echo $i| $AWK -F: '{print $2}')
 		rlist="$rlist $drive \"$release\" off"
 	done
 	unset IFS
@@ -1491,7 +1507,7 @@ check_upgrade()
 detect_removable()
 {
 	oneline_info "Detecting removable devices..."
-	local cdrom=`$REPO/mdisco -l | uniq | sed -e 's/\/dev\/dsk\//\/dev\/rdsk\//g'`
+	local cdrom=`$MDISCO -l | uniq | sed -e 's/\/dev\/dsk\//\/dev\/rdsk\//g'`
 
 	rmformat 2>/dev/null 1>&2
 
@@ -1503,7 +1519,7 @@ detect_removable()
 	fi
 
 	rmformat 2> /dev/null | grep "Logical Node:" |
-	nawk '/Node:/ { print $4 }' | while read drv; do
+	$AWK '/Node:/ { print $4 }' | while read drv; do
 		echo $cdrom | grep $drv 2>/dev/null 1>&2 && continue
 		rmdrive_info ${drv}
 	done
@@ -1524,8 +1540,8 @@ partition_ask()
 	local p=$1; shift
 	local plist=$*
 	for i in `echo $plist|sort`; do
-		local disp_part=$(echo $i|awk -F: '{print $1}')
-		local disp_comment=$(echo $i|awk -F: '{print $2}')
+		local disp_part=$(echo $i| $AWK -F: '{print $1}')
+		local disp_comment=$(echo $i| $AWK -F: '{print $2}')
 		rlist="$rlist $disp_part $disp_comment 0"
 	done
 	if test "x$p" = "x/"; then
@@ -1619,7 +1635,7 @@ readvfstab() {
 
 upgrade_drive()
 {
-	local release=`grep $UPGRADE_DISK $UPMAP | nawk -F : '{ print $2 }'`
+	local release=`grep $UPGRADE_DISK $UPMAP | $AWK -F : '{ print $2 }'`
 	local release_new=`cat /etc/issue|sed -e "s/Nexenta.*GNU\/OpenSolaris //"`
 
 	slice_root=$UPGRADE_DISK
@@ -1736,7 +1752,7 @@ slice_tag()
 	tags[9]="unassigned"
 
 	local slice=$(echo $dev|sed -e "s/.*s\([0-9]\+\)$/\1/")
-	local tag=$(prtvtoc -s $dev 2>/dev/null|awk "/^[ \t]+$slice/ {print \$2}")
+	local tag=$(prtvtoc -s $dev 2>/dev/null| $AWK "/^[ \t]+$slice/ {print \$2}")
 	echo ${tags[$tag]}
 }
 
@@ -1745,7 +1761,7 @@ partitions_detect()
 	local disk=$1
 	local output="/tmp/fstyp.output"
 	local output_fs="/tmp/fstyp_good.output"
-	local cdrom=`$REPO/mdisco -l | uniq | sed -e 's/p0//g' | sed -e 's/\/dev\/dsk\///g'`
+	local cdrom=`$MDISCO -l | uniq | sed -e 's/p0//g' | sed -e 's/\/dev\/dsk\///g'`
 	local exclude_cdrom_cmd="egrep -v \"${cdrom}\" |"
 	if test "x$cdrom" = x; then
 		exclude_cdrom_cmd=""
@@ -1779,15 +1795,15 @@ manual_partitioning()
 		rm -f ${RMFORMAT_TMP}
 		touch ${RMFORMAT_TMP}
 		echo "slices: 2 = 0, 999GB, \"wm\", \"backup\" " >> ${RMFORMAT_TMP}
-		local total_sectors=`rmformat -s ${RMFORMAT_TMP} ${RM_DISK} 2>&1 | grep "sectors" | nawk '{ print $6 }'`
+		local total_sectors=`rmformat -s ${RMFORMAT_TMP} ${RM_DISK} 2>&1 | grep "sectors" | $AWK '{ print $6 }'`
 
 		# find out number of bytes per sector
 		rm -f ${RMFORMAT_TMP}
 		touch ${RMFORMAT_TMP}
 		echo "slices: 0 = 0, 1, \"wm\", \"root\" " >> ${RMFORMAT_TMP}
 		rmformat -s ${RMFORMAT_TMP} ${RM_DISK} > /dev/null 2>&1
-		local bytes_per_sec=`prtvtoc ${RM_DISK} | grep "bytes/sector" | nawk '{ print $2 }'`
-		local sec_per_cyl=`prtvtoc ${RM_DISK} | grep "sectors/cylinder" | nawk '{ print $2 }'`
+		local bytes_per_sec=`prtvtoc ${RM_DISK} | grep "bytes/sector" | $AWK '{ print $2 }'`
+		local sec_per_cyl=`prtvtoc ${RM_DISK} | grep "sectors/cylinder" | $AWK '{ print $2 }'`
 
 		local total_size=0
 		local mb_size=0
@@ -1924,7 +1940,7 @@ progress_bar()
 	local msg=$4
 	sleep 3
 	(
-	while pgrep $prog>/dev/null; do
+	while pgrep $prog 2>&1 >/dev/null; do
 		test ! -e $logfile && continue
 		lines=`cat $logfile|wc -l`
 		prc=$((100*$lines/$max_lines))
@@ -1940,16 +1956,19 @@ progress_bar()
 install_base()
 {
 	local lines=${_KS_profile_lines[$_KS_profile_selected]}
+#	local lines=`cat $REPO/aptinst.lst | wc -w`
 	local message="Installing the base $DEFAULT_PROFILE software..."
+    local progr_log_file='/tmp/install-base-debootstrap.log'
 	printlog $message
-	$REPO/install-base.sh $TMPDEST $REPO $MEMSCRATCH &
-	progress_bar $lines install-base.sh $TMPDEST/debootstrap/debootstrap.log \
-		"$message... Please wait."
+	printlog "== $REPO/install-base.sh $TMPDEST $REPO $MEMSCRATCH"
+	$REPO/install-base.sh $TMPDEST $REPO $MEMSCRATCH 2>&1 > /dev/null 2>/dev/null &
+	progress_bar $lines install-base.sh $progr_log_file "$message... Please wait."
 }
 
 process_extradebs()
 {
-	chrootenv="/usr/bin/env -i PATH=/sbin:/bin:/usr/sbin:$PATH LOGNAME=root HOME=/root TERM=xterm"
+	chrootenv="/usr/bin/env -i PATH=/usr/bin:/sbin:/usr/sbin:$PATH LOGNAME=root \
+		    HOME=/root TERM=xterm"
 	chroot $TMPDEST $chrootenv /usr/sbin/mount /proc
 	packages_full=$(find ${EXTRADEBDIR} -name *.deb)
 	if test "x$packages_full" != "x"; then
@@ -2179,8 +2198,8 @@ EOF
 	# Fixups for broken pre-remove maintainer scripts
 	# Pass 1: fix non-matching close bracket
 	filelist=$(find $TMPDEST/var/lib/dpkg/info -name "sunw*.prerm")
-	for file in `echo $filelist|/usr/bin/sort`; do
-		cat $file | /usr/bin/nawk '
+	for file in `echo $filelist | sort`; do
+		cat $file | $AWK '
 		BEGIN { mark = 0; line = 0 }
 		{
 			line++
@@ -2202,7 +2221,7 @@ EOF
 	# Pass 2: fix empty alien_atexit routine
 	filelist=$(find $TMPDEST/var/lib/dpkg/info -name "sunw*.prerm")
 	for file in `echo $filelist|/usr/bin/sort`; do
-		cat $file | /usr/bin/nawk '
+		cat $file | $AWK '
 		BEGIN { mark = 0; line = 0 }
 		{
 			line++
@@ -2305,7 +2324,7 @@ echo \"Warning: Fake start-stop-daemon called, doing nothing\"" > "$TMPDEST/sbin
 }
 
 getrand_10_200() {
-	echo | gawk '{srand(systime()); print 10+int(190*rand())}'
+	perl -e "print int(rand(200)) + 10"
 }
 
 configure_network()
@@ -2350,7 +2369,7 @@ configure_network()
 	printlog "Domain Name is set to $domainname at /etc/resolv.conf"
 
 	ifconfig -a plumb >/dev/null 2>&1
-	iflist=`ifconfig -a|grep flags=|nawk -F: '{print $1}'|egrep -v lo0`
+	iflist=`ifconfig -a|grep flags=| $AWK -F: '{print $1}'|egrep -v lo0`
 	for ifname in $iflist; do
 
 		if test "x$auto_install" = "x1"; then
@@ -2400,6 +2419,7 @@ configure_network()
 					netmask=${_KS_iface_mask[$ifnum]}
 					static_ifnames[$ifnum]=$ifname
 				else
+					incorrect_iface_conf=1
 					break
 				fi
 			fi
@@ -2419,7 +2439,7 @@ configure_network()
 			fi
 		done
 
-		if test "x$ipaddress" = x -a "x$netmask" = x; then
+		if test "x$incorrect_iface_conf" != x ; then
 			(( ifnum = ifnum + 1 ))
 			continue
 		fi
@@ -2507,7 +2527,14 @@ configure_network()
 	# Bootstrap /etc/inet/hosts entry
 	node_name="$hostname"
 	node_fqnd="$node_name.$domainname"
-	ipaddress_0="127.0.0.1"
+
+	# fix static IP
+	if test "x$ipaddress" != x; then
+	    ipaddress_0=$ipaddress
+	else
+	    ipaddress_0="127.0.0.1"
+	fi
+
 	if test "x$_KS_ifaces" != x; then
 		ipaddress_0=${_KS_iface_ip[0]}
 
@@ -2561,7 +2588,7 @@ customize_hdd_install()
 
 	mv $TMPDEST/etc/shadow /tmp/shadow.tmp
 	cat /etc/shadow | grep ^root: | \
-	    nawk -F: '{print $1":"$2":"$3"::::::"}' > $TMPDEST/etc/shadow
+	    $AWK -F: '{print $1":"$2":"$3"::::::"}' > $TMPDEST/etc/shadow
 	cat /tmp/shadow.tmp | grep ^root: -v >> $TMPDEST/etc/shadow
 	chown root:sys $TMPDEST/etc/shadow
 	chmod 0400 $TMPDEST/etc/shadow
@@ -2579,7 +2606,7 @@ customize_hdd_install()
 				test "x$user" != x && break
 			done
 
-			if cat /etc/passwd|awk -F: '{print $1}'|grep "^$user$" >/dev/null; then
+			if cat /etc/passwd| $AWK -F: '{print $1}'|grep "^$user$" >/dev/null; then
 				oneline_msgbox Error "User $user already exists."
 				continue
 			fi
@@ -2611,9 +2638,12 @@ customize_hdd_install()
 
 	mkdir -p /export/home
 	rm -rf /export/home/$user
-	local user1000=$(cat /etc/passwd|grep "x:1000:"|awk -F: '{print $1}')
-	test "x$user1000" != x && userdel $user1000 2>/dev/null
-	userdel $user 2> /dev/null
+	local user1000=$(cat /etc/passwd|grep "x:1000:"| $AWK -F: '{print $1}')
+	test "x$user1000" != x && userdel $user1000 2>&1 > /dev/null
+
+	if grep -c $user /etc/passwd >/dev/null 2>&1 ; then
+	    userdel $user 2>&1 > /dev/null
+	fi
 	rm -f /etc/passwd.lock
 	useradd -u 1000 -d /export/home/$user -g staff -s /bin/bash $user
 
@@ -2622,15 +2652,42 @@ customize_hdd_install()
 
 	echo "$user:$pass1" | chpasswd
 	cat /etc/passwd | egrep "^$user" >> $TMPDEST/etc/passwd
-	cat /etc/shadow | egrep "^$user" |  nawk -F: '{print $1":"$2":"$3"::::::"}' >> $TMPDEST/etc/shadow
+	cat /etc/shadow | egrep "^$user" |  $AWK -F: '{print $1":"$2":"$3"::::::"}' >> $TMPDEST/etc/shadow
 
 	mkdir -p $TMPDEST/export/home/$user
 	find $TMPDEST/etc/skel -name ".*" -type f -exec cp {} $TMPDEST/export/home/$user/ \;
 	chown -R $user:staff $TMPDEST/export/home/$user
-	echo "$user    ALL=(ALL) ALL" >> $TMPDEST/etc/sudoers
-#	echo "root    ALL=(ALL) ALL" >> $TMPDEST/etc/sudoers
 
 	printlog "Added user: $user and assigned new password"
+
+	if [ -f $TMPDEST/etc/sudoers ] ; then
+	    echo "$user	ALL=(ALL) ALL" >> $TMPDEST/etc/sudoers
+	    printlog "Added user $user to /etc/sudoers"
+	else
+	    printlog "/etc/sudoers not found! Install pkg SUDO."
+	fi
+
+	# fix PATH
+	ALLPATH="/usr/gnu/bin:/usr/bin:/sbin:/usr/sbin:/usr/local/bin:/usr/local/sbin"
+	if [ -f $TMPDEST/etc/default/su ]; then
+	    echo "PATH=$ALLPATH" >> $TMPDEST/etc/default/su
+	    echo "SUPATH=$ALLPATH" >> $TMPDEST/etc/default/su
+	fi
+
+    if [ -f $TMPDEST/etc/default/login ]; then
+        echo "PATH=$ALLPATH" >> $TMPDEST/etc/default/login
+        echo "SUPATH=$ALLPATH" >> $TMPDEST/etc/default/login
+    fi
+
+	if [ -f $TMPDEST/etc/sudoers ] ; then
+	    sed '/env_reset/d' $TMPDEST/etc/sudoers > $TMPDEST/etc/sudoers.temp
+	    mv $TMPDEST/etc/sudoers.temp $TMPDEST/etc/sudoers
+	    sed '/secure_path/d' $TMPDEST/etc/sudoers > $TMPDEST/etc/sudoers.temp
+	    mv $TMPDEST/etc/sudoers.temp $TMPDEST/etc/sudoers
+	    echo "Defaults	env_reset" >> $TMPDEST/etc/sudoers
+	    echo "Defaults	secure_path=\"$ALLPATH\"" >> $TMPDEST/etc/sudoers
+	    chmod 0440 $TMPDEST/etc/sudoers
+	fi
 
 	restore_passwd_info
 
@@ -2659,6 +2716,18 @@ customize_hdd_install()
 	chown root:sys $TMPDEST/etc/passwd
 	printlog "Root SHELL is set to /bin/bash"
 
+	if test "x$_KS_disable_motd" != "x" -a "x$_KS_disable_motd" != "x0"; then
+		touch $TMPDEST/root/.hushlogin
+		printlog "Disabled MOTD for 'root' user"
+		touch $TMPDEST/export/home/$user/.hushlogin
+		printlog "Disabled MOTD for '$user' user"
+	fi
+
+    if test "x$_KS_issue_files_content" != "x"; then
+        echo $_KS_issue_files_content > $TMPDEST/etc/issue
+        echo $_KS_issue_files_content > $TMPDEST/etc/issue.net
+    fi
+
 	apply_kbd
 
 	customize_common
@@ -2673,7 +2742,7 @@ customize_hdd_install()
 	customize_sources
 
 	oneline_info "Populating /dev..."
-	devfsadm -r $TMPDEST
+	devfsadm -r $TMPDEST 2> /dev/null
 	printlog "Populated /dev"
 
 	callback _KS_callback_post_install
@@ -2799,6 +2868,7 @@ reboot_exit()
 
 install_grub()
 {
+	CWD=`pwd`
 	if test $UPGRADE = 1; then
 		# don't do anything... grub-data should take care
 		return
@@ -2822,6 +2892,13 @@ install_grub()
 		fi
 	fi
 
+	test -d $TMPDEST/boot/grub || $(printlog "Error: GRUB not found!"; aborted)
+
+	cp -f $REPO/hdd_grub-menu.txt $TMPDEST/boot/grub/menu.lst
+
+	CDATE=`date`
+	sed -e "s/__date__/$CDATE/" -i $TMPDEST/boot/grub/menu.lst 2> /dev/null
+
 	oneline_info "Installing GRUB$mbr_desc..."
 
 	# installing grub loader
@@ -2840,10 +2917,10 @@ install_grub()
 	#echo "disk" > $AUTOPART_CMD_FILE
 	#echo "0" >> $AUTOPART_CMD_FILE
 	#echo "q" >> $AUTOPART_CMD_FILE
-	#local hd=$(format -f $AUTOPART_CMD_FILE 2>&1 | awk -F. "/[0-9]+\. $disk/ {print \$1}" | sed -e "s/^\s* //")
+	#local hd=$(format -f $AUTOPART_CMD_FILE 2>&1 | $AWK -F. "/[0-9]+\. $disk/ {print \$1}" | sed -e "s/^\s* //")
 
 	local part=0
-	fdisk -W - /dev/rdsk/${disk}p0 | awk '!/^\*/ && !/^$/ {print $0}' |\
+	fdisk -W - /dev/rdsk/${disk}p0 | $AWK '!/^\*/ && !/^$/ {print $0}' |\
 	while read id act bhead bsect bcyl ehead esect ecyl rsect numsect; do
 		if test $id == 191; then
 			echo -n $part > $AUTOPART_CMD_FILE
@@ -2881,13 +2958,9 @@ install_grub()
 		sed -i -e "s/\(hd[0-9]\+,[0-9]\+,\)./\1$slice/" $TMPDEST/boot/grub/menu.lst
 	fi
 
-	# Edit menu.lst for curently distro
-	sed -i -e "s/_#N.*N#_/$grub_n_title/" $TMPDEST/boot/grub/menu.lst
-	sed -i -e "s/_#S.*S#_/$grub_s_title/" $TMPDEST/boot/grub/menu.lst
-
 	# enable ZFS/Boot feature in the GRUB menu for all entries
 	if test $ROOTDISK_TYPE = "zfs" && \
-	   ! cat $TMPDEST/boot/grub/menu.lst | grep "ZFS-BOOTFS" >/dev/null; then
+	   ! cat $TMPDEST/boot/grub/menu.lst | grep "ZFS-BOOTFS" 2>/dev/null; then
 
 		# make sure GRUB passes ZFS-BOOTFS property up to the kernel
 		sed -i -e "s/\/unix/\/unix -B \$ZFS-BOOTFS/" $TMPDEST/boot/grub/menu.lst
@@ -2898,19 +2971,22 @@ install_grub()
 		# no need to specify root...
 		sed -i -e "/^[ 	]*root[ 	]\+(/d" $TMPDEST/boot/grub/menu.lst
 
+		# change CD miniroot to HDD boot_archive...
+		sed -i -e 's/\/miniroot/\/boot_archive/' $TMPDEST/boot/grub/menu.lst
+
 		# copy menu.lst on syspool
-		umount /$ZFS_ROOTPOOL 2>/dev/null
-		if zfs set mountpoint=/$ZFS_ROOTPOOL $ZFS_ROOTPOOL; then
-			mkdir -p /$ZFS_ROOTPOOL/boot/grub
-			cp $TMPDEST/boot/grub/menu.lst /$ZFS_ROOTPOOL/boot/grub
-			umount /$ZFS_ROOTPOOL 2>/dev/null
-			zfs set mountpoint=none $ZFS_ROOTPOOL
-		fi
+		mkdir -p /$ZFS_ROOTPOOL/boot/grub/bootsign
+		touch /$ZFS_ROOTPOOL/boot/grub/bootsign/pool_syspool
+
+  		printlog "Copy menu.lst to $ZFS_ROOTPOOL ..."
+		cp -f $TMPDEST/boot/grub/menu.lst /$ZFS_ROOTPOOL/boot/grub
+
+		sync; sync
 	fi
 
 	printlog "Updated /boot/grub/menu.lst"
 
-	cd /
+	cd $CWD 2> /dev/null
 }
 
 customize_bootenv()
@@ -2922,7 +2998,7 @@ customize_bootenv()
 
 	echo "setprop prealloc-chunk-size 0x2000" >> $TMPDEST/boot/solaris/bootenv.rc
 	if test $ROOTDISK_TYPE = "ufs"; then
-		local path=`ls -l $slice_root|awk '{print $11}'|sed -e "s/.*\/devices//"`
+		local path=`ls -l $slice_root| $AWK '{print $11}'|sed -e "s/.*\/devices//"`
 		echo "setprop bootpath $path" >> $TMPDEST/boot/solaris/bootenv.rc
 	fi
 	echo "setprop console 'text'" >> $TMPDEST/boot/solaris/bootenv.rc
@@ -2935,7 +3011,7 @@ b2r() { echo `echo $1 | sed -e "s/\/dsk/\/rdsk/"`; }
 mntdev()
 {
 	if [ $BOOT_ANYWHERE -ne 0 ]; then
-		echo `basename $1 | nawk -F s '{ print "/.nexenta/s"$2 }'`
+		echo `basename $1 | $AWK -F s '{ print "/.nexenta/s"$2 }'`
 	else
 		if [ "$RM_DISK" = "" ]; then
 			r2b $1
@@ -2948,7 +3024,7 @@ mntdev()
 fsckdev()
 {
 	if [ $BOOT_ANYWHERE -ne 0 ]; then
-#		echo `basename $1 | nawk -F s '{ print "/.nexenta/s"$2 }'`
+#		echo `basename $1 | $AWK -F s '{ print "/.nexenta/s"$2 }'`
 		echo "-"
 	else
 		if [ "$RM_DISK" = "" ]; then
@@ -3005,73 +3081,61 @@ vfstab_setup()
 
 configure_repository()
 {
-	rm -f $DBFILE >/dev/null 2>&1
+	plat='none'
 
-	manifest_list=`find ${TMPDEST}/var/svc/manifest/* \
-	    -type f -name "*.xml" -print`
+	CWD=`pwd`
+	cd ${TMPDEST}/etc/svc/profile
 
-	set -- ${manifest_list}
-
-	CONFIGD=${TMPDEST}/lib/svc/bin/svc.configd
-	SVCCFG=${TMPDEST}/usr/sbin/svccfg
-	DTD=${TMPDEST}/usr/share/lib/xml/dtd/service_bundle.dtd.1
-
-	# Create the repository with smf/manifest property
-	PKG_INSTALL_ROOT=${TMPDEST} SVCCFG_DTD=${DTD} \
-	SVCCFG_REPOSITORY=${DBFILE} SVCCFG_CONFIGD_PATH=${CONFIGD} \
-	${SVCCFG} add smf/manifest >/dev/null 2>&1
-
-	# This will significantly speed up next reboot
-	while [ $# -gt 0 ]; do
-		# Import manifests into the repository
-		SVCCFG_CHECKHASH=1 \
-		PKG_INSTALL_ROOT=${TMPDEST} SVCCFG_DTD=${DTD} \
-		SVCCFG_REPOSITORY=${DBFILE} SVCCFG_CONFIGD_PATH=${CONFIGD} \
-		${SVCCFG} import $1 >/dev/null 2>&1
-
-		shift
-	done
-
-	plat=`uname -i`
-
-	cd ${TMPDEST}/var/svc/profile
 	rm -f inetd_services.xml >/dev/null 2>&1
-	ln -fs inetd_generic.xml inetd_services.xml >/dev/null 2>&1
+	$LN -fs inetd_generic.xml inetd_services.xml >/dev/null 2>&1
+
 	rm -f name_service.xml >/dev/null 2>&1
-	ln -fs ns_dns.xml name_service.xml >/dev/null 2>&1
-	ln -fs platform_${plat}.xml platform.xml >/dev/null 2>&1
+	$LN -fs ns_dns.xml name_service.xml >/dev/null 2>&1
 
-	PKG_INSTALL_ROOT=${TMPDEST} SVCCFG_DTD=${DTD} \
-	SVCCFG_REPOSITORY=${DBFILE} SVCCFG_CONFIGD_PATH=${CONFIGD} \
-	${SVCCFG} apply ${TMPDEST}/var/svc/profile/generic.xml >/dev/null 2>&1
+	rm -f platform.xml
+	$LN -fs platform_${plat}.xml platform.xml >/dev/null 2>&1
 
-	PKG_INSTALL_ROOT=${TMPDEST} SVCCFG_DTD=${DTD} \
-	SVCCFG_REPOSITORY=${DBFILE} SVCCFG_CONFIGD_PATH=${CONFIGD} \
-	${SVCCFG} apply ${TMPDEST}/var/svc/profile/platform.xml >/dev/null 2>&1
+	rm -f generic.xml
+	$LN -fs generic_open.xml generic.xml
 
-	PKG_INSTALL_ROOT=${TMPDEST} SVCCFG_DTD=${DTD} \
-	SVCCFG_REPOSITORY=${DBFILE} SVCCFG_CONFIGD_PATH=${CONFIGD} \
-	${SVCCFG} -s vtdaemon setprop options/secure=false >/dev/null 2>&1
+	cd $CWD
 
 	# Store the repository under etc/svc/repository.db
-	chown root:sys ${DBFILE}
-	mv ${DBFILE} ${TMPDEST}/etc/svc/repository.db
+	cp -ar ${TMPDEST}/lib/svc/seed/global.db ${TMPDEST}/etc/svc/repository.db
+	chown root:sys ${TMPDEST}/etc/svc/repository.db
 	printlog "SMF repository configured at /etc/svc/repository.db"
 }
 
 update_boot_archive()
 {
+	sync; sync
 	test ! -d $TMPDEST/etc/devices && mkdir $TMPDEST/etc/devices
 	if test $ROOTDISK_TYPE = "zfs"; then
 		cp /etc/zfs/zpool.cache $TMPDEST/etc/zfs
 	fi
-	cp -f /etc/path_to_inst $TMPDEST/etc
+
+	echo "etc/zfs/zpool.cache" >> $TMPDEST/boot/solaris/filelist.ramdisk
+
 	cd $TMPDEST
-	SUN_PERSONALITY=1 bootadm update-archive -R $TMPDEST >/dev/null
-	printlog "Boot archive created: /platform/i86pc/boot_archive"
-	cp -a $REPO/x86.miniroot-safe $TMPDEST/boot
+#	SUN_PERSONALITY=1 /sbin/bootadm update-archive -R $TMPDEST >/dev/null
+#	/sbin/bootadm update-archive -R $TMPDEST >/dev/null
+
+	# hack boot archive for first boot
+#	cp -a /.livecd/platform/i86pc/miniroot $TMPDEST/platform/i86pc/boot_archive
+#	cp -a /.livecd/platform/i86pc/amd64/miniroot $TMPDEST/platform/i86pc/amd64/boot_archive
+	bootadmlogs=`/usr/sbin/bootadm update-archive -R $TMPDEST`
+#	printlog "Boot archive created: /platform/i86pc/boot_archive"
+	printlog "$bootadmlogs"
+
+#	UPDATEFILE=/etc/svc/volatile/boot_archive_needs_update
+#	test -f $UPDATEFILE && rm -f $UPDATEFILE
+
+#	cp -a $REPO/x86.miniroot-safe $TMPDEST/boot
+	cp -a /.livecd/platform/i86pc/miniroot $TMPDEST/boot/x86.miniroot-safe
+#	cp -a $TMPDEST/platform/i86pc/boot_archive $TMPDEST/boot/x86.miniroot-safe
 	printlog "Safe Boot archive created: /boot/x86.miniroot-safe"
-	rm -f $TMPDEST/etc/zfs/zpool.cache
+	#rm -f $TMPDEST/etc/zfs/zpool.cache
+	sync; sync
 }
 
 cleanup_after_install()
@@ -3085,8 +3149,6 @@ cleanup_after_install()
 	rm -f $TMPDEST/etc/skel/.profile.dpkg-dist > /dev/null 2>&1
 	mkdir -p $TMPDEST/var/cache/apt/archives/partial
 	test -d $TMPDEST/var/log/apt || mkdir -p $TMPDEST/var/log/apt
-	cp $TMPDEST/debootstrap/debootstrap.log $TMPDEST/var/log/apt/debootstrap.log
-	rm -rf $TMPDEST/debootstrap > /dev/null 2>&1
 
 	test "x$slice_usr" != x && umount -f $TMPDEST/usr > /dev/null 2>&1
 	test "x$slice_var" != x && umount -f $TMPDEST/var > /dev/null 2>&1
@@ -3098,14 +3160,15 @@ cleanup_after_install()
 
 customize_sources()
 {
-	echo "# Main repository sources" > $TMPDEST/etc/apt/sources.list
-	echo "deb $_KS_apt_sources" >> $TMPDEST/etc/apt/sources.list
-	echo "deb-src $_KS_apt_sources" >> $TMPDEST/etc/apt/sources.list
+	APTSOURCES="$TMPDEST/etc/apt/sources.list"
+	echo "# Main repository sources" > $APTSOURCES
+	echo "deb $_KS_apt_sources" >> $APTSOURCES
+	echo "deb-src $_KS_apt_sources" >> $APTSOURCES
 	if test "x$_KS_plugin_sources" != x; then
-		echo >> $TMPDEST/etc/apt/sources.list
-		echo "# Third-party and commercial NexentaStor plugins sources" >> $TMPDEST/etc/apt/sources.list
-		echo "deb $_KS_plugin_sources" >> $TMPDEST/etc/apt/sources.list
-		echo "deb-src $_KS_plugin_sources" >> $TMPDEST/etc/apt/sources.list
+		echo >> $APTSOURCES
+		echo "# Third-party and commercial NexentaStor plugins sources" >> $APTSOURCES
+		echo "deb $_KS_plugin_sources" >> $APTSOURCES
+		echo "deb-src $_KS_plugin_sources" >> $APTSOURCES
 	fi
 	rm -f "$TMPDEST/var/lib/apt/lists/*" 2>/dev/null 1>&2
 	printlog "Installed /etc/apt/sources.list"
@@ -3120,15 +3183,15 @@ customize_X()
 
 restore_passwd_info()
 {
-	rm -f /tmp/passwd.tmp
-	rm -f /tmp/shadow.tmp
+	rm -f /tmp/passwd.tmp > /dev/null 2>&1
+	rm -f /tmp/shadow.tmp > /dev/null 2>&1
 	if [ -f /etc/passwd.$$ ]; then
-		cp /etc/passwd.$$ /etc/passwd
-		rm -f /etc/passwd.$$
+		cp -f /etc/passwd.$$ /etc/passwd > /dev/null 2>&1
+		rm -f /etc/passwd.$$ > /dev/null 2>&1
 	fi
 	if [ -f /etc/shadow.$$ ]; then
-		cp /etc/shadow.$$ /etc/shadow
-		rm -f /etc/shadow.$$
+		cp -f /etc/shadow.$$ /etc/shadow > /dev/null 2>&1
+		rm -f /etc/shadow.$$ > /dev/null 2>&1
 	fi
 }
 
@@ -3191,11 +3254,11 @@ aborted()
 
 kbd_layouts()
 {
-	echo | kbd -s | egrep "^[ \t]*[0-9]+" | awk '{print $2}' > /tmp/a
-	echo | kbd -s | egrep "^[ \t]*[0-9]+" | awk '{print $4}' >> /tmp/a
+	echo | kbd -s | egrep "^[ \t]*[0-9]+" | $AWK '{print $2}' > /tmp/a
+	echo | kbd -s | egrep "^[ \t]*[0-9]+" | $AWK '{print $4}' >> /tmp/a
 	for l in `cat /tmp/a`; do
 		kbd -s $l >/dev/null
-		kbd -l | awk '/^layout.*=/ {print $1}' | awk -F= "{print \"${l}\",\$2}"
+		kbd -l | $AWK '/^layout.*=/ {print $1}' | $AWK -F= "{print \"${l}\",\$2}"
 	done
 	kbd -s US-English >/dev/null
 	rm -f /tmp/a
@@ -3256,7 +3319,7 @@ tz_by_posix()
 		    --inputbox "\nPlease enter the desired value of the TZ environment variable. For example, GST-10 is a zone named GST that is 10 hours ahead (east) of UTC (GMT/Zulu)." 0 0 2>$DIALOG_RES
 
 		TZ=$(dialog_res)
-		env LC_ALL=C nawk -v TZ="$TZ" 'BEGIN {
+		env LC_ALL=C $AWK -v TZ="$TZ" 'BEGIN {
 			tzname = "[^-+,0-9][^-+,0-9][^-+,0-9]+"
 			time = "[0-2]?[0-9](:[0-5][0-9](:[0-5][0-9])?)?"
 			offset = "[-+]?" time
@@ -3277,7 +3340,7 @@ tz_by_posix()
 tz_by_location()
 {
 	# Get list of names of countries in the continent or ocean.
-	countries=$(nawk -F'\t' \
+	countries=$($AWK -F'\t' \
 		-v continent="$continent" \
 		-v TZ_COUNTRY_TABLE="$TZ_COUNTRY_TABLE" \
 	'
@@ -3342,7 +3405,7 @@ tz_by_location()
 	rm -f $TMP_FILE >/dev/null
 
 	# Get list of names of time zone rule regions in the country.
-	regions=$(nawk -F'\t' \
+	regions=$($AWK -F'\t' \
 		-v country="$country" \
 		-v TZ_COUNTRY_TABLE="$TZ_COUNTRY_TABLE" \
 	'
@@ -3403,7 +3466,7 @@ tz_by_location()
 	region=$(echo $region | sed -e 's/_/ /g')
 
 	# Determine TZ from country and region.
-	TZ=$(nawk -F'\t' \
+	TZ=$($AWK -F'\t' \
 		-v country="$country" \
 		-v region="$region" \
 		-v TZ_COUNTRY_TABLE="$TZ_COUNTRY_TABLE" \
@@ -3500,15 +3563,20 @@ none          	\"Specify time zone using POSIX TZ format\"	off	\
 	rm -f $TMP_FILE >/dev/null
 
 	case $continent in
-	none)	tz_by_posix ;;
-	*)	tz_by_location ;;
+	none)	tz_by_posix
+        ;;
+	*)	tz_by_location
+        ;;
 	esac
 
 	rlist=""
 	case $country+$region in
-	?*+?*)	rlist="        $country\n        $region\n";;
-	?*+)	rlist="        $country\n";;
+	?*+?*)	rlist="        $country\n        $region\n"
+        ;;
+	?*+)	rlist="        $country\n"
+        ;;
 	+)	rlist="        TZ='$TZ'\n"
+        ;;
 	esac
 
 	extra_info=$(printf "$INFO_TZ" "$TZ")
@@ -3524,7 +3592,7 @@ none          	\"Specify time zone using POSIX TZ format\"	off	\
 select_profile()
 {
 	# no need to select profile if just one supplied
-	local num=$(echo $_KS_profiles|wc|awk '{print $2}')
+	local num=$(echo $_KS_profiles|wc| $AWK '{print $2}')
 	test $num -le 1 && return
 
 	local msg="$TITLE allows to select installation profile. You may choose to select one which suits your needs the most."
@@ -3562,11 +3630,11 @@ apply_profile()
 check_components()
 {
 	# XXX: add more check here
-	if [ ! -f /usr/sbin/debootstrap ]; then
-		echo "Debootstrap is not present on this system."
-		screen -X quit >/dev/null
-		exit 1
-	fi
+#	if [ ! -f /usr/sbin/debootstrap ]; then
+#		echo "Debootstrap is not present on this system."
+#		screen -X quit >/dev/null
+#		exit 1
+#	fi
 	if [ ! -f $DEFPROFILE ]; then
 		echo "Default profile '$DEFPROFILE' not found."
 		screen -X quit >/dev/null
@@ -3588,13 +3656,14 @@ check_requirements()
 
 	if test "x$_KS_need_network" = x1; then
 		ifconfig -a plumb >/dev/null 2>&1
-		if ! ifconfig -a|grep flags=|nawk -F: '{print $1}'|egrep -v lo0 >/dev/null; then
+		if ! ifconfig -a|grep flags=| $AWK -F: '{print $1}'|egrep -v lo0 >/dev/null; then
 			message_Yn_ask "\nNo network adapter or required networking driver found.\nEnsure that target has network adapter properly installed.\n\nFor third-party driver installation instructions press F2\nand type 'less /DRIVER-INSTALL.txt'\n\nAbort installation process?"
 			test $? = $DIALOG_OK && return 1
 		fi
 	fi
 
-	eval 'format 2>/dev/null <<_EOF\cD\n_EOF | egrep "[0-9]+\. c" >/dev/null'
+#	eval 'format 2>/dev/null <<_EOF\cD\n_EOF | egrep "[0-9]+\. c" >/dev/null'
+	eval 'format < /dev/null | egrep "[0-9]+\. c" >/dev/null'
 	if test $? != 0; then
 		message_Yn_ask "\nNo hard disk or required storage driver found.\nEnsure that hard disk is properly connected to a storage controller.\n\nFor third-party driver installation instructions press F2\nand type 'less /DRIVER-INSTALL.txt'\n\nAbort installation process?"
 		test $? = $DIALOG_OK && return 1
@@ -3642,11 +3711,11 @@ show_license()
 extract_lic_file()
 {
 	local lic_text=$1
-	lic_pkgname=$(echo "$lic_text"|awk -F: '{print $1}')
+	lic_pkgname=$(echo "$lic_text"| $AWK -F: '{print $1}')
 	lic_pkg=$(find $REPO -name "${lic_pkgname}_*.deb" 2>/dev/null)
 	if test -f "$lic_pkg"; then
 		dpkg -x "$lic_pkg" "/tmp/$lic_pkgname" 2>/dev/null
-		lic_text=$(echo "$lic_text"|awk -F: '{print $2}')
+		lic_text=$(echo "$lic_text"| $AWK -F: '{print $2}')
 	fi
 	echo $lic_text
 }
@@ -3654,11 +3723,11 @@ extract_lic_file()
 extract_lic_text()
 {
 	local lic_text=$1
-	lic_pkgname=$(echo "$lic_text"|awk -F: '{print $1}')
+	lic_pkgname=$(echo "$lic_text"| $AWK -F: '{print $1}')
 	lic_pkg=$(find $REPO -name "${lic_pkgname}_*.deb" 2>/dev/null)
 	if test -f "$lic_pkg"; then
 		dpkg -x "$lic_pkg" "/tmp/$lic_pkgname" 2>/dev/null
-		lic_file=$(echo "$lic_text"|awk -F: '{print $2}')
+		lic_file=$(echo "$lic_text"| $AWK -F: '{print $2}')
 		if test -f "/tmp/$lic_pkgname$lic_file"; then
 			cp "/tmp/$lic_pkgname$lic_file" / 2>/dev/null
 			lic_text=/$(basename "/tmp/$lic_pkgname$lic_file" 2>/dev/null)
@@ -3702,9 +3771,9 @@ create_dump()
 
 calculate_dump_size()
 {
-	phys="$(echo $result_disk_pool | awk '{print $1}')"
+	phys="$(echo $result_disk_pool |  $AWK '{print $1}')"
 	phys="/dev/rdsk/${phys}s0"
-	size="$(fdisk -G $phys | tail -1 | awk '{print $1*$5*$6*$7}')"
+	size="$(fdisk -G $phys | tail -1 | $AWK '{print $1*$5*$6*$7}')"
 	perl -e '
 		my $syspool_size = $ARGV[0]/1024/1024;
 		my $memsize = $ARGV[1];
@@ -3731,9 +3800,10 @@ activate_dump()
 		chmod 0700 $TMPDEST/$savecore_dir
 		mkdir -p $TMPDEST/$ROOTPOOL_ZVOL_DIR
 		local dump_link=`readlink $ROOTPOOL_ZVOL_DIR/$rawdump`
-		cd $TMPDEST/$ROOTPOOL_ZVOL_DIR && ln -s $dump_link $rawdump && cd - 1>/dev/null 2>&1
+		CWD=`pwd`
+		cd $TMPDEST/$ROOTPOOL_ZVOL_DIR && ln -s $dump_link $rawdump && cd $CWD
 		dumpadm -c curproc -d $ROOTPOOL_ZVOL_DIR/$rawdump -z on -r \
-			$TMPDEST -s $savecore_dir -m 20% 1>/dev/null
+			$TMPDEST -s $savecore_dir -m 20% 2>/dev/null 1> /dev/null
 		if [ $? -eq 0 ]; then
 			printlog "Crash dump service was successfully activated."
 			printlog "Dump device: $rawdump"
@@ -3779,7 +3849,7 @@ get_lun_by_device_id()
 {
 	perl -e '
 		my $found;
-        	for my $l (`/usr/nexenta/hddisco`) {
+        	for my $l (`/usr/bin/hddisco`) {
 	        	if ($l =~ /^=(c\d+.*d\d+)/) {
 	           		$found = $1;
 	           		next;
@@ -3845,7 +3915,7 @@ if test -f ${EXTRADEB_PROFILE}; then
 	source ${EXTRADEB_PROFILE}
 fi
 DEFAULT_PROFILE=${_KS_profile_name[$_KS_profile_selected]}
-TITLE=$_KS_product_title
+TITLE="$_KS_product_title"
 if test -f $REPO/machinesig; then
 	devfsadm -c disk 2>/dev/null 1>&2
 	rmformat 2>/dev/null 1>&2
@@ -4127,9 +4197,6 @@ if test "x$rawdump" != x; then
 	activate_dump
 fi
 
-printlog "Saving log file ..."
-cp $LOGFILE $TMPDEST/root
-
 if [ $UPGRADE -eq 0 ]; then
 	# Trigger first time startup wizard if specified via Kick-Start profile
 	if test "x$_KS_startup_wizard" != x; then
@@ -4185,6 +4252,10 @@ oneline_info "Updating Boot Archive..."
 update_boot_archive
 
 test -f $REPO/machinesig && $REPO/machinesig
+
+printlog "Installer finished at '`date`'. Logging."
+printlog "Saving log file ..."
+cp $LOGFILE $TMPDEST/root
 
 if [ $UPGRADE -eq 0 ]; then
 	if test $ROOTDISK_TYPE = "zfs"; then

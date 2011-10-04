@@ -32,7 +32,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (C) 2005-2008 Nexenta Systems, Inc.
+# Copyright (C) 2005-2011 Nexenta Systems, Inc.
 # All rights reserved.
 #
 ##############################################################################
@@ -49,6 +49,7 @@ customdir="$NBLD_LIBDIR"	        # directory with data files
 extra_dir="/var/lib/nbld"		# directory with extra data files
 debug="$NBLD_DEBUG"		        # default no debug mode
 mode="$NBLD_DEFAULT_MODE"	        # no default mode
+grub_hdd_menu_file="${mode}_hdd_grub-menu.txt"
 install_script=nexenta-install.sh
 install_profile="$rootdir$hddrepo/defaults"
 pkglist="$NBLD_TMP/debootstrap-pkglist.tmp"
@@ -86,7 +87,9 @@ cleanup() { if test "x$repolock_set" = xyes; then rmdir $repolock 2>/dev/null;
 	repolock_set=no; echo "Lock $repolock removed"; fi; umount /etc/mnttab 2>/dev/null; }
 trap "cleanup" INT EXIT TERM QUIT
 
-if [ `whoami` != "root" ]; then
+UUID=`id -u`
+#if [ `whoami` != "root" ]; then
+if [ $UUID != "0" ]; then
 	echo "Insufficient privileges to run $0"
 	exit 1
 fi
@@ -104,23 +107,29 @@ done
 # Recalculate some globals
 repolock="$repo/dists/debarchiver.lock"
 install_profile="$rootdir$hddrepo/defaults"
-environ="$rootdir /usr/bin/env -i PATH=/bin:/usr/sbin:$PATH LOGNAME=root HOME=/root TERM=xterm"
+environ="$rootdir /usr/bin/env -i PATH=usr/gnu/bin:/usr/bin:/sbin:/usr/sbin LOGNAME=root HOME=/root TERM=xterm"
 
-if mount|grep $rootdir 1>/dev/null 2>&1 && test -d $rootdir; then
+if mount | grep $rootdir 1>/dev/null 2>&1 && test -d $rootdir; then
 	echo "Error: $rootdir is busy. has loopback mounted dirs."
 	exit 1
 fi
 
 test -d $rootdir && umount $rootdir/proc 2>/dev/null
 
-REQ_DEBS="pciutils nexenta-keyring zlib1g libnspr4-0d libnss3-1d gnupg sunwpiclr \
-	  sunwdtrc sunwdtrp sunwrcmdc nexenta-sunw pkg-config libkrb53 libstdc++6-4.2-dev"
+#REQ_DEBS="pciutils nexenta-keyring zlib1g libnspr4-0d libnss3-1d gnupg sunwpiclr \
+#	  sunwdtrc sunwdtrp sunwrcmdc nexenta-sunw pkg-config libkrb53 libstdc++6-4.2-dev"
+#REQ_DEBS="pciutils nexenta-keyring zlib1g libnspr4-0d libnss3-1d gnupg service-picl \
+#	developer-dtrace system-kernel-dtrace-providers service-network-network-clients nexenta-sunw pkg-config libkrb53 libstdc++6-4.2-dev"
 
-MINIMAL_CMN_DEBS="vim sunwsshu sunwsshdu bzip2 mkisofs sudo sed sunwcsu"
 
-HDD_EXCLUDE_DEBS="openssh-client openssh-server"
+#MINIMAL_CMN_DEBS="vim sunwsshu sunwsshdu bzip2 mkisofs sudo sed sunwcsu"
+#MINIMAL_CMN_DEBS="vim network-ssh service-network-ssh bzip2 mkisofs sudo sed sunwcs"
 
-STAGE0_EXCLUDE_DEBS="alien aptitude sunwdtrc rpm info locales sunwrcmdc sunwfmd sunwpkgcmdsu sunwdtrp libssl0.9.7 libsnmp9 librpm4 debhelper libldap-2.2-7 sasl2-bin nano nvi sunwsmbsu sunwsmbsr sunwsmbskr audioctl patch sunwdmgtu sunwdmgtr sunwdrmr sunwdsdr sunwdsdu sunwiscsir sunwiscsiu sunwima sunwimac sunwimacr sunwimar sunwmpapi sunwmpapir sunwmdb sunwmdbr sunwsshdr sunwsshdu sunwxwdv sunwtnetd sunwsmedia sunwsmediar sunwhea sunwiir sunwiiu sunwrdcr sunwrdcu sunwscmr sunwscmu sunwspsvr sunwspsvu sunwrmvolmgrr sunwrmvolmgr sunwxvmr sunwxvmu sunwxvmdomr sunwxvmdomu"
+#HDD_EXCLUDE_DEBS="openssh-client openssh-server"
+
+#STAGE0_EXCLUDE_DEBS="alien aptitude sunwdtrc rpm info locales sunwrcmdc sunwfmd sunwpkgcmdsu sunwdtrp libssl0.9.7 libsnmp9 librpm4 debhelper libldap-2.2-7 sasl2-bin nano nvi sunwsmbsu sunwsmbsr sunwsmbskr audioctl patch sunwdmgtu sunwdmgtr sunwdrmr sunwdsdr sunwdsdu sunwiscsir sunwiscsiu sunwima sunwimac sunwimacr sunwimar sunwmpapi sunwmpapir sunwmdb sunwmdbr sunwsshdr sunwsshdu sunwxwdv sunwtnetd sunwsmedia sunwsmediar sunwhea sunwiir sunwiiu sunwrdcr sunwrdcu sunwscmr sunwscmu sunwspsvr sunwspsvu sunwrmvolmgrr sunwrmvolmgr sunwxvmr sunwxvmu sunwxvmdomr sunwxvmdomu"
+
+#STAGE0_EXCLUDE_DEBS="alien system-library-storage-libmpscsi-vhci storage-mpathadm python nexenta-pkgcmd dpkg-dev debhelper tasksel tasksel-data libhal-dev libhal-storage-dev python2.5  myamanet-rf aptitude developer-dtrace info manpages service-network-network-clients service-fault-management system-kernel-dtrace-providers libssl0.9.7 man-db nano service-file-system-smb patch driver-graphics-drm sunwcs service-network-dns-mdns network-iscsi-initiator system-library-storage-ima system-library-storage-ima-header-ima system-library-storage-libmpapi developer-debug-mdb driver-x11-winlock service-network-telnet system-header storage-avs-point-in-time-copy storage-avs-remote-mirror service-storage-avs-cache-management driver-storage-sv diagnostic-powertop"
 
 if test -f $customdir/$mode.profile; then
 	. $customdir/$mode.profile
@@ -155,7 +164,7 @@ fi
 
 echo "Selected Mode is $mode"
 export BOOTSTRAP_EXTRA_DEBS="$LOCAL_ARCHIVE_DEBS ${REQ_DEBS}"
-export STAGE0_DEBS="$STAGE0_DEBS ${REQ_DEBS}"
+export STAGE0_DEBS="$STAGE0_DEBS ${REQ_DEBS} $STAGE0_APTINST $STAGE0_CD $STAGE0_DRIVERS $STAGE0_CD_END $STAGE0_HDD_END"
 
 # From now on selected do 'install' or 'livecd' type
 mode=$mode_type
@@ -172,20 +181,23 @@ test -d $rootdir && rm -rf $rootdir
 mkdir -p $rootdir
 
 # $repo/incoming/input.conf must pre-exist, so debarchiver will use it
-test ! -f $repo/incoming/input.conf && \
-	fatal "could not find $repo/incoming/input.conf"
+#test ! -f $repo/incoming/input.conf && \
+#	fatal "could not find $repo/incoming/input.conf"
 
-echo "\$destdir = \"$repo/dists\";" >> $repo/incoming/input.conf
-echo "\$inputdir = \"$repo/incoming\";" >> $repo/incoming/input.conf
+#grep -c "$repo" $repo/incoming/input.conf >/dev/null
+#if [ $? -ne 0 ] ; then
+#    echo "\$destdir = \"$repo/dists\";" >> $repo/incoming/input.conf
+#    echo "\$inputdir = \"$repo/incoming\";" >> $repo/incoming/input.conf
+#fi
 
 # sync incomings in $repo/incoming
-echo "Syncing $repo/incoming ... "
-while ! mkdir $repolock 2>/dev/null; do sleep 1; done
-repolock_set=yes
-debarchiver --lockfile debarchiver-bootstrap.lock -o -x -i $repo/incoming ||
-	fatal "couldn't sync $repo/incoming"
-repolock_set=no
-rmdir $repolock 2>/dev/null
+#echo "Syncing $repo/incoming ... "
+#while ! mkdir $repolock 2>/dev/null; do sleep 1; done
+#repolock_set=yes
+#debarchiver --lockfile debarchiver-bootstrap.lock -o -x -i $repo/incoming ||
+#	fatal "couldn't sync $repo/incoming"
+#repolock_set=no
+#rmdir $repolock 2>/dev/null
 
 # Nexenta LU protected environment
 NLU_ENABLED=1; export NLU_ENABLED
@@ -200,8 +212,13 @@ if test "x$mode" = xinstall; then
 Generating InstallCD filelist...
 ------------------------------------------------------------------------------
 EOF
+#export BOOTSTRAP_REQUIRED="$BOOTSTRAP_EXTRA_DEBS $STAGE0_APTINST"
+#export BOOTSTRAP_REQUIRED="${REQ_DEBS}"
+export BOOTSTRAP_REQUIRED="dpkg apt"
+
 	pkglist="$NBLD_TMP/debootstrap-pkglist.installcd.tmp"
-	debootstrap \
+	/bin/bash debootstrap \
+		    --verbose \
 		    --arch solaris-i386 \
 		    --components=main,contrib,non-free \
 		    --resolve-deps \
@@ -211,19 +228,27 @@ EOF
 		    file://$repo \
 		    $customdir/$dist.bootstrap >$pkglist ||
 		fatal "couldn't generate package list for InstallCD"
-	BOOTSTRAP_REQUIRED=$(cat $pkglist|egrep "^Required:"|sed -e "s/^Required: //")
-	BOOTSTRAP_BASE=$(cat $pkglist|egrep "^Base:"|sed -e "s/^Base: //")
-	echo "Selected `echo $BOOTSTRAP_REQUIRED|sed -e "s/\s/\n/g"|wc -l` required packages"
-	echo "Selected `echo $BOOTSTRAP_BASE|sed -e "s/\s/\n/g"|wc -l` base packages"
+#	BOOTSTRAP_REQUIRED=$(cat $pkglist|egrep "^Required:"|sed -e "s/^Required: //")
+#	BOOTSTRAP_BASE=$(cat $pkglist|egrep "^Base:"|sed -e "s/^Base: //")
+#	echo "Selected `echo $BOOTSTRAP_REQUIRED|sed -e "s/\s/\n/g"|wc -l` required packages"
+#	echo "Selected `echo $BOOTSTRAP_BASE|sed -e "s/\s/\n/g"|wc -l` base packages"
+#echo ">>>>"
+#cat $pkglist
+#echo "<<<<"
+#exit 1
 	cat << EOF
 ------------------------------------------------------------------------------
 Downloading package archive...
 ------------------------------------------------------------------------------
 EOF
+BOOTSTRAP_REQUIRED=`cat $pkglist`
+BOOTSTRAP_REQUIRED="$BOOTSTRAP_REQUIRED $STAGE0_DEBS"
+
 	export BOOTSTRAP_REQUIRED BOOTSTRAP_BASE
 	while ! mkdir $repolock 2>/dev/null; do sleep 1; done
 	repolock_set=yes
-	debootstrap \
+	/bin/bash debootstrap \
+		    --verbose \
 		    --arch solaris-i386 \
 		    --components=main,contrib,non-free \
 		    --keep-debootstrap-dir \
@@ -260,7 +285,9 @@ Generating a $profile0 profile filelist...
 EOF
 pkglist="$NBLD_TMP/debootstrap-pkglist.profile0.tmp"
 export BOOTSTRAP_REQUIRED= BOOTSTRAP_BASE=$MINIMAL_CMN_DEBS
-env FAKEROOT=yes debootstrap \
+export FAKEROOT=yes
+/bin/bash debootstrap \
+	    --verbose \
 	    --arch solaris-i386 \
 	    --components=main,contrib,non-free \
 	    --keep-debootstrap-dir \
@@ -281,7 +308,9 @@ Generating a $mode-mode  filelist...
 EOF
 pkglist="$NBLD_TMP/debootstrap-pkglist.mode.tmp"
 export BOOTSTRAP_REQUIRED= BOOTSTRAP_BASE=
-env FAKEROOT=yes debootstrap \
+export FAKEROOT=yes
+/bin/bash debootstrap \
+	    --verbose \
 	    --arch solaris-i386 \
 	    --components=main,contrib,non-free \
 	    --keep-debootstrap-dir \
@@ -307,7 +336,9 @@ EOF
 export BOOTSTRAP_REQUIRED BOOTSTRAP_BASE
 while ! mkdir $repolock 2>/dev/null; do sleep 1; done
 repolock_set=yes
-env FAKEROOT=yes debootstrap \
+export FAKEROOT=yes
+/bin/bash /usr/sbin/debootstrap \
+	    --verbose \
 	    --arch solaris-i386 \
 	    --components=main,contrib,non-free \
 	    --keep-debootstrap-dir \
@@ -315,12 +346,11 @@ env FAKEROOT=yes debootstrap \
 	    $dist \
 	    $rootdir \
 	    file://$repo \
-	    $customdir/$dist.bootstrap ||
-	fatal "couldn't complete bootstrap"
+	    $customdir/$dist.bootstrap || fatal "couldn't complete bootstrap"
 repolock_set=no
 rmdir $repolock 2>/dev/null
 
-if test "x$mode" = xinstall; then
+if test "x$mode" = "xinstall"; then
 	echo "Creating local repository... "
 	test -d $rootdir$hddrepo || mkdir $rootdir$hddrepo
 	mkdir $rootdir$hddrepo/dists
@@ -336,18 +366,23 @@ if test "x$mode" = xinstall; then
 	echo "Propagating local repository... "
 	mkdir $rootdir$hddrepo/incoming/$dist
 	mv $rootdir/var/cache/stage0_archive/*.deb $rootdir$hddrepo/incoming/$dist
-        if test "x$builtin_plugins" != x; then
-                for pub_plugin in $builtin_plugins; do
-                        echo "Uploading plugin $pub_plugin... "
-                        find $rootdir$hddrepo/incoming -name "${pub_plugin}_*.*" | xargs rm -f
-                        plugin_pkg=$(find $builtin_plugins_dir -name "${pub_plugin}_*.deb")
-                        test -d $rootdir$hddrepo/incoming/$dist || mkdir $rootdir$hddrepo/incoming/$dist
-                        cp $plugin_pkg $rootdir$hddrepo/incoming/$dist
-                        sed -i -e "s/$/ $pub_plugin/" /tmp/base-$profile1.lst
-                        echo "$pub_plugin var/cache/apt/archives/"$(basename $plugin_pkg) >> /tmp/debpaths
-                done
-        fi
-	rm -Rf $rootdir/var/cache/stage0_archive
+
+	# Copy additional plugins to ISO
+	# TODO: need to implement resolving dependencies
+	if test "x$builtin_plugins" != x -a "x$builtin_plugins_dir" != x -a -d $builtin_plugins_dir; then
+		for pub_plugin in $builtin_plugins; do
+	    	echo "Uploading plugin $pub_plugin... "
+    		find $rootdir$hddrepo/incoming -name "${pub_plugin}_*.*" | xargs rm -f
+    		plugin_pkg=$(find $builtin_plugins_dir -name "${pub_plugin}_*.deb")
+    		test -d $rootdir$hddrepo/incoming/$dist || mkdir $rootdir$hddrepo/incoming/$dist
+    		cp $plugin_pkg $rootdir$hddrepo/incoming/$dist
+    		sed -i -e "s/$/ $pub_plugin/" /tmp/base-$profile1.lst
+            ADD_PLUGINS="$ADD_PLUGINS $pub_plugin"
+    		echo "$pub_plugin var/cache/apt/archives/"$(basename $plugin_pkg) >> /tmp/debpaths
+		done
+	fi
+
+	rm -rf $rootdir/var/cache/stage0_archive
 	rm -f $rootdir/var/cache/apt/archive/*.deb
 	rm -rf /var/cache/debarchiver/cache.db
 	debarchiver  --dl 1 --ql 0 --gpgkey Nexenta -o -x -i $rootdir$hddrepo/incoming ||
@@ -383,14 +418,13 @@ if test "x$mode" = xinstall; then
 		eval "echo \"_KS_profile_rootsize[$p]='\$rootsize$p'\"" >> $install_profile
 	done
 	echo "_KS_profiles='$profiles'" >> $install_profile
-	echo "grub_n_title='$grub_n_title'" >> $install_profile
-	echo "grub_s_title='$grub_s_title'" >> $install_profile
 	for i in $ks_ifaces; do
 		eval "echo \"_KS_iface_ip[$i]='\$ks_iface_ip$i'\"" >> $install_profile
 		eval "echo \"_KS_iface_mask[$i]='\$ks_iface_mask$i'\"" >> $install_profile
 	done
 	echo "_KS_ifaces='$ks_ifaces'" >> $install_profile
 	echo "_KS_apt_sources='$apt_sources'" >> $install_profile
+    test "x$issue_files_content" != x && echo "_KS_issue_files_content='$issue_files_content'" >> $install_profile
 	test "x$plugin_sources" != x && echo "_KS_plugin_sources='$plugin_sources'" >> $install_profile
 	echo "_KS_profile_selected='$defprofile'" >> $install_profile
 	test "x$ks_root_passwd" != x && echo "_KS_root_passwd='$ks_root_passwd'" >> $install_profile
@@ -418,6 +452,7 @@ if test "x$mode" = xinstall; then
 	test "x$ks_autopart_manual" != x && echo "_KS_autopart_manual='$ks_autopart_manual'" >> $install_profile
 	test "x$ks_autopart_use_swap_zvol" != x && echo "_KS_autopart_use_swap_zvol='$ks_autopart_use_swap_zvol'" >> $install_profile
 	test "x$ks_need_network" != x && echo "_KS_need_network='$ks_need_network'" >> $install_profile
+	test "x$ks_disable_motd" != x && echo "_KS_disable_motd='$ks_disable_motd'" >> $install_profile
 	if test "x$ks_startup_wizard" != x; then
 	        echo "_KS_startup_wizard='$ks_startup_wizard'" >> $install_profile
 	        test "x$ks_show_wizard_license" != x && echo "_KS_show_wizard_license='$ks_show_wizard_license'" >> $install_profile
@@ -431,21 +466,18 @@ if test "x$mode" = xinstall; then
 	        echo "1;" >> /tmp/model.$$
 	        mv /tmp/model.$$ $rootdir$hddrepo/Model.pm
 	        echo "_KS_model='Model.pm'" >> $install_profile
+
+			cp $customdir/remote-logger.pl $rootdir$hddrepo/remote-logger
+			chmod 744 $rootdir$hddrepo/remote-logger
+
+			bin_dir="/usr/local/bin"
+			if ! test -d $rootdir$bin_dir; then
+				mkdir -p $rootdir$bin_dir
+			fi
+			cp $customdir/nabat-config $rootdir$bin_dir/nabat-config
+			chmod 744 $rootdir$bin_dir/nabat-config
 	fi
 
-	cp $customdir/remote-logger.pl $rootdir$hddrepo/remote-logger
-	chmod 744 $rootdir$hddrepo/remote-logger
-
-	if test "x$ks_machinesig" != x; then
-#		cp $customdir/$ks_machinesig $rootdir$hddrepo/machinesig
-		bin_dir="/usr/local/bin"
-#		chmod 744 $rootdir$hddrepo/machinesig
-		if ! test -d $rootdir$bin_dir; then
-			mkdir -p $rootdir$bin_dir
-		fi
-		cp $customdir/nabat-config $rootdir$bin_dir/nabat-config
-		chmod 744 $rootdir$bin_dir/nabat-config
-	fi
 	if test "x$ks_license_text" != x; then
 		if test -f $customdir/$ks_license_text; then
 			cp $customdir/$ks_license_text $rootdir$hddrepo
@@ -453,6 +485,8 @@ if test "x$mode" = xinstall; then
 		fi
 		echo "_KS_license_text='$ks_license_text'" >> $install_profile
 	fi
+
+	echo "_KS_inst_dist='$dist'" >> $install_profile
 
 	rm -f /tmp/debpaths.new
 	cat /tmp/debpaths | while read p f; do
@@ -463,28 +497,46 @@ if test "x$mode" = xinstall; then
 	mv /tmp/debpaths.new $rootdir$hddrepo/debpaths
 
 	echo "Initial local repository APT update ... "
+
+	unset FAKEROOT
+	DEBCONF_FRONTEND=noninteractive
+	DEBCONF_NONINTERACTIVE_SEEN=true
+	export DEBCONF_FRONTEND DEBCONF_NONINTERACTIVE_SEEN
+
+	chroot $environ mount -F proc /proc
+
 	chroot $environ apt-get update
 
-	echo "Preparing mdisco/hwdisco/hddisco ... "
-	cp $customdir/mdisco $rootdir$hddrepo
+	chroot $environ apt-get -y install -f --force-yes
+
+	APTCMD="apt-get -y --force-yes install"
+	FILESCD="$STAGE0_CD $STAGE0_DRIVERS $STAGE0_CD_END"
+	chroot $environ $APTCMD $FILESCD
+
+	# save list of packages for APT installation
+	echo "$STAGE0_APTINST $STAGE0_DRIVERS $STAGE0_HDD_END $ADD_PLUGINS" > $rootdir$hddrepo/aptinst.lst
+
+	chroot $environ umount /proc
+
+	echo "Preparing hwdisco ... "
 	cp $customdir/hwdisco.pl $rootdir$hddrepo/hwdisco
-	cp $customdir/hddisco $rootdir$hddrepo
 
 	echo "Preparing install scripts... "
-	cp $customdir/$dist.bootstrap $rootdir$hddrepo
 	cp $customdir/$install_script $rootdir$hddrepo
 	chmod 755 $rootdir$hddrepo/$install_script
 	cp $customdir/eventhook $rootdir$hddrepo
 	chmod 755 $rootdir$hddrepo/eventhook
 	cp $customdir/nexenta-sysidtool* $rootdir$hddrepo
 	chmod 755 $rootdir$hddrepo/nexenta-sysidtool*
+
 	mv $rootdir/lib/svc/method/console-login $rootdir/lib/svc/method/console-login.unmodified
 	cp $customdir/nexenta-console-login $rootdir/lib/svc/method/console-login
-	cp $customdir/nexenta-tetris $rootdir/usr/bin/tetris
+
+	cp -f $customdir/nexenta-tetris $rootdir/usr/bin/tetris
 	chmod 755 $rootdir/usr/bin/tetris
-	cp $customdir/nexenta-log $rootdir/usr/bin/install-log
+	cp -f $customdir/nexenta-log $rootdir/usr/bin/install-log
 	chmod 755 $rootdir/usr/bin/install-log
-	cp $customdir/tail.pl $rootdir/usr/bin
+	cp -f $customdir/tail.pl $rootdir/usr/bin
 	chmod 755 $rootdir/usr/bin/tail.pl
 	screen_title="$product_title $os_version"
 	test "x$sw_version" != "x" && screen_title="$screen_title, software $sw_version"
@@ -506,53 +558,14 @@ EOF
 	chmod 644 $rootdir/etc/syslog.conf
 	test "x$release_file" != "x" && cp $customdir/$release_file $rootdir/etc/release
 	chmod 444 $rootdir/etc/release
+	echo "export TERMINFO=/usr/share/lib/terminfo" >> $rootdir/root/.bash_profile
 	echo "export TERM=sun-color" >> $rootdir/root/.bash_profile
-	cat << EOF > $rootdir$hddrepo/install-base.sh
-#!/bin/sh
-#
-# Copyright 2005 Nexenta Systems, Inc.  All rights reserved.
-# Use is subject to license terms.
-#
-# Installation script generated by bootstrap.sh
 
-test "x\$1" = x && exit 1
-test "x\$2" = x && exit 1
-test "x\$3" = x && exit 1
-
-export BOOTSTRAP_DEBPATHS=\$2/debpaths
-export FAKEROOT=yes
-
-if test "x\$3" = "x1"; then
-	mkdir -p /tmp/apt-archive.\$\$
-	mkdir -p \$1/var/cache/apt/archives/partial
-	mount -F lofs /tmp/apt-archive.\$\$ \$1/var/cache/apt/archives
-fi
-mkdir -p \$1\$2
-mount -F lofs \$2 \$1\$2
-
-# required.lst and base.lst are symbolic links to the
-# selected user profile
-export BOOTSTRAP_REQUIRED=\$(cat \$1/var/tmp/required.lst)
-export BOOTSTRAP_BASE=\$(cat \$1/var/tmp/base.lst)
-
-debootstrap --arch solaris-i386 --components=main,contrib,non-free --keep-debootstrap-dir \\
-    $dist \$1 file://\$2 \$2/$dist.bootstrap &> /tmp/install-base-debootstrap.log
-
-for pid in \`ps -ef|awk '/devfsadmd/ {print \$2}'\`; do
-	if pfiles \$pid 2>/dev/null | grep \$1 >/dev/null; then
-		kill -9 \$pid 2>/dev/null
-		break
-	fi
-done
-sleep 2
-umount \$1/devices 2>/dev/null
-umount -f \$1\$2 2>/dev/null
-if test "x\$3" = "x1"; then
-	umount -f \$1/var/cache/apt/archives
-	rm -rf /tmp/apt-archive.\$\$
-fi
-EOF
+	cp -f $customdir/install-base.sh $rootdir$hddrepo/install-base.sh
 	chmod 755 $rootdir$hddrepo/install-base.sh
+
+	cp -f $customdir/$grub_hdd_menu_file $rootdir$hddrepo/hdd_grub-menu.txt
+	sed -e "s/__autoversion__/$os_version, software $sw_version/" -i $rootdir$hddrepo/hdd_grub-menu.txt
 else
 	# LiveCD/DVD
 	cat << EOF > $rootdir/etc/apt/sources.list
@@ -580,8 +593,10 @@ deb file://$baserepo/ $dist main non-free contrib
 deb-src file://$baserepo/ $dist main non-free contrib
 EOF
 	mv "$rootdir/sbin/start-stop-daemon" "$rootdir/sbin/start-stop-daemon.REAL"
+
 	echo \
 "#!/bin/sh
+
 echo
 echo \"Warning: Fake start-stop-daemon called, doing nothing\"" > "$rootdir/sbin/start-stop-daemon"
 	chmod 755 "$rootdir/sbin/start-stop-daemon"
@@ -608,7 +623,7 @@ echo \"Warning: Fake start-stop-daemon called, doing nothing\"" > "$rootdir/sbin
 	chroot $environ apt-get -y install vim
 	chroot $environ apt-get -y install cpp
 	chroot $environ apt-get -y install g++
-	chroot $environ apt-get -y install sunwtoo
+	chroot $environ apt-get -y install developer-linker
 	chroot $environ apt-get -y install devscripts
 	chroot $environ apt-get -y install debarchiver
 	chroot $environ apt-get -y install gnome-devel
@@ -660,14 +675,14 @@ fi
 echo "Polishing ... "
 
 # special fix for bootstraping machine
-for pid in `ps -ef|awk '/devfsadmd/ {print $2}'`; do
+for pid in `ps -ef | awk '/devfsadmd/ {print $2}'`; do
 	if pfiles $pid 2>/dev/null | grep $rootdir >/dev/null; then
 		kill -9 $pid
 		break
 	fi
 done
 sleep 2
-umount $rootdir/devices
+umount $rootdir/devices 2>/dev/null 1>&2
 
 rm -f $rootdir/etc/zfs/zpool.cache
 
@@ -677,8 +692,8 @@ sed -i -e "s/^root:\*:/root::/" $rootdir/etc/shadow
 rm -f $rootdir/etc/shadow- $rootdir/etc/shadow.org $rootdir/etc/passwd.org
 # Make sure no kernel/user logging goes to the /dev/console
 sed -i -e "/\/dev\/sysmsg/d" $rootdir/etc/syslog.conf
-rm $rootdir/*.err
-rm $rootdir/*.orig
+rm -f $rootdir/*.err
+rm -f $rootdir/*.orig
 rm -f $rootdir/core
 find $rootdir/usr -type d -name ".svn" | xargs rm -rf
 if test "x$debug" != xyes; then
@@ -688,18 +703,25 @@ if test "x$debug" != xyes; then
 	cp $rootdir/debootstrap/debootstrap.log $latest_log
 	rm -rf $rootdir/debootstrap
 else
+	latest_log=/tmp/debootstrap.log.latest.$$
 	cp $rootdir/debootstrap/debootstrap.log $latest_log
+	rm -rf $rootdir/debootstrap
 fi
 # Cleanup logs and extra files
 rm -rf $rootdir/var/cache/debconf
 rm -rf $rootdir/var/log/bootstrap.log
 rm -rf $rootdir/var/log/dpkg.log
 rm -rf $rootdir/var/lib/dpkg/info
-#rm -rf $rootdir/tmp/*
+rm -f $rootdir/var/cache/apt/archives/*.deb
+rm -rf $rootdir/tmp/*
 echo "NOTE: log file saved at $latest_log"
 
-if test "x$mode" = xinstall; then
-	nbld-saferoot $rootdir$hddrepo || exit 1
-fi
+crle -u -c $rootdir/var/ld/ld.config -l /lib:/usr/lib:/usr/gnu/lib
+crle -64 -u -c $rootdir/var/ld/64/ld.config -l /lib/64:/usr/lib/64:/usr/gnu/lib/64
 
-nbld-livecd || exit 1
+devfsadm -r $rootdir -u
+
+echo "$product_title $sw_version $sw_description" > $rootdir/etc/issue
+
+CWD=`dirname $0`
+$CWD/nbld-livecd || exit 1

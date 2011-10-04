@@ -1,6 +1,13 @@
+nexenta-builder (40-0-0) unstable; urgency=low
+
+  * Move to Illumos
+  * Fix build process related to Illumos enviroment
+
+ -- Nexenta Systems <maintainer@nexenta.com>  Tue, 28 Jun 2011 00:00:00 +0300
+
 nexenta-builder (2.5.5) hardy; urgency=low
 
-  * Add zlib1g-dev to depends. Closes: #155 
+  * Add zlib1g-dev to depends. Closes: #155
 
  -- Anil Gulecha <anil.verve@gmail.com>  Thu, 22 Apr 2010 03:21:42 -0700
 
@@ -43,21 +50,21 @@ nexenta-builder (2.3.3) hardy; urgency=low
 
 nexenta-builder (2.3.2) hardy; urgency=low
 
-  * Add du fix to nbld-livdcd for correct filesize 
+  * Add du fix to nbld-livdcd for correct filesize
   * Bump NCP2 -> 3
 
  -- Nexenta Systems <maintainer@nexenta.com>  Fri, 09 Oct 2009 09:32:21 -0700
 
 nexenta-builder (2.3.1) hardy; urgency=low
 
-  * Add fix to hardy-unstable.bootstrap to extract base-files first 
+  * Add fix to hardy-unstable.bootstrap to extract base-files first
 
  -- Anil Gulecha <anil.verve@gmail.com>  Sat, 03 Oct 2009 07:40:01 -0700
 
 nexenta-builder (2.3) hardy; urgency=low
 
   * Added nza2 profile
-  * Upload to nexentastor.org 
+  * Upload to nexentastor.org
 
  -- Anil Gulecha <anil.verve@gmail.com>  Mon, 28 Sep 2009 02:42:09 -0700
 
@@ -84,7 +91,7 @@ nexenta-builder (2.0) hardy; urgency=low
 
 nexenta-builder (1.9) elatte; urgency=low
 
-  * Fix how a user's existance is grepped (Fixes: 257465) 
+  * Fix how a user's existance is grepped (Fixes: 257465)
 
  -- Anil Gulecha <anil.verve@gmail.com>  Thu, 12 Feb 2009 21:58:29 -0800
 
@@ -127,7 +134,7 @@ nexenta-builder (1.3) elatte; urgency=low
 
 nexenta-builder (1.2) elatte; urgency=low
 
-  * Bug 257465 fix -AnilG 
+  * Bug 257465 fix -AnilG
 
  -- Erast Benson <erast@gnusolaris.org>  Thu, 14 Aug 2008 03:58:29 -0700
 

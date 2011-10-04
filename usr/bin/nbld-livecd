@@ -22,7 +22,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (C) 2005-2008 Nexenta Systems, Inc.
+# Copyright (C) 2005-2011 Nexenta Systems, Inc.
 # All rights reserved.
 #
 ##############################################################################
@@ -30,8 +30,11 @@
 test ! -f /etc/nbld.cf && echo "Error: can't find /etc/nbld.cf" && exit 1
 . /etc/nbld.cf
 
-PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/ucb:/usr/ccs/bin export PATH
+PATH=/usr/gnu/bin:/usr/bin:/sbin:/usr/sbin:/usr/ucb:/usr/ccs/bin
+export PATH
 umask 0222
+
+SED="/usr/gnu/bin/sed"
 
 MODE=livecd
 REPO=/usr/nexenta
@@ -95,11 +98,12 @@ NODENAME=elatte_livecd
 # The following variables are used internally and should
 # not be set by the user under normal circumstances.
 #
+CWD=`dirname $0`
+
 POOL_NAME=.pool_name
 THIS_POOL=usrpool
 POOL_MNT=.pool_mnt
 POOL_MNTDIR=/var/tmp/${THIS_POOL}.mnt
-MDISCO=${CUSTOM_DIR}/mdisco
 SYSIDTOOL_XML=${CUSTOM_DIR}/nexenta-sysidtool.xml
 SYSIDTOOL_NET=${CUSTOM_DIR}/nexenta-sysidtool-net
 SYSIDTOOL_SYSTEM=${CUSTOM_DIR}/nexenta-sysidtool-system
@@ -128,7 +132,10 @@ RAMDISK_FILE="$NBLD_TMP/miniroot.$$"
 RAMDISK_MNT="$NBLD_TMP/miniroot_mount.$$"
 REPO_FILE="$NBLD_TMP/repository.db.$$"
 TMP_FILE="$NBLD_TMP/tmp_file.$$"
-CPIO=/usr/sun/bin/cpio
+
+CPIO="/usr/bin/cpio"
+test -f /usr/sun/bin/cpio && CPIO=/usr/sun/bin/cpio
+
 ZFS_VDEV=/.livecd/${THIS_POOL}
 MEMTEST=${CUSTOM_DIR}/memtest86+-2.11.bin
 
@@ -154,9 +161,9 @@ function cleanup
 	rm -f ${REPO_FILE} 2> /dev/null
 	umount -f ${RAMDISK_MNT} 2>/dev/null
 	lofiadm -d ${RAMDISK_FILE} 2>/dev/null
-	rm -Rf ${RAMDISK_FILE} ${RAMDISK_FILE}.gz ${RAMDISK_MNT} 2> /dev/null
-	rm -Rf ${MINIROOT_STAGING} 2> /dev/null
-	rm -Rf ${ISO_STAGING} 2> /dev/null
+	rm -rf ${RAMDISK_FILE} ${RAMDISK_FILE}.gz ${RAMDISK_MNT} 2> /dev/null
+	rm -rf ${MINIROOT_STAGING} 2> /dev/null
+	rm -rf ${ISO_STAGING} 2> /dev/null
 	rm -f ${TMP_FILE} 2> /dev/null
 	rm -f ${FILES} 2> /dev/null
 	unshare -F nfs ${FAKEROOT} >/dev/null 2>&1
@@ -214,26 +221,29 @@ function bootstrap_repository
 	# Grab the list of all manifests under var/svc/manifest
 	alt_root=$1
 
+	mkdir -p ${alt_root}/etc/ssh
+	/usr/bin/ssh-keygen -q -f ${alt_root}/etc/ssh/ssh_host_rsa_key -t rsa -N ''
+	/usr/bin/ssh-keygen -q -f ${alt_root}/etc/ssh/ssh_host_dsa_key -t dsa -N ''
+
 	if [ "${MODE}" != "livecd" ]; then
 		eval echo "\"\$installcd_excl\""  | \
 		while read mft; do
 			test "x${mft}" = "x" && continue
-			rm -f ${alt_root}/var/svc/manifest/${mft}.xml
+			rm -f ${alt_root}/lib/svc/manifest/${mft}.xml
 		done
 	fi
 
-	manifest_list=`find ${alt_root}/var/svc/manifest/* \
+	manifest_list=`find ${alt_root}/lib/svc/manifest/* \
 	    -type f -name "*.xml" -print`
 
 	set -- ${manifest_list}
-        backup=`echo "[$#/$#] ... " | sed 's/.//g'`
+        backup=`echo "[$#/$#] ... " | $SED 's/.//g'`
         fwidth=`echo "$#\c" | wc -c`
 
-	CONFIGD=/lib/svc/bin/svc.configd
-	SVCCFG=/usr/sbin/svccfg
+	CONFIGD=${FAKEROOT}/lib/svc/bin/svc.configd
+	SVCCFG=${FAKEROOT}/usr/sbin/svccfg
 	DTD=${FAKEROOT}/usr/share/lib/xml/dtd/service_bundle.dtd.1
-	SVCENV="NLU_ENABLED=1 LD_NOAUXFLTR=1 LD_LIBRARY_PATH=/tmp/nlulib \
-		LD_LIBRARY_PATH_64=/tmp/nlulib/64 SVCCFG_CHECKHASH=1 \
+	SVCENV="SVCCFG_CHECKHASH=1 \
 		PKG_INSTALL_ROOT=${alt_root} SVCCFG_DTD=${DTD} \
 		SVCCFG_REPOSITORY=${REPO_FILE} SVCCFG_CONFIGD_PATH=${CONFIGD}"
 
@@ -256,28 +266,35 @@ function bootstrap_repository
 		fi
 	done
 
-	cd ${alt_root}/var/svc/profile
+
+	cd ${alt_root}/etc/svc/profile
 	rm -f inetd_services.xml
-	ln -s inetd_generic.xml inetd_services.xml
+	ln -f -s inetd_generic.xml inetd_services.xml
 
 	rm -f name_service.xml
-	ln -s ns_dns.xml name_service.xml
+	ln -f -s ns_dns.xml name_service.xml
 
 	rm -f platform.xml
-	ln -s platform_none.xml platform.xml
+	ln -f -s platform_none.xml platform.xml
+
 
 	rm -f generic.xml
-	ln -s generic_limited_net.xml generic.xml
-	sed -i -e "s/\(vt[0-9].*enabled=.\)true/\1false/" generic.xml
-	sed -i -e "/system\/coreadm/{n; s/true/false/}" generic.xml
+	ln -f -s generic_limited_net.xml generic.xml
+	$SED -i -e "s#file:/etc/svc/profile/name_service.xml#name_service.xml#" generic.xml
+	$SED -i -e "s/\(vt[0-9].*enabled=.\)true/false/" generic.xml
+	$SED -i -e "/system\/coreadm/{n; s/true/false/}" generic.xml
 	cd ${OLDPWD}
 
-	eval "${SVCENV} ${SVCCFG} apply ${alt_root}/var/svc/profile/generic.xml"
+	eval "${SVCENV} ${SVCCFG} apply ${alt_root}/etc/svc/profile/generic.xml"
 
-	eval "${SVCENV} ${SVCCFG} apply ${alt_root}/var/svc/profile/platform.xml"
+	eval "${SVCENV} ${SVCCFG} apply ${alt_root}/etc/svc/profile/platform.xml"
 
 	# Apply LiveCD profile
 	eval "${SVCENV} ${SVCCFG} apply ${SMF_PROFILE}"
+
+	# turnoff boot-archive, manifest-import
+	eval "${SVCENV} ${SVCCFG} -s system/boot-archive setprop general/enabled=false"
+	eval "${SVCENV} ${SVCCFG} -s system/boot-archive setprop start/exec=:true"
 
 	# Store the repository under etc/svc/repository.db
 	chown root:sys ${REPO_FILE}
@@ -329,7 +346,10 @@ function customize_mini
 	echo "setprop prealloc-chunk-size 0x2000" >> $1/boot/solaris/bootenv.rc
 
 	# Make sure root special device is known at boot time
-	echo "/devices/ramdisk:a\t-\t/\t\tufs\t1\tno\trw" >> $1/etc/vfstab
+	CHK=`cat $1/etc/vfstab | grep "devices/ramdisk:a" | wc -l`
+	if (( $CHK < 1 )); then
+	    echo "/devices/ramdisk:a\t-\t/\t\tufs\t1\tno\trw" >> $1/etc/vfstab
+	fi
 
 	# Get us as much swap space as possible
 	echo "set tmpfs:tmpfs_minfree=1" >> $1/etc/system
@@ -352,7 +372,7 @@ function customize_mini
 
 	# Copy over customized SMF manifests and methods
 	copy_file ${SYSIDTOOL_XML} \
-	    $1/var/svc/manifest/system/`basename ${SYSIDTOOL_XML}` 0444 root:sys
+	    $1/lib/svc/manifest/system/`basename ${SYSIDTOOL_XML}` 0444 root:sys
 
 	copy_file ${SYSIDTOOL_NET} \
 	    $1/lib/svc/method/`basename ${SYSIDTOOL_NET}` 0555 root:bin
@@ -360,41 +380,33 @@ function customize_mini
 	copy_file ${SYSIDTOOL_SYSTEM} \
 	    $1/lib/svc/method/`basename ${SYSIDTOOL_SYSTEM}` 0555 root:bin
 
-	# Copy over our media discovery utility
-	if [ -f ${MDISCO} ]; then
-		copy_file ${MDISCO} $1/sbin/`basename ${MDISCO}` 0755 root:bin
-	else
-		echo "\nError: ${MDISCO} not found"
-		fatal_error
-	fi
-
 	if [ "${MODE}" = "livecd" ]; then
 		# Set LiveCD root password to "livecd"
-		sed 's/^root:/root:pv80DlPSjDfZI/g' $1/etc/shadow > ${TMP_FILE}
+		$SED 's/^root:/root:pv80DlPSjDfZI/g' $1/etc/shadow > ${TMP_FILE}
 		copy_file ${TMP_FILE} $1/etc/shadow 0400 root:sys
 		rm ${TMP_FILE}
 	else
 		# Set InstallCD root password to "empty"
-		sed 's/^root:/root:moAdagpFPw1iE/g' $1/etc/shadow > ${TMP_FILE}
+		$SED 's/^root:/root:moAdagpFPw1iE/g' $1/etc/shadow > ${TMP_FILE}
 		copy_file ${TMP_FILE} $1/etc/shadow 0400 root:sys
 		rm ${TMP_FILE}
 	fi
 
 	# Set root shell to /bin/bash
-	sed 's/sbin\/sh/bin\/bash/g' $1/etc/passwd > ${TMP_FILE}
+	$SED 's/sbin\/sh/bin\/bash/g' $1/etc/passwd > ${TMP_FILE}
 	copy_file ${TMP_FILE} $1/etc/passwd 0644 root:sys
 	rm ${TMP_FILE}
 
 	# Allow root login via SSH
 	if [ -f $1/etc/ssh/sshd_config ]; then
-		sed '/^PermitRootLogin/ s/no/yes/g' \
+		$SED '/^PermitRootLogin/ s/no/yes/g' \
 		    $1/etc/ssh/sshd_config > ${TMP_FILE}
 		copy_file ${TMP_FILE} $1/etc/ssh/sshd_config 0644 root:sys
 		rm ${TMP_FILE}
 	fi
 
 	# Allow root login via telnet
-	sed -e 's/^CONSOLE/#CONSOLE/' $1/etc/default/login > ${TMP_FILE}
+	$SED -e 's/^CONSOLE/#CONSOLE/' $1/etc/default/login > ${TMP_FILE}
 	copy_file ${TMP_FILE} $1/etc/default/login 0644 root:sys
 	rm ${TMP_FILE}
 
@@ -454,7 +466,7 @@ function create_mini
 	echo "Creating miniroots...."
 
 	# skip commented, blank lines and excluded entries
-	filelist=`egrep -v -e '^[ \t]*#|^[ \t]*$|^[ \t]*!' ${MINI_FILELIST}`
+	filelist=`egrep -v -e '^[\S]*#|^[\S]*$|^[\S]*!' ${MINI_FILELIST}`
 
 	set -- ${filelist}
         backup=`echo "[$#/$#] ... " | sed 's/.//g'`
@@ -479,6 +491,7 @@ function create_mini
 		fi
 	done
 
+
 	chown -R root:sys ${MINIROOT_STAGING}/etc/init.d
 
 	if [ "${USE_ZFS}" = "y" ]; then
@@ -493,6 +506,7 @@ function create_mini
 		chown root:sys ${MINIROOT_STAGING}/.clofi_archive
 		echo >> ${MINIROOT_STAGING}/kernel/drv/lofi.conf
 		echo "ddi-forceattach=1;" >> ${MINIROOT_STAGING}/kernel/drv/lofi.conf
+		devfsadm -r ${MINIROOT_STAGING} -u
 	fi
 
 	echo "usr" > ${MINIROOT_STAGING}/${CD_DIRLIST}
@@ -503,13 +517,13 @@ function create_mini
 	nawk '{ print $1 }' | while read dirname; do
 		if [ -e ${dirname} ]; then
 			echo "${dirname}" >> ${MINIROOT_STAGING}/${CD_DIRLIST}
-			rm -Rf ${MINIROOT_STAGING}/${dirname} 2> /dev/null
+			rm -rf ${MINIROOT_STAGING}/${dirname} 2> /dev/null
 		fi
 	done
 
 	# Save this for later use
 	mkdir -p ${FAKEROOT}/${MINIROOT_STAGING}
-	cp ${MINIROOT_STAGING}/${CD_DIRLIST} \
+	cp -f ${MINIROOT_STAGING}/${CD_DIRLIST} \
 	    ${FAKEROOT}/${MINIROOT_STAGING}/${CD_DIRLIST}
 
 	echo "done"
@@ -517,44 +531,26 @@ function create_mini
 	# Customize miniroot
 	customize_mini ${MINIROOT_STAGING}
 
+	# Copy over customized GRUB menu
+	if [ "${MODE}" = "livecd" ]; then
+		MENU=${GRUB_MENU}
+	else
+		if [ "${INSTALL_MODE}" = "core" ]; then
+			MENU=${SERVER_GRUB_MENU}
+		else
+			MENU=${HDD_GRUB_MENU}
+		fi
+	fi
 
 	# Spliting miniroot
 	echo "  Spliting miniroot ..."
-	rm -rf ${MINIROOT_STAGING_32b} ${MINIROOT_STAGING_64b}
+	test -d ${MINIROOT_STAGING_32b} && rm -rf ${MINIROOT_STAGING_32b}
+	test -d ${MINIROOT_STAGING_64b} && rm -rf ${MINIROOT_STAGING_64b}
 	mkdir -p ${MINIROOT_STAGING_32b} ${MINIROOT_STAGING_64b}
-	cd ${MINIROOT_STAGING}
-	tar cf - . |(cd ${MINIROOT_STAGING_32b}; tar xf -)
-	tar cf - . |(cd ${MINIROOT_STAGING_64b}; tar xf -)
 
-	dirlist="kernel platform"
-	for line in $dirlist; do
-		find $line  -type d  -name amd64 -exec find {} \; >> ${FILES}
-	done
-	
-	echo "    Cleanup miniroots ... \c"
-	for line in `cat ${FILES}`; do
-#		echo $line
-		dirs=`dirname $line`
-		dirs_32=`dirname $dirs`
-		filename=`basename $line`
-		if [ -f ${MINIROOT_STAGING}/$dirs_32/$filename ]; then
-#			echo "removing $line from x86 miniroot"
-			rm -rf "${MINIROOT_STAGING_32b}/$line"
-#			echo "removing $dirs_32/$filename from x64 miniroot"
-			rm -rf "${MINIROOT_STAGING_64b}/$dirs_32/$filename"
-		fi
-	done
-	#make sure that all amd64 content is removed from 32 bit miniroot
-	rm -rf `find ${MINIROOT_STAGING_32b} -type d -name amd64 2>/dev/null`
-	echo "done"
-	
-#	find ${MINIROOT_STAGING_32b} -type d -name amd64 -exec rm -rf {} \;
+	$CWD/boot_archive_strip ${MINIROOT_STAGING} ${MINIROOT_STAGING_32b} x86
+	$CWD/boot_archive_strip ${MINIROOT_STAGING} ${MINIROOT_STAGING_64b} amd64
 
-	# Tried to delete 32-bit library from 64-bit miniroot, but it not work... :-( (need to research)
-#	for file in `ls -1 ${MINIROOT_STAGING_64b}/lib`; do
-#		test -f ${MINIROOT_STAGING_64b}/lib/amd64/$file &&
-#			rm -f ${MINIROOT_STAGING_64b}/lib/$file
-#	done
 	rm -rf ${MINIROOT_STAGING_64b}/tmp/*
 	rm -rf ${MINIROOT_STAGING_32b}/tmp/*
 
@@ -563,7 +559,7 @@ function create_mini
 	sleep 5 #this should give du time to see the correct file size
 	total_size_32b=`du -sk ${MINIROOT_STAGING_32b} | nawk '{print $1}'`
 	total_size_64b=`du -sk ${MINIROOT_STAGING_64b} | nawk '{print $1}'`
-	
+
 	# Add some extra space for our root filesystem
 	if [ "${MODE}" = "livecd" ]; then
 		(( total_size_32b += total_size_32b * 50 / 100 ))
@@ -610,17 +606,11 @@ function create_mini_stage2
 	# Copy over contents of miniroot staging area into ramdisk image
 	echo "    populating ramdisk image using $1 ... \c"
  	cd $1
-	
+
 	find . -print | ${CPIO} -pdum ${RAMDISK_MNT} 2> /dev/null
 
 	# clean up NLU environment on target, but keep on source
 	rm -rf ${RAMDISK_MNT}/tmp/*
-
-	if test -f ${FAKEROOT}/var/lib/dpkg/alien/nexenta-sunw/ld32; then
-		cp ${FAKEROOT}/var/lib/dpkg/alien/nexenta-sunw/ld32 ${RAMDISK_MNT}/lib/ld.so.1
-		test -d ${RAMDISK_MNT}/root/lib/amd64 && \
-			cp ${FAKEROOT}/var/lib/dpkg/alien/nexenta-sunw/ld64 ${RAMDISK_MNT}/lib/amd64/ld.so.1
-	fi
 
 	echo "done"
 	cd ${OLDPWD}
@@ -628,18 +618,19 @@ function create_mini_stage2
 	# Blow away temporary resources
  	umount ${RAMDISK_MNT}
  	lofiadm -d ${RAMDISK_FILE}
- 	rm -Rf ${RAMDISK_MNT}
-	rm -Rf $1
+ 	rm -rf ${RAMDISK_MNT}
+#	rm -Rf $1
 
 	echo "    compressing ramdisk image ... \c"
 
 	# Compress miniroot image
 	test -d ${DEST} || mkdir -p ${DEST}
  	gzip -c ${RAMDISK_FILE} > ${DEST}/miniroot
-	du -sk ${DEST}/miniroot | read size name
+	sync; sync
+	sleep 1
+	du -sh ${DEST}/miniroot | read size name
 
-	echo "done (${size} KB, compressed)"
-
+	echo "done (${size}, compressed)"
 }
 
 function create_grub
@@ -650,7 +641,7 @@ function create_grub
 	tar cf - grub | (cd ${BOOT_DIR}; umask 0; tar xpf -)
 	cd ${OLDPWD}
 
-	cd ${FAKEROOT}/platform/i86pc 
+	cd ${FAKEROOT}/platform/i86pc
 	tar cf - kernel | (cd ${PLATFORM_DIR}; umask 0; tar xpf -)
 	cd ${OLDPWD}
 
@@ -660,7 +651,7 @@ function create_grub
 
 	# Copy over customized GRUB menu
 	if [ "${MODE}" = "livecd" ]; then
-		MENU=${GRUB_MENU}		
+		MENU=${GRUB_MENU}
 	else
 		if [ "${INSTALL_MODE}" = "core" ]; then
 			MENU=${SERVER_GRUB_MENU}
@@ -676,6 +667,12 @@ function create_grub
 
 	if [ -f ${MEMTEST} ]; then
 		copy_file ${MEMTEST} ${BOOT_DIR}/memtest86+.bin 0644 root:root
+	fi
+
+	if [ -f ${MENU} ]; then
+	    echo "title Boot from Local HDD" >> ${BOOT_DIR}/grub/menu.lst
+	    echo "	root (hd0,0)" >> ${BOOT_DIR}/grub/menu.lst
+	    echo "	chainloader +1" >> ${BOOT_DIR}/grub/menu.lst
 	fi
 
 	echo "done"
@@ -844,7 +841,6 @@ usr/share/locale/te
 usr/share/locale/uk
 usr/share/locale/xh
 usr/share/doc
-var/lib/dpkg/alien
 '
 
 function create_usr
@@ -868,7 +864,7 @@ function create_usr
 
 	# now take care of any excluded entries
 	egrep -e '^[ \t]*!' ${MINI_FILELIST} | sed -e "s/\!//g" | \
-	nawk '{ print $1 }' | while read dirname; do
+	awk '{ print $1 }' | while read dirname; do
 		if [ -e ${dirname} ]; then
 			echo "    copying /${dirname} ... \c"
 			find ${dirname} ${exclude64} -print | \
@@ -891,7 +887,7 @@ function create_usr_clofi
 	create_usr
 
 	echo "    archiving ${ISO_STAGING}/root/usr ... \c"
-	/usr/bin/mkisofs -o ${ISO_STAGING}/${CLOFI_ARCHIVE} -N -l -R -U -allow-multidot -no-iso-translate -cache-inodes -d -D -V "compress" ${ISO_STAGING}/root/usr >/dev/null 2>&1
+	mkisofs -o ${ISO_STAGING}/${CLOFI_ARCHIVE} -N -l -R -U -allow-multidot -no-iso-translate -cache-inodes -d -D -V "compress" ${ISO_STAGING}/root/usr >/dev/null 2>&1
 	if [ $? -ne 0 ]; then
 		echo "Error archiving - not enough space at ${CLOFI_ARCHIVE}/.. ?"
 		exit 1
@@ -917,7 +913,7 @@ function pool_cleanup
 	if [ $? -eq 0 ]; then
 		/usr/sbin/zpool export -f ${THIS_POOL}
 	fi
-	rm -Rf ${POOL_MNTDIR} >/dev/null 2>&1
+	rm -rf ${POOL_MNTDIR} >/dev/null 2>&1
 	rm -rf /.livecd
 	test "x$quit" = x1 && exit 1
 }
@@ -1065,9 +1061,9 @@ function create_iso
 	fi
 
 	sleep 1; sync
-	size=$(du -sk ${ISO_IMAGE} | awk '{print $1}')
+	size=$(du -sh ${ISO_IMAGE} | awk '{print $1}')
 
-	echo "done (${size} KB)"
+	echo "done (${size})"
 	echo "CD image ${ISO_IMAGE} is ready"
 
 	return 0
@@ -1082,7 +1078,8 @@ function create_iso
 # privileges for non-root users to do those operations, but
 # until then we need to be root.  This is risky!
 #
-if [ `whoami` != "root" ]; then
+UID=`id -u`
+if [ "$UID" != "0" ]; then
 	echo "Insufficient privileges to run $0"
 	exit 1
 fi
@@ -1145,12 +1142,9 @@ if [ ! -d ${STAGING_DIR} ]; then
 fi
 
 # Blow away existing ISO staging area
-if [ -d ${ISO_STAGING} ]; then
-	rm -Rf ${ISO_STAGING}
-fi
-if [ -d ${MINIROOT_STAGING} ]; then
-	rm -Rf ${MINIROOT_STAGING}
-fi
+test -d ${ISO_STAGING} && rm -rf ${ISO_STAGING}
+test -d ${MINIROOT_STAGING} && rm -rf ${MINIROOT_STAGING}
+
 mkdir -p ${PLATFORM_DIR} || fatal_error
 mkdir -p ${PLATFORM_PV_DIR} || fatal_error
 mkdir -p ${BOOT_DIR} || fatal_error

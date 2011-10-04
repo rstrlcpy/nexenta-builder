@@ -1,0 +1,4 @@
+                Open Storage Appliance v4.0.0
+        Copyright (c) 2011 Nexenta Systems, Inc.  All Rights Reserved.
+        Copyright (c) 2010 Oracle.  All Rights Reserved.
+                Use is subject to license terms.

@@ -1,0 +1,385 @@
+#
+# Copyright 2010 Nexenta Systems, Inc.  All rights reserved.
+# Use is subject to license terms.
+#
+# $Id: elatte-unstable.bootstrap 113861 2006-09-28 09:11:26Z root $
+#
+
+mirror_style release
+download_style apt
+finddebs_style from-indices
+variants -
+
+if test -f /etc/nbld.cf; then
+	. /etc/nbld.cf
+fi
+
+CPIO=/bin/cpio
+
+work_out_debs () {
+    required="$BOOTSTRAP_REQUIRED"
+#    test "x$required" = x && required="$(get_debs Priority: required) less base-files libgcc1 libreadline6 libbz2-1.0"
+    test "x$required" = x && required="$(get_debs Priority: required) sunwcsd sunwcs"
+    base="$BOOTSTRAP_BASE"
+    test "x$base" = x && base="$(get_debs Priority: important) $BOOTSTRAP_EXTRA_DEBS"
+    return 0
+}
+
+install_class_action_files () {
+	alien_pkgs=`find $TARGET/var/lib/dpkg/alien/ -maxdepth 1 -mindepth 1 -type d`
+	for pkg in $alien_pkgs; do
+		if [ ! -d $pkg/reloc ]; then
+			continue
+		fi
+		cd $pkg/reloc
+		file_list=`find . -maxdepth 1 -mindepth 1 -type d`
+		if [ $? -eq 0 ]; then
+			info CONFIGURING "Setting up %s..." `basename $pkg`
+			for file in $file_list; do
+				cp -a $file $TARGET/
+			done
+		fi
+		cd - > /dev/null 2>&1
+	done
+}
+
+prepare_nlu() {
+    rm -rf /tmp/nlubin /tmp/nlulib
+    mkdir -p /var/lib/dpkg/alien/nexenta-sunw 2>/dev/null
+    test -f /var/lib/dpkg/alien/nexenta-sunw/b55.libc.64 || \
+    	cp $TARGET/var/lib/dpkg/alien/nexenta-sunw/b55.libc.64 /var/lib/dpkg/alien/nexenta-sunw
+    test -f /var/lib/dpkg/alien/nexenta-sunw/b55.libc.32 || \
+    	cp $TARGET/var/lib/dpkg/alien/nexenta-sunw/b55.libc.32 /var/lib/dpkg/alien/nexenta-sunw
+    test -f /var/lib/dpkg/alien/nexenta-sunw/nluld || \
+    	cp $TARGET/var/lib/dpkg/alien/nexenta-sunw/nluld /var/lib/dpkg/alien/nexenta-sunw
+    $TARGET/var/lib/dpkg/alien/nexenta-sunw/makenlu.sh
+#    cp -ar /tmp/nlubin $TARGET/tmp
+#    cp -ar /tmp/nlulib $TARGET/tmp
+#    cp -ar /tmp/nl $TARGET/tmp
+#    cp /lib/ld.so.1  $TARGET/lib
+#    cp /lib/amd64/ld.so.1  $TARGET/lib/amd64
+}
+
+first_stage_install () {
+
+    mkdir -p $TARGET/var/lib/dpkg/updates
+    mkdir -p $TARGET/var/lib/dpkg/info
+    mkdir -p $TARGET/var/lib/dpkg/alien
+    mkdir -p $TARGET/var/lib/dpkg/alternatives
+    mkdir -p $TARGET/var/lib/dpkg/parts
+    mkdir -p $TARGET/var/lib/dpkg/triggers
+
+    touch $TARGET/var/lib/dpkg/status
+    touch $TARGET/var/lib/dpkg/available
+    touch $TARGET/var/lib/dpkg/lock
+
+    extract sunwcsd
+    extract sunwcs
+    extract bash
+
+    extract libgcc1
+    extract lib64gcc1
+
+###    cp /usr/bin/bash /$TARGET/usr/bin
+
+#    cp /usr/sbin/chpasswd /$TARGET/usr/sbin
+
+    # fix chpasswd
+#    touch $TARGET/etc/login.defs
+
+# fixed 
+###cp -r /usr/gnu $TARGET/usr
+
+###
+
+    install_class_action_files
+
+#    if test -f /.volid; then
+#        cp $TARGET/var/lib/dpkg/alien/nexenta-sunw/ld32 $TARGET/lib/ld.so.1
+#        cp $TARGET/var/lib/dpkg/alien/nexenta-sunw/ld64 $TARGET/lib/amd64/ld.so.1
+#    else
+#        prepare_nlu
+#    fi
+
+
+    mkdir -p "$TARGET/var/lib/dpkg"
+    : >"$TARGET/var/lib/dpkg/status"
+    : >"$TARGET/var/lib/dpkg/available"
+
+    extract coreutils
+#    extract base-files
+    extract sysv-rc
+    extract package-svr4
+    extract dpkg
+    extract zlib1g
+    extract lib64z1
+    extract libbz2-1.0
+    extract lib64bz2-1.0
+    extract libdb4.8
+    extract system-library
+    extract system-library-math
+
+
+#    setup_etc
+    if [ ! -e "$TARGET/etc/mnttab" ]; then
+        echo '# UNCONFIGURED MNTTAB FOR BASE SYSTEM' > "$TARGET/etc/mnttab"
+        chown 0.0 "$TARGET/etc/mnttab"; chmod 644 "$TARGET/etc/mnttab"
+    fi
+
+    x_feign_install () {
+        local pkg="$1"
+        local deb="$(debfor $pkg)"
+        local ver="$(
+            ar -p "$TARGET/$deb" control.tar.gz | zcat |
+                tar -O -xf - control ./control 2>/dev/null |
+                sed -ne 's/^Version: *//Ip' | head -n 1
+        )"
+
+        mkdir -p "$TARGET/var/lib/dpkg/info"
+
+        echo \
+"Package: $pkg
+Version: $ver
+Status: install ok installed" >> "$TARGET/var/lib/dpkg/status"
+
+        touch "$TARGET/var/lib/dpkg/info/${pkg}.list"
+    }
+
+    x_setup_proc () {
+        on_exit "umount $TARGET/proc"
+        umount $TARGET/proc 2>/dev/null || true
+	touch $TARGET/dev/zero
+        in_target /sbin/mount -F proc /proc
+#        in_target /sbin/mount -F fd /dev/fd
+    }
+
+    x_setup_proc
+#    x_feign_install dpkg
+}
+
+second_stage_install () {
+
+
+    x_core_install () {
+#	smallyes '' | dpkg --unpack --force-depends --root=$TARGET --admindir=$TARGET/var/lib/dpkg $TARGET/$(debfor "$@")
+#	smallyes '' | in_target dpkg --debug=2 --force-depends --install $(debfor "$@")
+	smallyes '' | in_target /usr/bin/dpkg --debug=2 --force-all --install $(debfor "$@")
+    }
+
+    x_core_install2 () {
+#	smallyes '' | dpkg --debug=2 --install --force-all --root=$TARGET --admindir=$TARGET/var/lib/dpkg $TARGET/$(debfor "$@")
+#	smallyes '' | in_target dpkg --debug=2 --force-depends --install $(debfor "$@")
+#	smallyes '' | in_target dpkg --debug=2 --force-all --install $(debfor "$@")
+	smallyes '' | /usr/bin/dpkg --debug=2 --unpack --force-all --root=$TARGET --admindir=$TARGET/var/lib/dpkg $TARGET/$(debfor "$@")
+    }
+
+    p () {
+	baseprog="$(($baseprog + ${1:-1}))"
+    }
+
+    export FAKEROOT="no"
+
+#    in_target /usr/bin/ldconfig
+    in_target /usr/bin/crle -u -l /lib:/usr/lib:/usr/gnu/lib
+    in_target /usr/bin/crle -64 -u -l /lib/64:/usr/lib/64:/usr/gnu/lib
+#    $TARGET/usr/bin/crle -u -c $TARGET/var/ld/ld.config
+#    $TARGET/usr/bin/crle -64 -u -c $TARGET/var/ld/64/ld.config
+
+    DEBIAN_FRONTEND=noninteractive
+    DEBCONF_NONINTERACTIVE_SEEN=true
+    export DEBIAN_FRONTEND DEBCONF_NONINTERACTIVE_SEEN
+
+    baseprog=0
+    bases=15
+
+    touch $TARGET/var/lib/dpkg/status
+    touch $TARGET/var/lib/dpkg/lock
+
+#    touch $TARGET/dev/zero
+
+    p; progress $baseprog $bases INSTCORE "Installing core packages" #1
+    info INSTCORE "Installing core packages... #1"
+    x_core_install sunwcsd
+
+
+    p; progress $baseprog $bases INSTCORE "Installing core packages" #2
+    info INSTCORE "Installing core packages... #2"
+
+#    x_core_install storage-stmf
+#    x_core_install sunwstmfu
+#    x_core_install sunwcsr
+#    x_core_install sunwlibm
+#    x_core_install sunwcslr
+#    x_core_install sunwcsu
+
+
+    p; progress $baseprog $bases INSTCORE "Installing core packages" #3
+    info INSTCORE "Installing core packages... #3"
+
+    x_core_install system-data-keyboard-keytables 
+    x_core_install system-extended-system-utilities 
+
+    x_core_install nexenta-ldconfig
+
+    x_core_install system-library-iconv-utf-8
+    x_core_install sunwcs
+
+    x_core_install service-fault-management 
+
+    x_core_install system-library-storage-scsi-plugins
+    x_core_install system-library
+    x_core_install system-library-math
+
+    if [ ! -e "$TARGET/etc/localtime" ]; then
+        ln -sf /usr/share/lib/zoneinfo/UTC "$TARGET/etc/localtime"
+    fi
+
+    p; progress $baseprog $bases INSTCORE "Installing core packages" #5
+    info INSTCORE "Installing core packages... #5"
+#    ln -sf mawk $TARGET/usr/bin/awk
+#    echo 'utmp::666:' >> $TARGET/etc/group
+
+      x_core_install nexenta-libintl
+      x_core_install nexenta-libiconv
+    x_core_install sensible-utils
+    x_core_install text-locale
+    x_core_install debianutils
+    x_core_install base-files
+
+
+    p; progress $baseprog $bases INSTCORE "Installing core packages" #7
+    info INSTCORE "Installing core packages... #7"
+
+#    x_core_install tar
+
+#    x_core_install libiconv
+    x_core_install libssl0.9.8
+    x_core_install libssl0.9.8k
+    x_core_install libtspi1
+    x_core_install libidn11
+    x_core_install wget
+    x_core_install binutils
+    x_core_install debootstrap
+
+    x_core_install lib64z1
+    x_core_install libbz2-1.0
+    x_core_install libdb4.8
+    x_core_install gcc-4.4-base
+    x_core_install libgcc1
+    x_core_install lib64gcc1
+    x_core_install libstdc++6
+    x_core_install lib64stdc++6
+
+    x_core_install libxml2
+
+    x_core_install liblzma2
+    x_core_install xz-utils
+
+    x_core_install libgmp3c2
+    x_core_install coreutils
+    x_core_install sysv-rc
+    x_core_install package-svr4
+    x_core_install system-library-install-libinstzones
+    x_core_install system-library-security-libsasl
+    x_core_install dpkg
+
+    x_core_install libncurses5
+    x_core_install libncursesw5
+    x_core_install gzip
+    x_core_install install-info
+    x_core_install libusb
+
+    x_core_install libgcrypt11
+    x_core_install libgpg-error0
+    x_core_install libksba8
+    x_core_install libpth20
+    x_core_install libldap-2.4-2
+    x_core_install gpgv
+    x_core_install gnupg
+
+    x_core_install zlib1g
+    x_core_install apt
+    x_core_install apt-utils
+    x_core_install nexenta-keyring
+    x_core_install gettext-base
+
+    p; progress $baseprog $bases INSTCORE "Installing core packages" #6
+    info INSTCORE "Installing core packages... #6"
+    x_core_install perl-base
+    x_core_install perl-modules
+    x_core_install perl
+
+    p; progress $baseprog $bases INSTCORE "Installing core packages" #9
+    info INSTCORE "Installing core packages... #9"
+#    if doing_variant -; then
+#      x_core_install debconf
+
+      x_core_install dialog
+
+      x_core_install debconf-i18n debconf
+      x_core_install liblocale-gettext-perl
+      x_core_install libtext-iconv-perl
+      x_core_install libtext-wrapi18n-perl
+      x_core_install libtext-charwidth-perl
+
+    p; progress $baseprog $bases INSTCORE "Installing core packages" #10
+    info INSTCORE "Installing core packages... #10"
+
+      x_core_install grep
+      x_core_install mawk
+
+#      x_core_install debconf-i18n
+#    fi
+
+#    baseprog=0
+#    bases=$(set -- $required; echo $#)
+
+#    info UNPACKREQ "Unpacking required packages..."
+
+#    smallyes '' |
+#      (repeat 1 in_target_failmsg UNPACK_REQ_FAIL_FIVE "Failure while unpacking required packages. Repeat one more time." "" \
+#      /usr/bin/dpkg --status-fd 8 --force-depends --unpack $(debfor $required) 8>&1 1>&7 |
+#      dpkg_progress $baseprog $bases UNPACKREQ "Unpacking required packages" UNPACKING) 7>&1
+
+    info CONFREQ "Configuring required packages ....."
+
+    mv "$TARGET/sbin/start-stop-daemon" "$TARGET/sbin/start-stop-daemon.REAL"
+
+
+    echo \
+"#!/bin/sh
+
+echo
+echo \"Warning: Fake start-stop-daemon called, doing nothing\"" > "$TARGET/sbin/start-stop-daemon"
+    chmod 755 "$TARGET/sbin/start-stop-daemon"
+
+    setup_dselect_method apt
+
+    smallyes '' |
+      (repeat 1 in_target_failmsg CONF_REQ_FAIL "Trying to resolve configuration issues." "" \
+      /usr/bin/dpkg --status-fd 8 --configure --pending --force-configure-any --force-depends 8>&1 1>&7 |
+      dpkg_progress $baseprog $bases CONFREQ "Configuring required packages" CONFIGURING) 7>&1
+
+    baseprog=0
+    bases="$(set -- $base; echo $#)"
+
+    info UNPACKBASE "Unpacking the base system..."
+
+    smallyes '' |
+      (repeat 1 in_target_failmsg INST_BASE_FAIL_FIVE "Failure while installing base packages.  Repeat one more time." "" \
+      /usr/bin/dpkg --status-fd 8 --force-auto-select --force-overwrite --force-depends --force-confold --skip-same-version --unpack $(debfor $base) 8>&1 1>&7 |
+      dpkg_progress $baseprog $bases UNPACKBASE "Unpacking base system" UNPACKING) 7>&1
+
+    info CONFBASE "Configuring the base system..."
+
+    smallyes '' |
+      (repeat 1 in_target_failmsg CONF_BASE_FAIL_FIVE "Failure while configuring base packages.  Repeat one more time." "" \
+      dpkg --status-fd 8 --force-confold --skip-same-version --configure --force-depends -a 8>&1 1>&7 |
+      dpkg_progress $baseprog $bases CONFBASE "Configuring base system" CONFIGURING) 7>&1
+
+    mv "$TARGET/sbin/start-stop-daemon.REAL" "$TARGET/sbin/start-stop-daemon"
+
+    progress $bases $bases CONFBASE "Configuring base system"
+    info BASESUCCESS "Base system installed successfully."
+
+}
