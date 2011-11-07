@@ -64,7 +64,7 @@ if [ -x /sbin/mdisco ]; then
 		if test "x$install_srv" = x; then
 			if test "x$iso_usb" != "x"; then
 				mount_usb_flash
-				/usr/sbin/devfsadm -C 
+				/usr/sbin/devfsadm -C
 				dev_phys=`/usr/sbin/lofiadm -a $usb_mountpoint/$iso_usb`
 			else
 				dev_phys=`/sbin/mdisco -V ${livecd_volid} -l 2>/dev/msglog`
@@ -75,7 +75,7 @@ if [ -x /sbin/mdisco ]; then
 			fi
 		else
 			dev_phys=${install_srv}
-			fs_type="nfs -o ro"
+			fs_type="nfs -o ro,vers=3"
 			`/sbin/ifconfig -a dhcp`
 		fi
 	fi
