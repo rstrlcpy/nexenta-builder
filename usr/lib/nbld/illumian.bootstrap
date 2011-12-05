@@ -1,0 +1,190 @@
+#
+# Copyright 2011 Nexenta Systems.  All rights reserved.
+# Use is subject to license terms.
+#
+
+mirror_style release
+download_style apt
+finddebs_style from-indices
+variants -
+
+if test -f /etc/nbld.cf; then
+	. /etc/nbld.cf
+fi
+
+CPIO=/bin/cpio
+
+work_out_debs () {
+    required="$BOOTSTRAP_REQUIRED"
+    test "x$required" = x && required="$(get_debs Priority: required) apt dpkg sunwcsd sunwcs"
+    base="$BOOTSTRAP_BASE"
+    test "x$base" = x && base="$(get_debs Priority: important) $BOOTSTRAP_EXTRA_DEBS"
+    return 0
+}
+
+install_class_action_files () {
+	alien_pkgs=`find $TARGET/var/lib/dpkg/alien/ -maxdepth 1 -mindepth 1 -type d`
+	for pkg in $alien_pkgs; do
+		if [ ! -d $pkg/reloc ]; then
+			continue
+		fi
+		cd $pkg/reloc
+		file_list=`find . -maxdepth 1 -mindepth 1 -type d`
+		if [ $? -eq 0 ]; then
+			info CONFIGURING "Setting up %s..." `basename $pkg`
+			for file in $file_list; do
+				cp -a $file $TARGET/
+			done
+		fi
+		cd - > /dev/null 2>&1
+	done
+}
+
+first_stage_install () {
+
+    mkdir -p $TARGET/var/lib/dpkg/{updates,info,alien,alternatives,parts,triggers}
+
+    touch $TARGET/var/lib/dpkg/{status,available,lock}
+
+    for pkg in sunwcsd sunwcs shell-bash dpkg library-zlib compress-gzip compress-bzip2 system-library system-library-math; do
+        extract $pkg
+    done
+
+    if [ ! -e "$TARGET/etc/mnttab" ]; then
+        echo '# UNCONFIGURED MNTTAB FOR BASE SYSTEM' > "$TARGET/etc/mnttab"
+        chown 0.0 "$TARGET/etc/mnttab"; chmod 644 "$TARGET/etc/mnttab"
+    fi
+
+
+    x_setup_proc () {
+        on_exit "umount $TARGET/proc"
+        umount $TARGET/proc 2>/dev/null || true
+        touch $TARGET/dev/zero
+        in_target /sbin/mount -F proc /proc
+    }
+
+    x_setup_proc
+}
+
+second_stage_install () {
+
+    x_core_install () {
+	    smallyes '' | in_target /usr/bin/dpkg --debug=2 --force-all --install $(debfor "$@")
+    }
+
+    p () {
+	    baseprog="$(($baseprog + ${1:-1}))"
+    }
+
+    export FAKEROOT="no"
+
+    in_target /usr/bin/crle -u -l /lib:/usr/lib
+    in_target /usr/bin/crle -64 -u -l /lib/64:/usr/lib/64
+
+    DEBIAN_FRONTEND=noninteractive
+    DEBCONF_NONINTERACTIVE_SEEN=true
+    export DEBIAN_FRONTEND DEBCONF_NONINTERACTIVE_SEEN
+
+    touch $TARGET/var/lib/dpkg/status
+    touch $TARGET/var/lib/dpkg/lock
+
+	core_pkgs_1="sunwcsd \
+	             system-data-keyboard-keytables \
+	             system-extended-system-utilities \
+	             sunwcs \
+	             service-fault-management \
+	             system-library-storage-scsi-plugins \
+	             system-library \
+	             system-library-math"
+
+	baseprog=0
+	bases=`echo $core_pkgs_1 | wc -w`
+	info INSTCORE "Installing $bases core packages... part 1"
+	for pkg in $core_pkgs_1; do
+		p; info INSTCORE "Installing $baseprog core package: $pkg"
+        x_core_install $pkg
+    done
+
+    if [ ! -e "$TARGET/etc/localtime" ]; then
+        ln -sf /usr/share/lib/zoneinfo/UTC "$TARGET/etc/localtime"
+    fi
+
+	core_pkgs_2="text-locale \
+	             base-files \
+				 library-security-trousers \
+				 library-libidn \
+				 library-zlib \
+				 compress-bzip2 \
+				 compress-gzip \
+				 system-library-gcc-44-runtime \
+				 library-libxml2 \
+				 dpkg \
+				 library-ncurses \
+				 library-security-libgpg-error \
+				 system-library-security-libgcrypt \
+				 library-pth \
+				 library-readline \
+				 crypto-gnupg \
+				 library-zlib \
+				 library-security-libassuan \
+				 apt \
+				 apt-utils \
+				 icore-keyring \
+				 terminal-dialog \
+				 text-gnu-grep \
+				 text-gawk \
+				 text-less \
+				 text-gnu-sed \
+				 file-gnu-findutils"
+
+	baseprog=0
+	bases=`echo $core_pkgs_2 | wc -w`
+    info INSTCORE "Installing $bases core packages... part 2"
+	for pkg in $core_pkgs_2; do
+	    p; info INSTCORE "Installing $baseprog core package: $pkg"
+        x_core_install $pkg
+	done
+
+
+#    info CONFREQ "Configuring required packages ....."
+#
+#    mv "$TARGET/sbin/start-stop-daemon" "$TARGET/sbin/start-stop-daemon.REAL"
+#
+#
+#    echo \
+#"#!/bin/sh
+#
+#echo
+#echo \"Warning: Fake start-stop-daemon called, doing nothing\"" > "$TARGET/sbin/start-stop-daemon"
+#    chmod 755 "$TARGET/sbin/start-stop-daemon"
+#
+#    setup_dselect_method apt
+#
+#    smallyes '' |
+#      (repeat 1 in_target_failmsg CONF_REQ_FAIL "Trying to resolve configuration issues." "" \
+#      /usr/bin/dpkg --status-fd 8 --configure --pending --force-configure-any --force-depends 8>&1 1>&7 |
+#      dpkg_progress $baseprog $bases CONFREQ "Configuring required packages" CONFIGURING) 7>&1
+#
+#    baseprog=0
+#    bases="$(set -- $base; echo $#)"
+#
+#    info UNPACKBASE "Unpacking the base system..."
+#
+#    smallyes '' |
+#      (repeat 1 in_target_failmsg INST_BASE_FAIL_FIVE "Failure while installing base packages.  Repeat one more time." "" \
+#      /usr/bin/dpkg --status-fd 8 --force-auto-select --force-overwrite --force-depends --force-confold --skip-same-version --unpack $(debfor $base) 8>&1 1>&7 |
+#      dpkg_progress $baseprog $bases UNPACKBASE "Unpacking base system" UNPACKING) 7>&1
+#
+#    info CONFBASE "Configuring the base system..."
+#
+#    smallyes '' |
+#      (repeat 1 in_target_failmsg CONF_BASE_FAIL_FIVE "Failure while configuring base packages.  Repeat one more time." "" \
+#      dpkg --status-fd 8 --force-confold --skip-same-version --configure --force-depends -a 8>&1 1>&7 |
+#      dpkg_progress $baseprog $bases CONFBASE "Configuring base system" CONFIGURING) 7>&1
+#
+#    mv "$TARGET/sbin/start-stop-daemon.REAL" "$TARGET/sbin/start-stop-daemon"
+#
+#    progress $bases $bases CONFBASE "Configuring base system"
+#    info BASESUCCESS "Base system installed successfully."
+
+}

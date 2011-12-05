@@ -36,7 +36,7 @@ export PS1="\W> "
 #export TERMINFO=/usr/share/lib/terminfo
 export TERMINFO=/usr/gnu/share/terminfo
 #export TERM=sun-color
-export TERM=xterm-color
+export TERM=xterm
 export PATH=/usr/nexenta:/usr/gnu/bin:/bin:/sbin:/usr/sbin:/usr/bin:$PATH
 
 TITLE="NexentaOS"
@@ -2716,6 +2716,9 @@ customize_hdd_install()
 	chown root:sys $TMPDEST/etc/passwd
 	printlog "Root SHELL is set to /bin/bash"
 
+	# Disable VI mode for VIM
+	touch $TMPDEST/root/.vimrc
+
 	if test "x$_KS_disable_motd" != "x" -a "x$_KS_disable_motd" != "x0"; then
 		touch $TMPDEST/root/.hushlogin
 		printlog "Disabled MOTD for 'root' user"
@@ -3083,8 +3086,19 @@ configure_repository()
 {
 	plat='none'
 
+    # Store the repository under etc/svc/repository.db
+	cp -ar ${TMPDEST}/lib/svc/seed/global.db ${TMPDEST}/etc/svc/repository.db
+	chown root:sys ${TMPDEST}/etc/svc/repository.db
+
 	CWD=`pwd`
-	cd ${TMPDEST}/etc/svc/profile
+    DBFILE=${TMPDEST}/etc/svc/repository.db
+	CONFIGD=${TMPDEST}/lib/svc/bin/svc.configd
+	SVCCFG=${TMPDEST}/usr/sbin/svccfg
+	DTD=${TMPDEST}/usr/share/lib/xml/dtd/service_bundle.dtd.1
+	SVCENV="PKG_INSTALL_ROOT=${TMPDEST} SVCCFG_DTD=${DTD} \
+	SVCCFG_REPOSITORY=${DBFILE} SVCCFG_CONFIGD_PATH=${CONFIGD}"
+
+    cd ${TMPDEST}/etc/svc/profile
 
 	rm -f inetd_services.xml >/dev/null 2>&1
 	$LN -fs inetd_generic.xml inetd_services.xml >/dev/null 2>&1
@@ -3096,13 +3110,15 @@ configure_repository()
 	$LN -fs platform_${plat}.xml platform.xml >/dev/null 2>&1
 
 	rm -f generic.xml
+	sed -i -e "s#file:/etc/svc/profile/name_service.xml#name_service.xml#" generic_open.xml
 	$LN -fs generic_open.xml generic.xml
 
-	cd $CWD
+	eval "${SVCENV} ${SVCCFG} apply ${TMPDEST}/etc/svc/profile/generic.xml >/dev/null 2>&1"
 
-	# Store the repository under etc/svc/repository.db
-	cp -ar ${TMPDEST}/lib/svc/seed/global.db ${TMPDEST}/etc/svc/repository.db
-	chown root:sys ${TMPDEST}/etc/svc/repository.db
+	eval "${SVCENV} ${SVCCFG} apply ${TMPDEST}/etc/svc/profile/platform.xml >/dev/null 2>&1"
+
+    cd $CWD
+
 	printlog "SMF repository configured at /etc/svc/repository.db"
 }
 
@@ -4214,7 +4230,7 @@ if [ $UPGRADE -eq 0 ]; then
 		fi
 		printlog "First time startup wizard '/usr/bin/$_KS_startup_wizard' enabled."
 		if test "x$_KS_model" != x; then
-			cp $REPO/$_KS_model $TMPDEST/usr/lib/perl5/NZA
+			cp $REPO/$_KS_model $TMPDEST/usr/perl5/5.12/lib/NZA
 		fi
 	fi
 	if test "x$auto_install" = "x1"; then

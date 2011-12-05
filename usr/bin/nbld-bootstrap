@@ -43,6 +43,7 @@ test ! -f /etc/nbld.cf && echo "Error: can't find /etc/nbld.cf" && exit 1
 repo="$NBLD_REPO"		        # APT repository (must exist)
 repolock="$repo/dists/debarchiver.lock" # APT debarchiver's lock
 dist="$NBLD_DISTRO-$NBLD_BRANCH"	# IN repository's distribution name
+distro=$NBLD_DISTRO
 rootdir="$NBLD_MINIROOT"                # bootstrap output
 hddrepo="/usr/nexenta"	        	# APT repository for HDD mode
 customdir="$NBLD_LIBDIR"	        # directory with data files
@@ -116,21 +117,6 @@ fi
 
 test -d $rootdir && umount $rootdir/proc 2>/dev/null
 
-#REQ_DEBS="pciutils nexenta-keyring zlib1g libnspr4-0d libnss3-1d gnupg sunwpiclr \
-#	  sunwdtrc sunwdtrp sunwrcmdc nexenta-sunw pkg-config libkrb53 libstdc++6-4.2-dev"
-#REQ_DEBS="pciutils nexenta-keyring zlib1g libnspr4-0d libnss3-1d gnupg service-picl \
-#	developer-dtrace system-kernel-dtrace-providers service-network-network-clients nexenta-sunw pkg-config libkrb53 libstdc++6-4.2-dev"
-
-
-#MINIMAL_CMN_DEBS="vim sunwsshu sunwsshdu bzip2 mkisofs sudo sed sunwcsu"
-#MINIMAL_CMN_DEBS="vim network-ssh service-network-ssh bzip2 mkisofs sudo sed sunwcs"
-
-#HDD_EXCLUDE_DEBS="openssh-client openssh-server"
-
-#STAGE0_EXCLUDE_DEBS="alien aptitude sunwdtrc rpm info locales sunwrcmdc sunwfmd sunwpkgcmdsu sunwdtrp libssl0.9.7 libsnmp9 librpm4 debhelper libldap-2.2-7 sasl2-bin nano nvi sunwsmbsu sunwsmbsr sunwsmbskr audioctl patch sunwdmgtu sunwdmgtr sunwdrmr sunwdsdr sunwdsdu sunwiscsir sunwiscsiu sunwima sunwimac sunwimacr sunwimar sunwmpapi sunwmpapir sunwmdb sunwmdbr sunwsshdr sunwsshdu sunwxwdv sunwtnetd sunwsmedia sunwsmediar sunwhea sunwiir sunwiiu sunwrdcr sunwrdcu sunwscmr sunwscmu sunwspsvr sunwspsvu sunwrmvolmgrr sunwrmvolmgr sunwxvmr sunwxvmu sunwxvmdomr sunwxvmdomu"
-
-#STAGE0_EXCLUDE_DEBS="alien system-library-storage-libmpscsi-vhci storage-mpathadm python nexenta-pkgcmd dpkg-dev debhelper tasksel tasksel-data libhal-dev libhal-storage-dev python2.5  myamanet-rf aptitude developer-dtrace info manpages service-network-network-clients service-fault-management system-kernel-dtrace-providers libssl0.9.7 man-db nano service-file-system-smb patch driver-graphics-drm sunwcs service-network-dns-mdns network-iscsi-initiator system-library-storage-ima system-library-storage-ima-header-ima system-library-storage-libmpapi developer-debug-mdb driver-x11-winlock service-network-telnet system-header storage-avs-point-in-time-copy storage-avs-remote-mirror service-storage-avs-cache-management driver-storage-sv diagnostic-powertop"
-
 if test -f $customdir/$mode.profile; then
 	. $customdir/$mode.profile
 elif test -f $mode.profile; then
@@ -180,40 +166,12 @@ echo "Cleaning up $rootdir ... "
 test -d $rootdir && rm -rf $rootdir
 mkdir -p $rootdir
 
-# $repo/incoming/input.conf must pre-exist, so debarchiver will use it
-#test ! -f $repo/incoming/input.conf && \
-#	fatal "could not find $repo/incoming/input.conf"
-
-#grep -c "$repo" $repo/incoming/input.conf >/dev/null
-#if [ $? -ne 0 ] ; then
-#    echo "\$destdir = \"$repo/dists\";" >> $repo/incoming/input.conf
-#    echo "\$inputdir = \"$repo/incoming\";" >> $repo/incoming/input.conf
-#fi
-
-# sync incomings in $repo/incoming
-#echo "Syncing $repo/incoming ... "
-#while ! mkdir $repolock 2>/dev/null; do sleep 1; done
-#repolock_set=yes
-#debarchiver --lockfile debarchiver-bootstrap.lock -o -x -i $repo/incoming ||
-#	fatal "couldn't sync $repo/incoming"
-#repolock_set=no
-#rmdir $repolock 2>/dev/null
-
-# Nexenta LU protected environment
-NLU_ENABLED=1; export NLU_ENABLED
-LD_NOAUXFLTR=1; export LD_NOAUXFLTR
-LD_LIBRARY_PATH=/tmp/nlulib; export LD_LIBRARY_PATH
-LD_LIBRARY_PATH_64=/tmp/nlulib/64; export LD_LIBRARY_PATH_64
-environ="$environ NLU_ENABLED=1 LD_NOAUXFLTR=1 LD_LIBRARY_PATH=/tmp/nlulib LD_LIBRARY_PATH_64=/tmp/nlulib/64"
-
 if test "x$mode" = xinstall; then
 	cat << EOF
 ------------------------------------------------------------------------------
 Generating InstallCD filelist...
 ------------------------------------------------------------------------------
 EOF
-#export BOOTSTRAP_REQUIRED="$BOOTSTRAP_EXTRA_DEBS $STAGE0_APTINST"
-#export BOOTSTRAP_REQUIRED="${REQ_DEBS}"
 export BOOTSTRAP_REQUIRED="dpkg apt"
 
 	pkglist="$NBLD_TMP/debootstrap-pkglist.installcd.tmp"
@@ -225,17 +183,9 @@ export BOOTSTRAP_REQUIRED="dpkg apt"
 		    --print-debs \
 		    $dist \
 		    $rootdir \
-		    file://$repo \
-		    $customdir/$dist.bootstrap >$pkglist ||
+		    $repo \
+		    $customdir/$distro.bootstrap >$pkglist ||
 		fatal "couldn't generate package list for InstallCD"
-#	BOOTSTRAP_REQUIRED=$(cat $pkglist|egrep "^Required:"|sed -e "s/^Required: //")
-#	BOOTSTRAP_BASE=$(cat $pkglist|egrep "^Base:"|sed -e "s/^Base: //")
-#	echo "Selected `echo $BOOTSTRAP_REQUIRED|sed -e "s/\s/\n/g"|wc -l` required packages"
-#	echo "Selected `echo $BOOTSTRAP_BASE|sed -e "s/\s/\n/g"|wc -l` base packages"
-#echo ">>>>"
-#cat $pkglist
-#echo "<<<<"
-#exit 1
 	cat << EOF
 ------------------------------------------------------------------------------
 Downloading package archive...
@@ -245,8 +195,8 @@ BOOTSTRAP_REQUIRED=`cat $pkglist`
 BOOTSTRAP_REQUIRED="$BOOTSTRAP_REQUIRED $STAGE0_DEBS"
 
 	export BOOTSTRAP_REQUIRED BOOTSTRAP_BASE
-	while ! mkdir $repolock 2>/dev/null; do sleep 1; done
-	repolock_set=yes
+#	while ! mkdir $repolock 2>/dev/null; do sleep 1; done
+#	repolock_set=yes
 	/bin/bash debootstrap \
 		    --verbose \
 		    --arch solaris-i386 \
@@ -256,11 +206,11 @@ BOOTSTRAP_REQUIRED="$BOOTSTRAP_REQUIRED $STAGE0_DEBS"
 		    --download-only \
 		    $dist \
 		    $rootdir \
-		    file://$repo \
-		    $customdir/$dist.bootstrap ||
+		    $repo \
+		    $customdir/$distro.bootstrap ||
 		fatal "couldn't complete bootstrap of the InstallCD archive"
-	repolock_set=no
-	rmdir $repolock 2>/dev/null
+#	repolock_set=no
+#	rmdir $repolock 2>/dev/null
 	echo $BOOTSTRAP_REQUIRED > /tmp/required-$profile1.lst
 	echo $BOOTSTRAP_BASE > /tmp/base-$profile1.lst
 	cp $rootdir/debootstrap/debpaths /tmp
@@ -295,8 +245,8 @@ export FAKEROOT=yes
 	    --print-debs \
 	    $dist \
 	    $rootdir \
-	    file://$repo \
-	    $customdir/$dist.bootstrap >$pkglist ||
+	    $repo \
+	    $customdir/$distro.bootstrap >$pkglist ||
 	fatal "couldn't complete a $mode-mode filelist generation phase"
 BOOTSTRAP_BASE_MINIMAL=$(cat $pkglist|egrep "^Base:"|sed -e "s/^Base: //")
 echo "Selected `echo $BOOTSTRAP_BASE|sed -e "s/\s/\n/g"|wc -l` base packages"
@@ -318,8 +268,8 @@ export FAKEROOT=yes
 	    --print-debs \
 	    $dist \
 	    $rootdir \
-	    file://$repo \
-	    $customdir/$dist.bootstrap >$pkglist ||
+	    $repo \
+	    $customdir/$distro.bootstrap >$pkglist ||
 	fatal "couldn't complete a $mode-mode filelist generation phase"
 BOOTSTRAP_REQUIRED=$(cat $pkglist|egrep "^Required:"|sed -e "s/^Required: //")
 BOOTSTRAP_BASE=$(cat $pkglist|egrep "^Base:"|sed -e "s/^Base: //")
@@ -334,8 +284,8 @@ Bootstrapping $mode CD media...
 ------------------------------------------------------------------------------
 EOF
 export BOOTSTRAP_REQUIRED BOOTSTRAP_BASE
-while ! mkdir $repolock 2>/dev/null; do sleep 1; done
-repolock_set=yes
+#while ! mkdir $repolock 2>/dev/null; do sleep 1; done
+#repolock_set=yes
 export FAKEROOT=yes
 /bin/bash /usr/sbin/debootstrap \
 	    --verbose \
@@ -345,61 +295,34 @@ export FAKEROOT=yes
 	    --resolve-deps \
 	    $dist \
 	    $rootdir \
-	    file://$repo \
-	    $customdir/$dist.bootstrap || fatal "couldn't complete bootstrap"
-repolock_set=no
-rmdir $repolock 2>/dev/null
+	    $repo \
+	    $customdir/$distro.bootstrap || fatal "couldn't complete bootstrap"
+#repolock_set=no
+#rmdir $repolock 2>/dev/null
 
 if test "x$mode" = "xinstall"; then
 	echo "Creating local repository... "
 	test -d $rootdir$hddrepo || mkdir $rootdir$hddrepo
-	mkdir $rootdir$hddrepo/dists
-	mkdir $rootdir$hddrepo/incoming
-	cp $customdir/$dist.debarchiver \
-		$rootdir$hddrepo/incoming/input.conf ||
-		fatal "couldn't create $rootdir$hddrepo/incoming/input.conf"
-	echo "\$destdir = \"$rootdir$hddrepo/dists\";" >> \
-		$rootdir$hddrepo/incoming/input.conf
-	echo "\$inputdir = \"$rootdir$hddrepo/incoming\";" >> \
-		$rootdir$hddrepo/incoming/input.conf
+	mkdir $rootdir$hddrepo/conf
+	cat << EOF > $rootdir$hddrepo/conf/distributions
+Origin: Installation APT
+Codename: installation
+Architectures: solaris-i386
+Components: main contrib non-free
+DebIndices: Packages Release . .gz .bz2
+Description: Installation repository
+EOF
 
-	echo "Propagating local repository... "
-	mkdir $rootdir$hddrepo/incoming/$dist
-	mv $rootdir/var/cache/stage0_archive/*.deb $rootdir$hddrepo/incoming/$dist
-
-	# Copy additional plugins to ISO
-	# TODO: need to implement resolving dependencies
-	if test "x$builtin_plugins" != x -a "x$builtin_plugins_dir" != x -a -d $builtin_plugins_dir; then
-		for pub_plugin in $builtin_plugins; do
-	    	echo "Uploading plugin $pub_plugin... "
-    		find $rootdir$hddrepo/incoming -name "${pub_plugin}_*.*" | xargs rm -f
-    		plugin_pkg=$(find $builtin_plugins_dir -name "${pub_plugin}_*.deb")
-    		test -d $rootdir$hddrepo/incoming/$dist || mkdir $rootdir$hddrepo/incoming/$dist
-    		cp $plugin_pkg $rootdir$hddrepo/incoming/$dist
-    		sed -i -e "s/$/ $pub_plugin/" /tmp/base-$profile1.lst
-            ADD_PLUGINS="$ADD_PLUGINS $pub_plugin"
-    		echo "$pub_plugin var/cache/apt/archives/"$(basename $plugin_pkg) >> /tmp/debpaths
-		done
-	fi
+	for file in `ls -1 $rootdir/var/cache/stage0_archive/*.deb`; do
+		reprepro --ignore=wrongdistribution -b $rootdir$hddrepo --export=never includedeb installation $file >/tmp/reprepro.log.$$ 2>&1 || exit 1
+	done
+	reprepro -b $rootdir$hddrepo export installation || exit 1
 
 	rm -rf $rootdir/var/cache/stage0_archive
 	rm -f $rootdir/var/cache/apt/archive/*.deb
 	rm -rf /var/cache/debarchiver/cache.db
-	debarchiver  --dl 1 --ql 0 --gpgkey Nexenta -o -x -i $rootdir$hddrepo/incoming ||
-		fatal "couldn't propagate $rootdir$hddrepo/incoming"
 
-	echo "Finalizing local repository... "
-	rm $rootdir$hddrepo/incoming/input.conf
-	cp $customdir/$dist.debarchiver \
-		$rootdir$hddrepo/incoming/input.conf ||
-		fatal "couldn't create $rootdir$hddrepo/incoming/input.conf"
-	echo "\$destdir = \"$hddrepo/dists\";" >> \
-		$rootdir$hddrepo/incoming/input.conf
-	echo "\$inputdir = \"$hddrepo/incoming\";" >> \
-		$rootdir$hddrepo/incoming/input.conf
-	echo "deb file://$hddrepo/ $dist main contrib non-free" > \
-		$rootdir/etc/apt/sources.list
-	echo "deb-src file://$hddrepo/ $dist main contrib non-free" >> \
+	echo "deb file://$hddrepo installation main contrib non-free" > \
 		$rootdir/etc/apt/sources.list
 
 	echo "Copying pre-generated filelists... "
@@ -486,15 +409,7 @@ if test "x$mode" = "xinstall"; then
 		echo "_KS_license_text='$ks_license_text'" >> $install_profile
 	fi
 
-	echo "_KS_inst_dist='$dist'" >> $install_profile
-
-	rm -f /tmp/debpaths.new
-	cat /tmp/debpaths | while read p f; do
-		f=$(find $rootdir$hddrepo/dists/$dist -name "${p}_*.deb")
-		f=$(echo $f|sed -e "s;$rootdir;;" -e "s;/;;")
-		echo "$p $f" >> /tmp/debpaths.new
-	done
-	mv /tmp/debpaths.new $rootdir$hddrepo/debpaths
+	echo "_KS_inst_dist='installation'" >> $install_profile
 
 	echo "Initial local repository APT update ... "
 
@@ -505,9 +420,16 @@ if test "x$mode" = "xinstall"; then
 
 	chroot $environ mount -F proc /proc
 
+	chroot $environ apt-key update
 	chroot $environ apt-get update
-
 	chroot $environ apt-get -y install -f --force-yes
+
+#	# Hack needed to install x11* packages.
+	chroot $environ apt-key update
+	chroot $environ rm -f /etc/apt/apt.conf.d/01icore
+	chroot $environ apt-get -o APT::Immediate-Configure=off -y install -f --force-yes
+	chroot $environ rm -f /etc/apt/apt.conf.d/01icore
+#	# End of hack
 
 	APTCMD="apt-get -y --force-yes install"
 	FILESCD="$STAGE0_CD $STAGE0_DRIVERS $STAGE0_CD_END"
@@ -520,6 +442,12 @@ if test "x$mode" = "xinstall"; then
 
 	echo "Preparing hwdisco ... "
 	cp $customdir/hwdisco.pl $rootdir$hddrepo/hwdisco
+
+#	# Hack, because now chpasswd is not provided by any package
+#	echo "Preparing chpasswd ... "
+#	cp $customdir/chpasswd $rootdir/usr/sbin/chpasswd
+
+	touch $rootdir/etc/login.defs
 
 	echo "Preparing install scripts... "
 	cp $customdir/$install_script $rootdir$hddrepo

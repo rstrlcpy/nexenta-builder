@@ -6,83 +6,165 @@
 # REQ_DEBS
 #
 REQ_DEBS="\
-    sunwcsd \
-    system-data-keyboard-keytables \
-    system-extended-system-utilities \
-    system-data-terminfo \
-    libxml2 \
-    system-library-math \
-    system-library-iconv-utf-8 \
-    sunwcs \
-    service-fault-management \
-    system-library-storage-scsi-plugins \
-    system-library \
-    sensible-utils \
-    text-locale \
-    bash \
-    debianutils \
-    base-files \
-    nexenta-ldconfig \
-    libssl0.9.8 \
-    libidn11 \
-    wget \
-    binutils \
-    debootstrap \
-    libgcc1 \
-    lib64gcc1 \
-    libstdc++6 \
-    lib64stdc++6 \
-    liblzma2 \
-    xz-utils \
-    libgmp3c2 \
-    coreutils \
-    package-svr4 \
-    dpkg \
-    libncurses5 \
-    gzip \
-	tree \
-    sed \
-    grep \
-    tar \
-    mawk \
-    install-info \
-    libusb \
-    libgcrypt11 \
-    libgpg-error0 \
-    libksba8 \
-    libpth20 \
-    libldap-2.4-2 \
-    gpgv \
-    gnupg \
-    debian-archive-keyring \
-    nexenta-keyring \
-    libdb4.6 \
-    apt \
-    apt-utils \
-    gettext-base \
-    perl-base \
-    perl-modules \
-    perl \
-    debconf-i18n \
-    debconf \
-    liblocale-gettext-perl \
-    libtext-iconv-perl \
-    libtext-wrapi18n-perl \
-    libtext-charwidth-perl \
-    dialog \
-    libdb4.8 \
-    system-library \
-    sysv-rc \
-    sysvinit \
-    libbz2-1.0 \
-    lib64z1 \
-    zlib1g \
-    ntp \
-    python2.6 \
-    python2.6-minimal \
-    libpython2.6 \
-    "
-#    nmv-meta"
+sunwcs \
+sunwcsd \
+file-gnu-coreutils \
+system-kernel \
+system-kernel-cpu-counters \
+system-kernel-dynamic-reconfiguration-i86pc \
+system-kernel-power \
+system-kernel-platform \
+system-kernel-power \
+system-kernel-secure-rpc \
+system-kernel-security-gss \
+system-kernel-suspend-resume \
+compress-bzip2 \
+compress-gzip \
+crypto-ca-certificates \
+database-sqlite-3 \
+editor-vim \
+install-beadm \
+library-libffi \
+library-libidn \
+library-libtecla \
+library-libxml2 \
+library-ncurses \
+library-nspr \
+library-readline \
+library-security-trousers \
+library-zlib \
+naming-ldap \
+network-bridging \
+network-ftp \
+network-ssh \
+network-ssh-ssh-key \
+print-lp-print-client-commands \
+release-name \
+runtime-python-26 \
+runtime-tcl-8 \
+runtime-tk-8 \
+service-fault-management \
+service-file-system-smb \
+service-network-dns-mdns \
+service-network-network-clients \
+service-network-ssh \
+service-picl \
+service-resource-pools \
+service-security-gss \
+service-security-kerberos-5 \
+shell-bash \
+system-boot-wanboot \
+system-data-keyboard-keytables \
+system-extended-system-utilities \
+system-file-system-autofs \
+system-file-system-nfs \
+system-file-system-smb \
+system-file-system-zfs \
+system-kernel-secure-rpc \
+system-library \
+system-library-c++-sunpro \
+system-library-iconv-utf-8 \
+system-library-libdiskmgt \
+system-library-math \
+system-library-mozilla-nss \
+system-library-security-gss \
+system-library-security-gss-diffie-hellman \
+system-library-security-gss-spnego \
+system-library-security-libgcrypt \
+system-library-security-libsasl \
+system-library-storage-scsi-plugins \
+system-network \
+system-network-routing \
+system-xopen-xcu4 \
+system-zones \
+text-doctools \
+text-groff \
+text-less \
+text-locale \
+text-texinfo \
+locale-en \
+\
+system-boot-grub \
+system-boot-real-mode \
+system-data-hardware-registry \
+media-cdrtools \
+text-gnu-sed \
+text-gnu-grep \
+text-gawk \
+archiver-gnu-tar \
+system-library-gcc-44-runtime \
+dpkg \
+icore-keyring \
+crypto-gnupg \
+apt \
+apt-utils \
+library-security-libassuan \
+terminal-dialog \
+terminal-screen \
+base-files \
+\
+runtime-perl-512 \
+library-perl-5-sun-solaris \
+"
+
+NM_STUFF="\
+developer-versioning-rcs \
+library-perl-5-archive-zip \
+library-perl-5-carp-assert \
+library-perl-5-class-methodmaker \
+library-perl-5-compiler-kit \
+library-perl-5-crypt-des \
+library-perl-5-dbd-sqlite \
+library-perl-5-digest-hmac \
+library-perl-5-digest-sha1 \
+library-perl-5-email-date-format \
+library-perl-5-file-which \
+library-perl-5-getopt-argvfile \
+library-perl-5-io-socket-ssl \
+library-perl-5-json \
+library-perl-5-mailtools \
+library-perl-5-module-scandeps \
+library-perl-5-net-dbus \
+library-perl-5-net-libidn \
+library-perl-5-par \
+library-perl-5-search-xapian \
+library-perl-5-dtrace \
+library-perl-5-term-readkey \
+library-perl-5-test-pod \
+library-perl-5-text-asciitable \
+library-perl-5-time-modules \
+library-perl-5-xml-libxml \
+library-perl-5-xml-namespacesupport \
+library-perl-5-xml-sax \
+library-perl-5-xml-twig \
+library-python-2-sqlobject-26 \
+library-python-2-turbogears-26 \
+library-python-2-turbokid-26 \
+library-xapian \
+network-sshpass \
+network-rrs \
+library-xapian-omega \
+\
+library-perl-5-xml-parser \
+library-perl-5-database \
+library-python-2-setuptools-26 \
+library-python-2-simplejson-26 \
+terminal-dialog \
+terminal-screen \
+\
+nbs \
+nlm-com \
+nms \
+nmdtrace \
+nmu \
+nmc \
+nmv-theme-nexenta \
+nmv \
+chpasswd \
+runtime-tcl-8 \
+"
+
+REQ_DEBS="$REQ_DEBS"
 
 #
 # MINIMAL_CMN_DEBS
@@ -107,207 +189,127 @@ STAGE0_DEBS=""
 #
 # CD stage
 #
-STAGE0_CD="
-system-kernel \
-system-kernel-platform \
-\
-libtspi1 \
-service-network-ssh \
+STAGE0_CD="\
+developer-debug-mdb \
+developer-debug-mdb-module-module-qlc \
+developer-dtrace \
+developer-linker \
+driver-network-platform \
+library-libtecla \
+library-security-trousers \
+network-ftp \
 network-ssh \
 network-ssh-ssh-key \
-network-ftp \
-driver-network-platform \
-\
+service-hal \
+service-fault-management \
+service-network-dns-mdns \
+service-network-network-clients \
+service-network-ssh \
+service-resource-pools \
 system-boot-grub \
 system-boot-real-mode \
 system-data-hardware-registry \
-system-file-system-nfs \
-system-file-system-smb \
 system-file-system-zfs \
-system-header \
-system-ipc \
-system-management-intel-amt \
-system-network \
-system-network-spdadm \
-system-scheduler-fss \
-system-storage-fibre-channel-port-utility \
-system-storage-luxadm \
-system-storage-sasinfo \
-system-trusted \
-system-trusted-global-zone \
-\
-service-file-system-nfs \
-service-file-system-smb \
-service-hal \
-service-network-dns-mdns \
-service-network-load-balancer-ilb \
-service-resource-pools \
-service-storage-avs-cache-management \
-service-storage-fibre-channel-fc-fabric \
-\
-service-storage-removable-media \
-\
-system-library-libdiskmgt \
-system-library-libfcoe \
-system-library-platform \
-system-library-policykit \
-system-library-processor \
-system-library-security-gss \
-system-library-security-libsasl \
-system-library-storage-fibre-channel-hbaapi \
-system-library-storage-fibre-channel-libsun-fc \
-system-library-storage-ima \
-system-library-storage-ima-header-ima \
-system-library-storage-libmpapi \
-system-library-storage-libmpscsi-vhci \
-\
-storage-avs-point-in-time-copy \
-storage-avs-remote-mirror \
-storage-mpathadm \
-\
+system-kernel \
 system-kernel-cpu-counters \
 system-kernel-dynamic-reconfiguration-i86pc \
+system-kernel-platform \
 system-kernel-power \
 system-kernel-secure-rpc \
 system-kernel-security-gss \
 system-kernel-suspend-resume \
-system-kernel-ultra-wideband \
-\
-developer-debug-mdb \
-developer-linker \
-developer-dtrace \
-developer-debug-mdb-module-module-qlc \
-library-libtecla \
-system-data-terminfo \
-ncurses-term \
+system-library-libdiskmgt \
+system-library-platform \
+system-library-policykit \
+system-library-processor \
+system-library-math \
+system-library-security-libgcrypt \
+system-network \
+system-network-routing \
+system-scheduler-fss \
+service-storage-avs-cache-management \
+storage-svm \
+system-library-iconv-utf-8 \
+media-cdrtools \
+install-beadm \
+text-less \
+editor-vim \
+web-wget \
+compress-bzip2 \
+compress-gzip \
+text-locale \
+archiver-gnu-tar \
 "
 
 #
 # CD stage
 #
 STAGE0_CD_END="\
-storage-svm \
-grep \
-sed \
-findutils \
-adduser \
-screen \
-mawk \
-pciutils \
-passwd \
-file \
-tar \
-mkisofs \
-machinesig \
-mdisco \
+text-gnu-grep \
+text-gnu-sed \
+file-gnu-findutils \
+file-gnu-coreutils \
+terminal-dialog \
+terminal-screen \
 hddisco \
-perl-compiler-kit \
+mdisco \
+machinesig \
+chpasswd \
+library-perl-5-compiler-kit \
+service-file-system-nfs \
+system-file-system-nfs \
 "
+
 
 #
 # STAGE0_APTINST
 #
-STAGE0_APTINST=" \
-service-fault-management \
-system-data-keyboard-keytables \
-system-extended-system-utilities \
-system-library-storage-scsi-plugins \
-libxml2 \
-system-library-math \
-\
-system-kernel \
-system-kernel-platform \
-\
-system-boot-grub \
-system-boot-real-mode \
-system-data-hardware-registry \
-system-file-system-nfs \
-system-file-system-smb \
-system-file-system-zfs \
-system-header \
-system-ipc \
-system-management-intel-amt \
-system-network \
-system-network-spdadm \
-system-scheduler-fss \
-system-storage-fibre-channel-port-utility \
-system-storage-luxadm \
-system-storage-sasinfo \
-system-trusted \
-system-trusted-global-zone \
-\
-service-file-system-nfs \
-service-file-system-smb \
-service-hal \
-service-network-dns-mdns \
-service-network-load-balancer-ilb \
-service-resource-pools \
-service-storage-avs-cache-management \
-service-storage-fibre-channel-fc-fabric \
-service-storage-media-volume-manager \
-service-storage-removable-media \
-service-storage-virus-scan \
-\
-system-library-libdiskmgt \
-system-library-libfcoe \
-system-library-platform \
-system-library-policykit \
-system-library-processor \
-system-library-security-gss \
-system-library-security-libsasl \
-system-library-storage-fibre-channel-hbaapi \
-system-library-storage-fibre-channel-libsun-fc \
-system-library-storage-ima \
-system-library-storage-ima-header-ima \
-system-library-storage-libmpapi \
-system-library-storage-libmpscsi-vhci \
-\
-storage-avs-point-in-time-copy \
-storage-avs-remote-mirror \
-storage-mpathadm \
-\
-system-kernel-cpu-counters \
-system-kernel-dynamic-reconfiguration-i86pc \
-system-kernel-power \
-system-kernel-secure-rpc \
-system-kernel-security-gss \
-system-kernel-suspend-resume \
-system-kernel-ultra-wideband \
-\
-developer-debug-mdb \
-developer-linker \
-developer-dtrace \
-developer-debug-mdb-module-module-qlc \
-\
-system-file-system-autofs \
-\
-library-libtecla \
-system-library-install-libinstzones \
-install-beadm \
-\
-system-kernel-dtrace-providers \
-\
-libtspi1 \
-service-network-ssh \
-network-ssh \
-network-ssh-ssh-key \
-network-ftp \
-\
+STAGE0_APTINST="$STAGE0_CD \
+naming-ldap \
 network-bridging \
+network-ipfilter \
 network-iscsi-initiator \
 network-iscsi-iser \
 network-iscsi-target \
 network-netcat \
 network-telnet \
-network-ipfilter \
-\
+service-fault-management-smtp-notify \
+service-fault-management-snmp-notify \
+service-file-system-nfs \
+service-file-system-smb \
+service-network-dhcp \
+service-network-dhcp-datastore-binfiles \
+service-network-ftp \
+service-network-legacy \
+service-network-load-balancer-ilb \
+service-network-network-servers \
+service-network-nis \
+service-network-slp \
+service-network-smtp-sendmail \
+service-network-telnet \
+service-network-tftp \
+service-network-uucp \
+service-network-wpa \
+service-picl \
+service-resource-cap \
+service-resource-pools-poold \
+service-security-gss \
+service-security-kerberos-5 \
+service-storage-fibre-channel-fc-fabric \
+service-storage-isns \
+service-storage-media-volume-manager \
+service-storage-ndmp \
+service-storage-removable-media \
+service-storage-virus-scan \
+storage-avs-point-in-time-copy \
+storage-avs-remote-mirror \
+storage-metassist \
+storage-mpathadm \
+storage-stmf \
 system-accounting-legacy \
-system-boot-grub \
 system-boot-network \
-system-boot-real-mode \
-system-boot-wanboot-internal \
 system-boot-wanboot \
-system-data-hardware-registry \
+system-boot-wanboot-internal \
 system-data-keyboard-keytables \
 system-data-terminfo \
 system-dtrace-tests \
@@ -319,132 +321,61 @@ system-file-system-ntfsprogs \
 system-file-system-smb \
 system-file-system-udfs \
 system-file-system-zfs-tests \
-system-file-system-zfs \
 system-flash-fwflash \
-system-fru-id-platform \
 system-fru-id \
-system-header-header-agp \
-system-header-header-audio \
-system-header-header-firewire \
-system-header-header-picl \
-system-header-header-storage \
-system-header-header-ugen \
-system-header-header-usb \
-system-header \
+system-fru-id-platform \
 system-io-tests \
 system-ipc \
-system-kernel-cpu-counters \
-system-kernel-dtrace-providers-xdt \
 system-kernel-dtrace-providers \
-system-kernel-dynamic-reconfiguration-i86pc \
-system-kernel-platform \
-system-kernel-power \
+system-kernel-dtrace-providers-xdt \
 system-kernel-rsmops \
-system-kernel-secure-rpc \
-system-kernel-security-gss \
-system-kernel-suspend-resume \
-system-kernel-ultra-wideband \
-system-kernel \
 system-library-install-libinstzones \
-system-library-libdiskmgt-header-libdiskmgt \
-system-library-libdiskmgt \
 system-library-libfcoe \
-system-library-platform \
-system-library-policykit \
-system-library-processor \
 system-library-security-crypto-pkcs11-kms \
+system-library-security-gss \
 system-library-security-gss-diffie-hellman \
 system-library-security-gss-spnego \
-system-library-security-gss \
 system-library-security-libsasl \
 system-library-security-rpcsec \
-system-library-storage-fibre-channel-hbaapi \
 system-library-storage-fibre-channel-libsun-fc \
-system-library-storage-ima-header-ima \
 system-library-storage-ima \
-system-library-storage-libmpapi \
+system-library-storage-ima-header-ima \
 system-library-storage-libmpscsi-vhci \
 system-library-storage-scsi-plugins \
 system-library-svm-rcm \
-system-library \
 system-management-intel-amt \
 system-management-pcitool \
 system-management-snmp-sea-sea-config \
 system-management-wbem-data-management \
 system-network-http-cache-accelerator \
-system-network-ipqos-ipqos-config \
 system-network-ipqos \
+system-network-ipqos-ipqos-config \
 system-network-nis \
+system-network-ppp \
 system-network-ppp-pppdump \
 system-network-ppp-tunnel \
-system-network-ppp \
 system-network-routing-vrrp \
-system-network-routing \
 system-network-spdadm \
-system-network-udapl-udapl-tavor \
 system-network-udapl \
+system-network-udapl-udapl-tavor \
 system-network-wificonfig \
-system-network \
 system-remote-shared-memory \
-system-scheduler-fss \
 system-security-kerberos-5 \
 system-storage-fibre-channel-port-utility \
 system-storage-luxadm \
 system-storage-parted \
 system-storage-sasinfo \
 system-tnf \
-system-trusted-global-zone \
-system-trusted \
 system-xopen-xcu4 \
 system-xopen-xcu6 \
 system-xvm-ipagent \
+system-zones \
 system-zones-brand-s10 \
 system-zones-brand-sn1 \
 system-zones-internal \
-system-zones \
-\
-service-fault-management-smtp-notify \
-service-fault-management-snmp-notify \
-service-fault-management \
-service-file-system-nfs \
-service-file-system-smb \
-service-hal \
-service-network-dhcp-datastore-binfiles \
-service-network-dhcp \
-service-network-dns-mdns \
-service-network-ftp \
-service-network-legacy \
-service-network-load-balancer-ilb \
-service-network-network-clients \
-service-network-network-servers \
-service-network-nis \
-service-network-slp \
-service-network-smtp-sendmail \
-service-network-ssh \
-service-network-telnet \
-service-network-tftp \
-service-network-uucp \
-service-network-wpa \
-service-picl \
-service-resource-cap \
-service-resource-pools-poold \
-service-resource-pools \
-service-security-gss \
-service-security-kerberos-5 \
-service-storage-avs-cache-management \
-service-storage-fibre-channel-fc-fabric \
-service-storage-isns \
-service-storage-media-volume-manager \
-service-storage-ndmp \
-service-storage-removable-media \
-service-storage-virus-scan \
-\
-storage-avs-point-in-time-copy \
-storage-avs-remote-mirror \
-storage-metassist \
-storage-mpathadm \
-storage-stmf \
-storage-svm \
+"
+
+STAGE0_APTINST_OLD=" \
 "
 
 #
@@ -452,79 +383,15 @@ storage-svm \
 #
 #
 STAGE0_HDD_END="\
-libsunw-kstat-perl \
-libsunw-intrs-perl \
-\
-grep \
-sed \
-findutils \
-tar \
-adduser \
-screen \
-mawk \
-pciutils \
-sudo \
-less \
-sysvinit \
-passwd \
-lsb-base \
-dpkg-dev \
-file \
-rsync \
-mkisofs \
-util-linux \
-procps \
-\
-diffutils \
-man-db \
-vim \
-\
-dbus \
-libdbus-glib-1-2 \
-libglib2.0-0 \
-\
-nexenta-lsof \
-tmux \
-bzip2 \
-gzip \
-tree \
-ntp "
-
-NMPKGS="\
-ttf-freefont \
-libfontconfig1 \
-libpoppler5 \
-poppler-utils \
-xpdf-utils \
-libjson-perl \
-libdb4.8 \
-sqlite3 \
-libdtrace-perl \
-libdbd-sqlite3-perl \
-apache2 \
-libnet-dbus-perl \
-perl-compiler-kit \
-\
-python-elementtree \
-python-kid \
-python-turbokid \
-python-turbogears \
-python-sqlobject \
-\
-nms \
-nms-dev \
-nmc \
-nmdtrace \
-nmu \
-nlm-com \
-nbs \
-nmv \
-python-genshi \
-python-tgmochikit \
+service-network-ntp \
+system-library-dbus \
+library-nspr \
+security-sudo \
+package-svr4 \
+library-perl-5-sun-solaris \
 "
 
-#REQ_DEBS="$REQ_DEBS $NMPKGS"
-STAGE0_HDD_END="$STAGE0_HDD_END $NMPKGS"
+STAGE0_HDD_END="$STAGE0_HDD_END $NM_STUFF"
 
 #
 # STAGE0_DRIVERS -
@@ -574,7 +441,6 @@ driver-network-e1000g \
 driver-network-efe \
 driver-network-elxl \
 driver-network-emlxs \
-driver-network-eoib \
 driver-network-fcip \
 driver-network-fcoe \
 driver-network-fcoei \
@@ -683,8 +549,10 @@ STAGE0_EXCLUDE_DEBS=""
 # LOCAL_ARCHIVE_DEBS - the content of on-ISO APT repository
 #                      (what will be installed by default)
 #
-LOCAL_ARCHIVE_DEBS="\
-"
+LOCAL_ARCHIVE_DEBS=""
+
+
+
 #
 # Various installer-specific settings
 # (see nbld-bootstrap source code for details)
@@ -693,7 +561,7 @@ company_title="Nexenta"
 product_title="NexentaStor"
 model_id="STOR_UNIFIED"
 model_name="Open Storage Appliance"
-os_version="v4.0"
+os_version="v4.0 (illumian)"
 sw_version="v4.0.0"
 issue_files_content="$model_name ($sw_version)"
 rootsize1="1024"

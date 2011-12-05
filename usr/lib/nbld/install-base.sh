@@ -51,71 +51,55 @@ PKGSPATH="$2"
 
 PKGS=" \
 sunwcsd \
+release-name \
 sunwcs \
-grep \
-sed \
-bash \
-nexenta-keyring \
-debian-archive-keyring \
-libreadline6 \
-libdb4.6 \
-apt-utils \
+archiver-gnu-tar \
+compress-gzip \
+shell-bash \
+icore-keyring \
+library-security-libassuan \
 apt \
-coreutils \
-package-svr4 \
+text-gnu-sed \
+text-gnu-grep \
+file-gnu-coreutils \
 dpkg \
-libgcrypt11 \
-libgpg-error0 \
-libksba8 \
-libpth20 \
-libldap-2.4-2 \
-gnupg \
-gpgv \
-libgcc1 \
-libgmp3c2 \
-liblzma2 \
+library-security-libgpg-error \
+system-library-security-libgcrypt \
+library-pth \
+library-readline \
+crypto-gnupg \
+system-library-gcc-44-runtime \
+library-gmp \
 system-data-keyboard-keytables \
 system-library \
 system-library-storage-scsi-plugins \
-xz-utils \
-sysv-rc \
-libbz2-1.0 \
-lib64bz2-1.0 \
-nexenta-ldconfig \
-system-library-iconv-utf-8 \
+compress-bzip2 \
 system-library-math \
-libstdc++6 \
-zlib1g \
-lib64z1 \
-perl-base \
-perl-modules \
-perl"
+library-zlib"
+
+#runtime-perl-510 \
+#runtime-perl-510-extra \
+#runtime-perl-510-module-sun-solaris"
 
 MAINPKGS="\
 sunwcsd \
 library-libtecla \
-service-fault-management \
-system-zones \
 system-library \
-gcc-4.4-base \
-libgcc1 \
-lib64gcc1 \
-zlib1g \
-lib64z1 \
+system-library-gcc-44-runtime \
+library-zlib \
 system-boot-grub \
 system-library-math \
 sunwcs \
 system-file-system-zfs \
-libtspi1 \
-libxml2 \
-libbz2-1.0 \
-package-svr4 \
-system-library-install-libinstzones \
+library-security-trousers \
+library-libxml2 \
+compress-bzip2 \
 dpkg \
-perl-base \
-debconf \
-libssl0.9.8 \
-mawk"
+library-security-openssl \
+base-files"
+
+#runtime-perl-510 \
+#text-gawk"
 
 function getFile
 {
@@ -129,14 +113,14 @@ function unpack
 {
     PKG=$1
     TO=$2
-    echo "Unpacking $PKG to $TO ..."
+    echo "Unpacking [$PKG] to [$TO] ..."
     dpkg-deb -x $PKG $TO
 }
 
 function dpkginst
 {
     PKG=$2
-    echo "Installing $PKG ..."
+    echo "Installing [$PKG] ..."
     chroot $1 $chrootenv dpkg --force-all -i $PKG
 }
 
@@ -164,18 +148,19 @@ do
 
     LPKG=`getFile $package`
     unpack $LPKG $TARGET 2>&1 | tee -a $LOG
+    echo "$LPKG" >> $PKGSLOG
 done
 
-# hack apt-clone
-rm -f $1/etc/apt/apt.conf.d/01nexenta
 
-echo "== 1 - chroot $1 $chrootenv mount -F proc /proc " >> $LOG
-chroot $1 $chrootenv mount -F proc /proc 2>&1 | tee -a $LOG
+echo "== 1 - chroot $1 $chrootenv /sbin/mount -F proc /proc " >> $LOG
+chroot $1 $chrootenv /sbin/mount -F proc /proc 2>&1 | tee -a $LOG
 
 # hack chroot for utils
 touch $1/dev/zero
 
-chroot $1 $chrootenv crle -u 2>&1 | tee -a $LOG
+
+chroot $1 $chrootenv crle -u -l /lib:/usr/lib 2>&1 | tee -a $LOG
+chroot $1 $chrootenv crle -64 -u -l /lib/64:/usr/lib/64 2>&1 | tee -a $LOG
 
 echo "deb file:///usr/nexenta/ ${_KS_inst_dist} main contrib non-free" > $1/etc/apt/sources.list
 
@@ -183,6 +168,7 @@ for package in $MAINPKGS
 do
     LPKG=`getFile $package`
     dpkginst $1 $LPKG 2>&1 | tee -a $LOG
+    echo "$LPKG" >> $PKGSLOG
 done
 
 echo "== 2 - chroot $1 $chrootenv mount -F proc /proc " >> $LOG
@@ -196,7 +182,7 @@ chroot $1 $chrootenv apt-get -f -y --force-yes install 2>&1 | tee -a $LOG
 
 APTCMD="apt-get -o APT::Get::AllowUnauthenticated=1 -o Debug::pkgDPkgProgressReporting=true -o Debug::pkgProblemResolver=true -y --force-yes install"
 
-for package in nexenta-keyring nexenta-ldconfig text-locale; do
+for package in icore-keyring text-locale; do
 	echo "== chroot $1 $chrootenv $APTCMD $package" >> $LOG
 	chroot $1 $chrootenv $APTCMD $package 2>&1 | tee -a $LOG
 	echo "$package" >> $PKGSLOG
@@ -206,7 +192,7 @@ echo "== chroot $1 $chrootenv $APTCMD $PKGS" >> $LOG
 chroot $1 $chrootenv $APTCMD $PKGS 2>&1 | tee -a $LOG
 echo "$PKGS" >> $PKGSLOG
 
-for package in debianutils libusb gzip dialog install-info base-files apt-utils; do
+for package in archiver-gnu-tar compress-gzip apt-utils; do
 	echo "== chroot $1 $chrootenv $APTCMD $package" >> $LOG
 	chroot $1 $chrootenv $APTCMD $package 2>&1 | tee -a $LOG
 	echo "$package" >> $PKGSLOG
@@ -215,15 +201,18 @@ done
 chroot $1 $chrootenv apt-get update 2>&1 | tee -a $LOG
 chroot $1 $chrootenv apt-get install -f 2>&1 | tee -a $LOG
 
+APTCMD="apt-get -o APT::Get::AllowUnauthenticated=1 -o Debug::pkgDPkgProgressReporting=true -o Debug::pkgProblemResolver=true -o APT::Immediate-Configure=false -y --force-yes install"
 echo "== chroot $1 $chrootenv $APTCMD $APTINST" >> $LOG
 chroot $1 $chrootenv $APTCMD $APTINST 2>&1 | tee -a $LOG
 echo "$APTINST" >> $PKGSLOG
 
-chroot $1 $chrootenv crle -u -l /lib:/usr/lib:/usr/gnu/lib 2>&1 | tee -a $LOG
-chroot $1 $chrootenv crle -64 -u -l /lib/64:/usr/lib/64:/usr/gnu/lib/64 2>&1 | tee -a $LOG
+chroot $1 $chrootenv crle -u 2>&1 | tee -a $LOG
+chroot $1 $chrootenv crle -64 -u 2>&1 | tee -a $LOG
 
+chroot $1 $chrootenv apt-key update 2>&1 | tee -a $LOG
 chroot $1 $chrootenv apt-get update 2>&1 | tee -a $LOG
 chroot $1 $chrootenv dpkg --configure -a 2>&1 | tee -a $LOG
+echo "== chroot $1 $chrootenv apt-get install -f -y --force-yes 2>&1" >> $LOG
 chroot $1 $chrootenv apt-get install -f -y --force-yes 2>&1 | tee -a $LOG
 
 chroot $1 $chrootenv umount /proc 2>&1 | tee -a $LOG
@@ -247,19 +236,12 @@ cp -f $1/debootstrap/debootstrap.log $1/root
 cp $LOG $1/root
 cp $PKGSLOG $1/root
 
-# temporary fixes
-mkdir -p $1/usr/perl5/bin
-cd $1/usr/perl5/bin; ln -sf /usr/bin/perl perl
-
-# fix keyring - need update package nexenta-keyring
-chroot $1 touch /usr/share/keyrings/nexenta-archive-removed-keys.gpg
-
 # ntp client config
-#NTPCONFCONF="$1/etc/inet/ntp.conf"
-#echo "driftfile /etc/inet/ntp.drift" > $NTPCONFCONF
-#echo "server pool.ntp.org # default" >> $NTPCONFCONF
-#echo "server 0.pool.ntp.org" >> $NTPCONFCONF
-#echo "server 1.pool.ntp.org" >> $NTPCONFCONF
-#echo "server 2.pool.ntp.org" >> $NTPCONFCONF
+NTPCONFCONF="$1/etc/inet/ntp.conf"
+echo "driftfile /etc/inet/ntp.drift" > $NTPCONFCONF
+echo "server pool.ntp.org # default" >> $NTPCONFCONF
+echo "server 0.pool.ntp.org" >> $NTPCONFCONF
+echo "server 1.pool.ntp.org" >> $NTPCONFCONF
+echo "server 2.pool.ntp.org" >> $NTPCONFCONF
 
 exit 0

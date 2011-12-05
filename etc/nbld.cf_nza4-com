@@ -1,5 +1,5 @@
 #
-# Nexenta Builder Configuration File for use with Stormstrap
+# Nexenta Builder Configuration File
 #
 ##############################################################################
 # CDDL HEADER START
@@ -21,7 +21,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (C) 2005-2008 Nexenta Systems, Inc.
+# Copyright (C) 2005-2011 Nexenta Systems, Inc.
 # All rights reserved.
 #
 ##############################################################################
@@ -33,18 +33,26 @@
 #       in order to get things done even faster -- of course this
 #       depends on the amount of available tmpfs (swap) space.
 #
-NBLD_STAGING="/tmp/nbld-staging"
+NBLD_STAGING="/root/nbld-staging"
 
 #
 # Primary temporary location for APT bootstraping
 # NOTE: ensure it will have enough space - 1GB is desirable
 #
-NBLD_MINIROOT="/tmp/miniroot"
+NBLD_MINIROOT="/root/miniroot"
 
 #
 # Primary location for customization profiles, scripts, programs, etc
 #
 NBLD_LIBDIR="/usr/lib/nbld"
+
+#
+# Default location of local APT repository
+# NOTE: use rsync command to get it from primary official:
+#
+#  rsync --inplace --delete -avHr nexenta.org::repository/* /tank/ncp
+#
+NBLD_REPO="file:///root/nza4-repo"
 
 #
 # Location used by default for storing temporary files and
@@ -56,7 +64,7 @@ NBLD_TMP="/tmp"
 #
 # Default distribution name, i.e. 'elatte', 'hardy', etc..
 #
-NBLD_DISTRO="hardy"
+NBLD_DISTRO="illumian"
 
 #
 # Default branch name, i.e. 'stable', 'testing' or 'unstable'
@@ -71,9 +79,10 @@ NBLD_DEBUG="no"
 #
 # Default profile or so called 'mode'
 #
-NBLD_DEFAULT_MODE="hardy-core"
+NBLD_DEFAULT_MODE="nza4-com"
 
 #
 # --------- DO NOT MODIFY THIS SECTION ------------
 #
-echo "Loaded /etc/nbld.cf"
+test `whoami` != "root" && echo "Insufficient privileges to run $0" && exit 1
+test ! -f "$NBLD_LIBDIR/nexenta-install.sh" && echo "NBLD_LIBDIR is not properly set" && exit 1
