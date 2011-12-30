@@ -1365,7 +1365,7 @@ autopart_ask()
 						else
 							for disk in `echo $(dialog_res)|sed -e "s/ /\n/g"`; do
 								disk_size=$(cat $TMP_DISKSIZE_FILE|grep $disk| $AWK '{print $2}')
-								if test $check_size -ne $disk_size; then
+								if ! compare_size $check_size $disk_size; then
 									if ! oneline_yN_ask "Warning! You have selected not-equal-sized disks. Proceed?"; then
 										rm -f $TMP_FILE $TMP_DISKSIZE_FILE
 										return 2
