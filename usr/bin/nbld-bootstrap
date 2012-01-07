@@ -172,7 +172,7 @@ if test "x$mode" = xinstall; then
 Generating InstallCD filelist...
 ------------------------------------------------------------------------------
 EOF
-export BOOTSTRAP_REQUIRED="dpkg apt"
+export BOOTSTRAP_REQUIRED="dpkg package-dpkg-apt"
 
 	pkglist="$NBLD_TMP/debootstrap-pkglist.installcd.tmp"
 	/bin/bash debootstrap \

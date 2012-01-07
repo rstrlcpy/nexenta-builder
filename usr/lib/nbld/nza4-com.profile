@@ -96,8 +96,7 @@ system-library-gcc-44-runtime \
 dpkg \
 icore-keyring \
 crypto-gnupg \
-apt \
-apt-utils \
+package-dpkg-apt \
 library-security-libassuan \
 terminal-dialog \
 terminal-screen \
@@ -158,7 +157,7 @@ nms \
 nmdtrace \
 nmu \
 nmc \
-nmv-theme-nexenta \
+nmv-theme-nexentaplain \
 nmv \
 chpasswd \
 runtime-tcl-8 \
@@ -176,7 +175,7 @@ sunwcs \
 system-library \
 system-kernel \
 system-kernel-platform \
-apt \
+package-dpkg-apt \
 dpkg \
 "
 

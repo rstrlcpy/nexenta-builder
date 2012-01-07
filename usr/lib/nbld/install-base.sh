@@ -58,7 +58,7 @@ compress-gzip \
 shell-bash \
 icore-keyring \
 library-security-libassuan \
-apt \
+package-dpkg-apt \
 text-gnu-sed \
 text-gnu-grep \
 file-gnu-coreutils \
@@ -192,7 +192,7 @@ echo "== chroot $1 $chrootenv $APTCMD $PKGS" >> $LOG
 chroot $1 $chrootenv $APTCMD $PKGS 2>&1 | tee -a $LOG
 echo "$PKGS" >> $PKGSLOG
 
-for package in archiver-gnu-tar compress-gzip apt-utils; do
+for package in archiver-gnu-tar compress-gzip; do
 	echo "== chroot $1 $chrootenv $APTCMD $package" >> $LOG
 	chroot $1 $chrootenv $APTCMD $package 2>&1 | tee -a $LOG
 	echo "$package" >> $PKGSLOG

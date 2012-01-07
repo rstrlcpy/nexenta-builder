@@ -54,8 +54,7 @@ REQ_DEBS="\
     gnupg \
     debian-archive-keyring \
     nexenta-keyring \
-    apt \
-    apt-utils \
+    package-dpkg-apt \
     gettext-base \
     perl-base \
     perl-modules \
@@ -92,7 +91,7 @@ sunwcs \
 system-library \
 system-kernel \
 system-kernel-platform \
-apt \
+package-dpkg-apt \
 dpkg \
 "
 

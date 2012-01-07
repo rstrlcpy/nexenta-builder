@@ -16,7 +16,7 @@ CPIO=/bin/cpio
 
 work_out_debs () {
     required="$BOOTSTRAP_REQUIRED"
-    test "x$required" = x && required="$(get_debs Priority: required) apt dpkg sunwcsd sunwcs"
+    test "x$required" = x && required="$(get_debs Priority: required) package-dpkg-apt dpkg sunwcsd sunwcs"
     base="$BOOTSTRAP_BASE"
     test "x$base" = x && base="$(get_debs Priority: important) $BOOTSTRAP_EXTRA_DEBS"
     return 0
@@ -127,8 +127,7 @@ second_stage_install () {
 				 crypto-gnupg \
 				 library-zlib \
 				 library-security-libassuan \
-				 apt \
-				 apt-utils \
+				 package-dpkg-apt \
 				 icore-keyring \
 				 terminal-dialog \
 				 text-gnu-grep \
@@ -144,47 +143,4 @@ second_stage_install () {
 	    p; info INSTCORE "Installing $baseprog core package: $pkg"
         x_core_install $pkg
 	done
-
-
-#    info CONFREQ "Configuring required packages ....."
-#
-#    mv "$TARGET/sbin/start-stop-daemon" "$TARGET/sbin/start-stop-daemon.REAL"
-#
-#
-#    echo \
-#"#!/bin/sh
-#
-#echo
-#echo \"Warning: Fake start-stop-daemon called, doing nothing\"" > "$TARGET/sbin/start-stop-daemon"
-#    chmod 755 "$TARGET/sbin/start-stop-daemon"
-#
-#    setup_dselect_method apt
-#
-#    smallyes '' |
-#      (repeat 1 in_target_failmsg CONF_REQ_FAIL "Trying to resolve configuration issues." "" \
-#      /usr/bin/dpkg --status-fd 8 --configure --pending --force-configure-any --force-depends 8>&1 1>&7 |
-#      dpkg_progress $baseprog $bases CONFREQ "Configuring required packages" CONFIGURING) 7>&1
-#
-#    baseprog=0
-#    bases="$(set -- $base; echo $#)"
-#
-#    info UNPACKBASE "Unpacking the base system..."
-#
-#    smallyes '' |
-#      (repeat 1 in_target_failmsg INST_BASE_FAIL_FIVE "Failure while installing base packages.  Repeat one more time." "" \
-#      /usr/bin/dpkg --status-fd 8 --force-auto-select --force-overwrite --force-depends --force-confold --skip-same-version --unpack $(debfor $base) 8>&1 1>&7 |
-#      dpkg_progress $baseprog $bases UNPACKBASE "Unpacking base system" UNPACKING) 7>&1
-#
-#    info CONFBASE "Configuring the base system..."
-#
-#    smallyes '' |
-#      (repeat 1 in_target_failmsg CONF_BASE_FAIL_FIVE "Failure while configuring base packages.  Repeat one more time." "" \
-#      dpkg --status-fd 8 --force-confold --skip-same-version --configure --force-depends -a 8>&1 1>&7 |
-#      dpkg_progress $baseprog $bases CONFBASE "Configuring base system" CONFIGURING) 7>&1
-#
-#    mv "$TARGET/sbin/start-stop-daemon.REAL" "$TARGET/sbin/start-stop-daemon"
-#
-#    progress $bases $bases CONFBASE "Configuring base system"
-#    info BASESUCCESS "Base system installed successfully."
-
 }
