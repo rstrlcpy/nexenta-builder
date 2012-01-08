@@ -238,7 +238,7 @@ cp $PKGSLOG $1/root
 
 # ntp client config
 NTPCONFCONF="$1/etc/inet/ntp.conf"
-echo "driftfile /etc/inet/ntp.drift" > $NTPCONFCONF
+echo "driftfile /var/ntp/ntp.drift" > $NTPCONFCONF
 echo "server pool.ntp.org # default" >> $NTPCONFCONF
 echo "server 0.pool.ntp.org" >> $NTPCONFCONF
 echo "server 1.pool.ntp.org" >> $NTPCONFCONF
