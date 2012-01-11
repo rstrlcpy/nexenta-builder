@@ -94,7 +94,7 @@ text-gawk \
 archiver-gnu-tar \
 system-library-gcc-44-runtime \
 dpkg \
-icore-keyring \
+nexenta-keyring \
 crypto-gnupg \
 package-dpkg-apt \
 library-security-libassuan \

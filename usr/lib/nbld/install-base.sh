@@ -56,7 +56,7 @@ sunwcs \
 archiver-gnu-tar \
 compress-gzip \
 shell-bash \
-icore-keyring \
+nexenta-keyring \
 library-security-libassuan \
 package-dpkg-apt \
 text-gnu-sed \
@@ -182,7 +182,7 @@ chroot $1 $chrootenv apt-get -f -y --force-yes install 2>&1 | tee -a $LOG
 
 APTCMD="apt-get -o APT::Get::AllowUnauthenticated=1 -o Debug::pkgDPkgProgressReporting=true -o Debug::pkgProblemResolver=true -y --force-yes install"
 
-for package in icore-keyring text-locale; do
+for package in nexenta-keyring text-locale; do
 	echo "== chroot $1 $chrootenv $APTCMD $package" >> $LOG
 	chroot $1 $chrootenv $APTCMD $package 2>&1 | tee -a $LOG
 	echo "$package" >> $PKGSLOG

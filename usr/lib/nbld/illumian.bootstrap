@@ -128,7 +128,7 @@ second_stage_install () {
 				 library-zlib \
 				 library-security-libassuan \
 				 package-dpkg-apt \
-				 icore-keyring \
+				 nexenta-keyring \
 				 terminal-dialog \
 				 text-gnu-grep \
 				 text-gawk \

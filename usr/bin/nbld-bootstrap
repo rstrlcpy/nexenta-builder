@@ -277,7 +277,6 @@ echo "Selected `echo $BOOTSTRAP_REQUIRED|sed -e "s/\s/\n/g"|wc -l` required pack
 echo "Selected `echo $BOOTSTRAP_BASE|sed -e "s/\s/\n/g"|wc -l` base packages"
 echo $BOOTSTRAP_REQUIRED > /tmp/required-$profile0.lst
 echo $(echo $BOOTSTRAP_BASE_MINIMAL $BOOTSTRAP_BASE | sed -e "s/\s/\n/g"| sort -u) > /tmp/base-$profile0.lst
-
 cat << EOF
 ------------------------------------------------------------------------------
 Bootstrapping $mode CD media...
@@ -299,7 +298,6 @@ export FAKEROOT=yes
 	    $customdir/$distro.bootstrap || fatal "couldn't complete bootstrap"
 #repolock_set=no
 #rmdir $repolock 2>/dev/null
-
 if test "x$mode" = "xinstall"; then
 	echo "Creating local repository... "
 	test -d $rootdir$hddrepo || mkdir $rootdir$hddrepo
