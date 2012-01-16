@@ -93,7 +93,7 @@ text-gnu-grep \
 text-gawk \
 archiver-gnu-tar \
 system-library-gcc-44-runtime \
-dpkg \
+package-dpkg \
 nexenta-keyring \
 crypto-gnupg \
 package-dpkg-apt \
@@ -176,7 +176,7 @@ system-library \
 system-kernel \
 system-kernel-platform \
 package-dpkg-apt \
-dpkg \
+package-dpkg \
 "
 
 #

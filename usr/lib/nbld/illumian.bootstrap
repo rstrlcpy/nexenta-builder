@@ -1,5 +1,5 @@
 #
-# Copyright 2011 Nexenta Systems.  All rights reserved.
+# Copyright 2005-2012 Nexenta Systems.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -16,7 +16,7 @@ CPIO=/bin/cpio
 
 work_out_debs () {
     required="$BOOTSTRAP_REQUIRED"
-    test "x$required" = x && required="$(get_debs Priority: required) package-dpkg-apt dpkg sunwcsd sunwcs"
+    test "x$required" = x && required="$(get_debs Priority: required) package-dpkg-apt package-dpkg sunwcsd sunwcs"
     base="$BOOTSTRAP_BASE"
     test "x$base" = x && base="$(get_debs Priority: important) $BOOTSTRAP_EXTRA_DEBS"
     return 0
@@ -46,7 +46,7 @@ first_stage_install () {
 
     touch $TARGET/var/lib/dpkg/{status,available,lock}
 
-    for pkg in sunwcsd sunwcs shell-bash dpkg library-zlib compress-gzip compress-bzip2 system-library system-library-math; do
+    for pkg in sunwcsd sunwcs shell-bash archiver-gnu-tar package-dpkg library-zlib compress-gzip compress-bzip2 system-library system-library-math; do
         extract $pkg
     done
 
@@ -118,7 +118,7 @@ second_stage_install () {
 				 compress-gzip \
 				 system-library-gcc-44-runtime \
 				 library-libxml2 \
-				 dpkg \
+				 package-dpkg \
 				 library-ncurses \
 				 library-security-libgpg-error \
 				 system-library-security-libgcrypt \

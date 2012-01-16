@@ -108,7 +108,7 @@ done
 # Recalculate some globals
 repolock="$repo/dists/debarchiver.lock"
 install_profile="$rootdir$hddrepo/defaults"
-environ="$rootdir /usr/bin/env -i PATH=usr/gnu/bin:/usr/bin:/sbin:/usr/sbin LOGNAME=root HOME=/root TERM=xterm"
+environ="$rootdir /usr/bin/env -i PATH=/usr/gnu/bin:/usr/bin:/sbin:/usr/sbin LOGNAME=root HOME=/root TERM=xterm"
 
 if mount | grep $rootdir 1>/dev/null 2>&1 && test -d $rootdir; then
 	echo "Error: $rootdir is busy. has loopback mounted dirs."
@@ -172,7 +172,7 @@ if test "x$mode" = xinstall; then
 Generating InstallCD filelist...
 ------------------------------------------------------------------------------
 EOF
-export BOOTSTRAP_REQUIRED="dpkg package-dpkg-apt"
+export BOOTSTRAP_REQUIRED="package-dpkg package-dpkg-apt"
 
 	pkglist="$NBLD_TMP/debootstrap-pkglist.installcd.tmp"
 	/bin/bash debootstrap \

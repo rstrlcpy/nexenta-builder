@@ -36,7 +36,7 @@ REQ_DEBS="\
     xz-utils \
     coreutils \
     package-svr4 \
-    dpkg \
+    package-dpkg \
     libncurses5 \
     gzip \
     sed \
@@ -92,7 +92,7 @@ system-library \
 system-kernel \
 system-kernel-platform \
 package-dpkg-apt \
-dpkg \
+package-dpkg \
 "
 
 #
@@ -463,7 +463,7 @@ less \
 sysvinit \
 passwd \
 lsb-base \
-dpkg-dev \
+package-dpkg \
 file \
 rsync \
 mkisofs \
