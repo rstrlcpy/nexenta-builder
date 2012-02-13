@@ -531,6 +531,8 @@ driver-storage-ses \
 driver-storage-si3124 \
 driver-storage-smp \
 driver-storage-sv \
+driver-storage-vioblk \
+driver-misc-virtio \
 driver-usb-ugen \
 driver-usb \
 driver-x11-winlock \
