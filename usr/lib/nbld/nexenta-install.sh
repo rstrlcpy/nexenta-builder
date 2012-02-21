@@ -1967,7 +1967,7 @@ install_base()
 
 process_extradebs()
 {
-	chrootenv="/usr/bin/env -i PATH=/usr/bin:/sbin:/usr/sbin:$PATH LOGNAME=root \
+	chrootenv="/usr/bin/env -i PATH=/usr/gnu/bin:/usr/bin:/sbin:/usr/sbin:$PATH LOGNAME=root \
 		    HOME=/root TERM=xterm"
 	chroot $TMPDEST $chrootenv /usr/sbin/mount /proc
 	packages_full=$(find ${EXTRADEBDIR} -name *.deb)
@@ -1982,14 +1982,14 @@ process_extradebs()
 		printlog "Installing extra deb packages: $packages"
 		mkdir -p $TMPDEST/var/tmp/extradebs
 		cp ${EXTRADEBDIR}/*.deb $TMPDEST/var/tmp/extradebs
-		chroot $TMPDEST /usr/bin/env -i PATH=/sbin:/bin:/usr/sbin:$PATH \
+		chroot $TMPDEST /usr/bin/env -i PATH=/usr/gnu/bin:/sbin:/bin:/usr/sbin:$PATH \
 			LOGNAME=root HOME=/root TERM=xterm \
 			DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true \
 			/usr/bin/dpkg --force-conflicts --force-depends --force-confold --force-confdef \
 			-i $packages_chroot 2>>/tmp/extradebs_install.log 1>&2
 		if test -f ${EXTRADEBDIR}/postinst; then
 			cp ${EXTRADEBDIR}/postinst $TMPDEST/var/tmp/extradebs
-			chroot $TMPDEST /usr/bin/env -i PATH=/sbin:/bin:/usr/sbin:$PATH \
+			chroot $TMPDEST /usr/bin/env -i PATH=/usr/gnu/bin:/sbin:/bin:/usr/sbin:$PATH \
 				LOGNAME=root HOME=/root TERM=xterm bash \
 				/var/tmp/extradebs/postinst 2>>/tmp/extradebs_install.log 1>&2
 			printlog "Script postinst executed successfully"
@@ -2002,13 +2002,13 @@ process_extradebs()
 	if test -f ${EXTRADEBDIR}/remove-pkgs.list; then
 		oneline_info "Removing the extra packages. Please wait..."
 		printlog "Removing extra deb packages: $(cat ${EXTRADEBDIR}/remove-pkgs.list)"
-		chroot $TMPDEST /usr/bin/env -i PATH=/sbin:/bin:/usr/sbin:$PATH \
+		chroot $TMPDEST /usr/bin/env -i PATH=/usr/gnu/bin:/sbin:/bin:/usr/sbin:$PATH \
 			LOGNAME=root HOME=/root TERM=xterm \
 			/usr/bin/dpkg --force-all -P `cat ${EXTRADEBDIR}/remove-pkgs.list` \
 			2>>/tmp/extradebs_remove.log 1>&2
 		if test -f ${EXTRADEBDIR}/postrm; then
 			cp ${EXTRADEBDIR}/postrm $TMPDEST/var/tmp
-			chroot $TMPDEST /usr/bin/env -i PATH=/sbin:/bin:/usr/sbin:$PATH \
+			chroot $TMPDEST /usr/bin/env -i PATH=/usr/gnu/bin:/sbin:/bin:/usr/sbin:$PATH \
 				LOGNAME=root HOME=/root TERM=xterm bash \
 				/var/tmp/postrm 2>>/tmp/extradebs_remove.log 1>&2
 				printlog "Script postrm executed successfully"
