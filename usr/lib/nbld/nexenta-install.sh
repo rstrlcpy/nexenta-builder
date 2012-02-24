@@ -2783,6 +2783,10 @@ customize_common()
 	cp /etc/default/init $TMPDEST/etc/default/init
 	printlog "Installed /etc/default/init"
 
+	sed -e '/^LANG=/d' -i $TMPDEST/etc/default/init
+	echo "LANG=en_US.UTF-8" >> $TMPDEST/etc/default/init
+	printlog "Added LANG=en_US.UTF-8 to /etc/default/init"
+
 	cp /etc/rtc_config $TMPDEST/etc/rtc_config
 	printlog "Installed /etc/rtc_config"
 }

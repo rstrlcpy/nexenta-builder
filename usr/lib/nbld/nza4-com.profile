@@ -82,7 +82,6 @@ text-groff \
 text-less \
 text-locale \
 text-texinfo \
-locale-en \
 \
 system-boot-grub \
 system-boot-real-mode \
@@ -378,6 +377,114 @@ STAGE0_APTINST_OLD=" \
 "
 
 #
+# LOCALES
+#
+LOCALES="\
+locale-af \
+locale-ar \
+locale-ar-extra \
+locale-as \
+locale-az \
+locale-be \
+locale-bg \
+locale-bg-extra \
+locale-bn \
+locale-bo \
+locale-bs \
+locale-ca \
+locale-ca-extra \
+locale-cs \
+locale-cs-extra \
+locale-da \
+locale-da-extra \
+locale-de \
+locale-de-extra \
+locale-el \
+locale-el-extra \
+locale-en \
+locale-en-extra \
+locale-es \
+locale-es-extra \
+locale-et \
+locale-fi \
+locale-fi-extra \
+locale-fil \
+locale-fr \
+locale-fr-extra \
+locale-ga \
+locale-gu \
+locale-he \
+locale-hi \
+locale-hr \
+locale-hr-extra \
+locale-hu \
+locale-hu-extra \
+locale-hy \
+locale-id \
+locale-ii \
+locale-is \
+locale-is-extra \
+locale-it \
+locale-it-extra \
+locale-ja \
+locale-ka \
+locale-kk \
+locale-km \
+locale-kn \
+locale-ko \
+locale-kok \
+locale-lt \
+locale-lt-extra \
+locale-lv \
+locale-lv-extra \
+locale-mk \
+locale-mk-extra \
+locale-ml \
+locale-mn \
+locale-mr \
+locale-ms \
+locale-mt \
+locale-nb \
+locale-ne \
+locale-nl \
+locale-nl-extra \
+locale-nn \
+locale-or \
+locale-pa \
+locale-pl \
+locale-pl-extra \
+locale-pt \
+locale-pt-extra \
+locale-ro \
+locale-ru \
+locale-ru-extra \
+locale-sa \
+locale-si \
+locale-sk \
+locale-sl \
+locale-sq \
+locale-sq-extra \
+locale-sr \
+locale-sv \
+locale-sv-extra \
+locale-ta \
+locale-te \
+locale-th \
+locale-th-extra \
+locale-tr \
+locale-tr-extra \
+locale-ug \
+locale-uk \
+locale-ur \
+locale-vi \
+locale-zh-cn \
+locale-zh-hk \
+locale-zh-mo \
+locale-zh-sg \
+locale-zh-tw \
+"
+
+#
 # STAGE0_HDD_END
 #
 #
@@ -388,9 +495,9 @@ library-nspr \
 security-sudo \
 package-svr4 \
 library-perl-5-sun-solaris \
+$NM_STUFF \
+$LOCALES
 "
-
-STAGE0_HDD_END="$STAGE0_HDD_END $NM_STUFF"
 
 #
 # STAGE0_DRIVERS -
