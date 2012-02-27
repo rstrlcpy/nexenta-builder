@@ -489,6 +489,7 @@ locale-zh-tw \
 #
 #
 STAGE0_HDD_END="\
+package-dpkg-apt-clone \
 service-network-ntp \
 system-library-dbus \
 library-nspr \

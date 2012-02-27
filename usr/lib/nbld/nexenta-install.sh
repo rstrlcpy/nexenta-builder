@@ -967,10 +967,10 @@ autopart_zfs()
 
 	test $config = "pool" && config=""
 	test "x$3" = "x" && hot_spare_cmd=""
-	if ! zpool create -f -O compression=on  $ZFS_ROOTPOOL $config $s0_slices $hot_spare_cmd 2>$AUTOPART_FMT_ERR; then
+	if ! zpool create -f -O compression=on -m /syspool $ZFS_ROOTPOOL $config $s0_slices $hot_spare_cmd 2>$AUTOPART_FMT_ERR; then
 		zpool destroy $ZFS_ROOTPOOL 2>/dev/null
 		sync
-		if ! zpool create -f -O compression=on $ZFS_ROOTPOOL $config $s0_slices $hot_spare_cmd 2>$AUTOPART_FMT_ERR; then
+		if ! zpool create -f -O compression=on -m /syspool $ZFS_ROOTPOOL $config $s0_slices $hot_spare_cmd 2>$AUTOPART_FMT_ERR; then
 			oneline_msgbox Error "Cannot create ZFS 'root' pool using disk(s) $disks with error:\n\n $(cat $AUTOPART_FMT_ERR)\n"
 			return 1
 		fi
