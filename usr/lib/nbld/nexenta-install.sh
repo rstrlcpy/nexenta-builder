@@ -2729,6 +2729,9 @@ customize_hdd_install()
     if test "x$_KS_issue_files_content" != "x"; then
         echo $_KS_issue_files_content > $TMPDEST/etc/issue
         echo $_KS_issue_files_content > $TMPDEST/etc/issue.net
+		# Revert release timestamp
+		touch -r /etc/issue $TMPDEST/etc/issue
+		touch -r /etc/issue $TMPDEST/etc/issue.net
     fi
 
 	apply_kbd

@@ -482,8 +482,11 @@ EOF
 	mv $rootdir/etc/syslog.conf $rootdir/etc/syslog.conf.unmodified
 	cp $customdir/nexenta-syslog.conf $rootdir/etc/syslog.conf
 	chmod 644 $rootdir/etc/syslog.conf
-	test "x$release_file" != "x" && cp $customdir/$release_file $rootdir/etc/release
-	chmod 444 $rootdir/etc/release
+	if test "x$release_file" != "x"; then
+		cp $customdir/$release_file $rootdir/etc/release
+		sed -e "s/__autoversion__/$sw_version/" -i $rootdir/etc/release
+		chmod 444 $rootdir/etc/release
+	fi
 	echo "export TERMINFO=/usr/share/lib/terminfo" >> $rootdir/root/.bash_profile
 	echo "export TERM=sun-color" >> $rootdir/root/.bash_profile
 
