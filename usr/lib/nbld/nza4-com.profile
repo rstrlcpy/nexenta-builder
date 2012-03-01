@@ -160,6 +160,7 @@ nmv-theme-nexentaplain \
 nmv \
 chpasswd \
 runtime-tcl-8 \
+mapmgr \
 "
 
 REQ_DEBS="$REQ_DEBS"
