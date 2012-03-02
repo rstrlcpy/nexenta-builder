@@ -383,7 +383,6 @@ STAGE0_APTINST_OLD=" \
 LOCALES="\
 locale-af \
 locale-ar \
-locale-ar-extra \
 locale-as \
 locale-az \
 locale-be \
@@ -479,6 +478,7 @@ locale-uk \
 locale-ur \
 locale-vi \
 locale-zh-cn \
+locale-zh-cn-extra \
 locale-zh-hk \
 locale-zh-mo \
 locale-zh-sg \
