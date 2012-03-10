@@ -60,6 +60,7 @@ first_stage_install () {
         on_exit "umount $TARGET/proc"
         umount $TARGET/proc 2>/dev/null || true
         touch $TARGET/dev/zero
+        test -f $TARGET/etc/vfstab.sunwcs && mv $TARGET/etc/vfstab.sunwcs $TARGET/etc/vfstab 
         in_target /sbin/mount -F proc /proc
     }
 

@@ -152,6 +152,8 @@ do
 done
 
 
+echo "== 1 - test -f $TARGET/etc/vfstab.sunwcs && mv $TARGET/etc/vfstab.sunwcs $TARGET/etc/vfstab" >> $LOG
+test -f $TARGET/etc/vfstab.sunwcs && mv $TARGET/etc/vfstab.sunwcs $TARGET/etc/vfstab 2>&1 | tee -a $LOG
 echo "== 1 - chroot $1 $chrootenv /sbin/mount -F proc /proc " >> $LOG
 chroot $1 $chrootenv /sbin/mount -F proc /proc 2>&1 | tee -a $LOG
 
