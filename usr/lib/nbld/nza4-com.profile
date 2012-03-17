@@ -497,6 +497,7 @@ library-nspr \
 security-sudo \
 package-svr4 \
 library-perl-5-sun-solaris \
+file-gnu-findutils \
 $NM_STUFF \
 $LOCALES
 "
