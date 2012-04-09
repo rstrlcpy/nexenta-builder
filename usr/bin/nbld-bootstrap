@@ -341,6 +341,7 @@ if test "x$mode" = xinstall; then
                         echo "Uploading plugin $pub_plugin... "
                         find $rootdir$hddrepo/incoming -name "${pub_plugin}_*.*" | xargs rm -f
                         plugin_pkg=$(find $builtin_plugins_dir -name "${pub_plugin}_*.deb")
+                        test -z $plugin_pkg && fatal "Cannot find $pub_plugin"
                         test -d $rootdir$hddrepo/incoming/$dist || mkdir $rootdir$hddrepo/incoming/$dist
                         cp $plugin_pkg $rootdir$hddrepo/incoming/$dist
                         sed -i -e "s/$/ $pub_plugin/" /tmp/base-$profile1.lst
