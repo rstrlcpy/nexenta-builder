@@ -6,7 +6,7 @@
 # REQ_DEBS
 #
 #
-REQ_DEBS="pciutils nexenta-keyring zlib1g gnupg sunwpiclr sunwdtrc sunwdtrp sunwrcmdc nexenta-sunw"
+REQ_DEBS="pciutils nexenta-keyring zlib1g gnupg sunwpiclr sunwdtrc sunwdtrp sunwrcmdc nexenta-sunw libssl1.0.0h libssh-4"
 
 #
 # MINIMAL_CMN_DEBS
@@ -18,7 +18,7 @@ MINIMAL_CMN_DEBS="vim sunwsshu sunwsshdu bzip2 mkisofs sudo"
 # STAGE0_EXCLUDE_DEBS
 #
 #
-STAGE0_EXCLUDE_DEBS="alien sunwmpsvplr sunwmpathadm python nexenta-pkgcmd dpkg-dev debhelper tasksel tasksel-data libhal-dev libhal-storage-dev python2.5 sunwmmsr sunwmmsu myamanet-rf aptitude sunwdtrc info manpages sunwrcmdc sunwfmd sunwpkgcmdsu sunwdtrp libssl0.9.7 man-db nano sunwsmbsu sunwsmbsr sunwsmbskr patch sunwdrmr sunwdsdr sunwdsdu sunwiscsir sunwiscsiu sunwima sunwimac sunwimacr sunwimar sunwmpapi sunwmpapir sunwmdb sunwmdbr sunwxwdv sunwtnetd sunwhea sunwiir sunwiiu sunwrdcr sunwrdcu sunwscmr sunwscmu sunwspsvr sunwspsvu sunwdtrc sunwpowertop"
+STAGE0_EXCLUDE_DEBS="alien sunwmpsvplr sunwmpathadm python nexenta-pkgcmd dpkg-dev debhelper tasksel tasksel-data libhal-dev libhal-storage-dev python2.5 sunwmmsr sunwmmsu myamanet-rf aptitude sunwdtrc info manpages sunwrcmdc sunwfmd sunwpkgcmdsu sunwdtrp man-db nano sunwsmbsu sunwsmbsr sunwsmbskr patch sunwdrmr sunwdsdr sunwdsdu sunwiscsir sunwiscsiu sunwima sunwimac sunwimacr sunwimar sunwmpapi sunwmpapir sunwmdb sunwmdbr sunwxwdv sunwtnetd sunwhea sunwiir sunwiiu sunwrdcr sunwrdcu sunwscmr sunwscmu sunwspsvr sunwspsvu sunwdtrc sunwpowertop libssl0.9.7 libssl1.0.0h libssh-4"
 
 #
 # STAGE0_DEBS - the content of InstallCD miniroot
