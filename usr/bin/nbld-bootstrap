@@ -6,7 +6,7 @@
 #
 # It uses three main components:
 #    1) apt
-#    2) debarchiver
+#    2) reprepro
 #    3) debootstrap
 #
 # Therefore it is required those packages to be pre-installed.
@@ -41,7 +41,6 @@ test ! -f /etc/nbld.cf && echo "Error: can't find /etc/nbld.cf" && exit 1
 . /etc/nbld.cf
 
 repo="$NBLD_REPO"		        # APT repository (must exist)
-repolock="$repo/dists/debarchiver.lock" # APT debarchiver's lock
 dist="$NBLD_DISTRO-$NBLD_BRANCH"	# IN repository's distribution name
 rootdir="$NBLD_MINIROOT"                # bootstrap output
 hddrepo="/usr/nexenta"	        	# APT repository for HDD mode
@@ -82,8 +81,7 @@ EOF
 	exit 1
 }
 fatal() { echo "Error: $1"; exit 1; }
-cleanup() { if test "x$repolock_set" = xyes; then rmdir $repolock 2>/dev/null;
-	repolock_set=no; echo "Lock $repolock removed"; fi; umount /etc/mnttab 2>/dev/null; }
+cleanup() { umount /etc/mnttab 2>/dev/null; }
 trap "cleanup" INT EXIT TERM QUIT
 
 if [ `whoami` != "root" ]; then
@@ -102,7 +100,6 @@ while test "x$1" != x; do
 done
 
 # Recalculate some globals
-repolock="$repo/dists/debarchiver.lock"
 install_profile="$rootdir$hddrepo/defaults"
 environ="$rootdir /usr/bin/env -i PATH=/bin:/usr/sbin:$PATH LOGNAME=root HOME=/root TERM=xterm"
 
@@ -171,22 +168,6 @@ echo "Cleaning up $rootdir ... "
 test -d $rootdir && rm -rf $rootdir
 mkdir -p $rootdir
 
-# $repo/incoming/input.conf must pre-exist, so debarchiver will use it
-test ! -f $repo/incoming/input.conf && \
-	fatal "could not find $repo/incoming/input.conf"
-
-echo "\$destdir = \"$repo/dists\";" >> $repo/incoming/input.conf
-echo "\$inputdir = \"$repo/incoming\";" >> $repo/incoming/input.conf
-
-# sync incomings in $repo/incoming
-echo "Syncing $repo/incoming ... "
-while ! mkdir $repolock 2>/dev/null; do sleep 1; done
-repolock_set=yes
-debarchiver --lockfile debarchiver-bootstrap.lock -o -x -i $repo/incoming ||
-	fatal "couldn't sync $repo/incoming"
-repolock_set=no
-rmdir $repolock 2>/dev/null
-
 # Nexenta LU protected environment
 NLU_ENABLED=1; export NLU_ENABLED
 LD_NOAUXFLTR=1; export LD_NOAUXFLTR
@@ -221,8 +202,6 @@ Downloading package archive...
 ------------------------------------------------------------------------------
 EOF
 	export BOOTSTRAP_REQUIRED BOOTSTRAP_BASE
-	while ! mkdir $repolock 2>/dev/null; do sleep 1; done
-	repolock_set=yes
 	debootstrap \
 		    --arch solaris-i386 \
 		    --components=main,contrib,non-free \
@@ -234,8 +213,6 @@ EOF
 		    file://$repo \
 		    $customdir/$dist.bootstrap ||
 		fatal "couldn't complete bootstrap of the InstallCD archive"
-	repolock_set=no
-	rmdir $repolock 2>/dev/null
 	echo $BOOTSTRAP_REQUIRED > /tmp/required-$profile1.lst
 	echo $BOOTSTRAP_BASE > /tmp/base-$profile1.lst
 	cp $rootdir/debootstrap/debpaths /tmp
@@ -305,8 +282,6 @@ Bootstrapping $mode CD media...
 ------------------------------------------------------------------------------
 EOF
 export BOOTSTRAP_REQUIRED BOOTSTRAP_BASE
-while ! mkdir $repolock 2>/dev/null; do sleep 1; done
-repolock_set=yes
 env FAKEROOT=yes debootstrap \
 	    --arch solaris-i386 \
 	    --components=main,contrib,non-free \
@@ -317,55 +292,52 @@ env FAKEROOT=yes debootstrap \
 	    file://$repo \
 	    $customdir/$dist.bootstrap ||
 	fatal "couldn't complete bootstrap"
-repolock_set=no
-rmdir $repolock 2>/dev/null
 
 if test "x$mode" = xinstall; then
 	echo "Creating local repository... "
 	test -d $rootdir$hddrepo || mkdir $rootdir$hddrepo
-	mkdir $rootdir$hddrepo/dists
-	mkdir $rootdir$hddrepo/incoming
-	cp $customdir/$dist.debarchiver \
-		$rootdir$hddrepo/incoming/input.conf ||
-		fatal "couldn't create $rootdir$hddrepo/incoming/input.conf"
-	echo "\$destdir = \"$rootdir$hddrepo/dists\";" >> \
-		$rootdir$hddrepo/incoming/input.conf
-	echo "\$inputdir = \"$rootdir$hddrepo/incoming\";" >> \
-		$rootdir$hddrepo/incoming/input.conf
-
+	mkdir $rootdir$hddrepo/conf
+	
+	cat << EOF > $rootdir$hddrepo/conf/distributions
+Origin: Installation APT
+Codename: installation
+Architectures: solaris-i386
+Components: main contrib non-free
+DebIndices: Packages Release . .gz .bz2
+Description: Installation repository
+EOF
+	
 	echo "Propagating local repository... "
-	mkdir $rootdir$hddrepo/incoming/$dist
-	mv $rootdir/var/cache/stage0_archive/*.deb $rootdir$hddrepo/incoming/$dist
         if test "x$builtin_plugins" != x; then
                 for pub_plugin in $builtin_plugins; do
                         echo "Uploading plugin $pub_plugin... "
-                        find $rootdir$hddrepo/incoming -name "${pub_plugin}_*.*" | xargs rm -f
                         plugin_pkg=$(find $builtin_plugins_dir -name "${pub_plugin}_*.deb")
                         test -z $plugin_pkg && fatal "Cannot find $pub_plugin"
-                        test -d $rootdir$hddrepo/incoming/$dist || mkdir $rootdir$hddrepo/incoming/$dist
-                        cp $plugin_pkg $rootdir$hddrepo/incoming/$dist
+                        reprepro  \
+                        --ignore=wrongdistribution \
+                        -b $rootdir$hddrepo \
+                        --export=never \
+                        includedeb installation $plugin_pkg >/tmp/reprepro.log.$$ 2>&1 || fatal "Cannot include $plugin_pkg in Installation APT"
                         sed -i -e "s/$/ $pub_plugin/" /tmp/base-$profile1.lst
                         echo "$pub_plugin var/cache/apt/archives/"$(basename $plugin_pkg) >> /tmp/debpaths
                 done
         fi
+        
+        for file in `ls $rootdir/var/cache/stage0_archive/*.deb`; do
+	    reprepro \
+	    --ignore=wrongdistribution \
+	    -b $rootdir$hddrepo \
+	    --export=never \
+	    includedeb installation $file >> /tmp/reprepro.log.$$ 2>&1 || fatal "Cannot include $file into Installation APT"
+	done
+	
+	reprepro -b $rootdir$hddrepo export installation || fatal "Cannot generate indexes for Installation APT"
+
 	rm -Rf $rootdir/var/cache/stage0_archive
 	rm -f $rootdir/var/cache/apt/archive/*.deb
-	rm -rf /var/cache/debarchiver/cache.db
-	debarchiver  --dl 1 --ql 0 --gpgkey Nexenta -o -x -i $rootdir$hddrepo/incoming ||
-		fatal "couldn't propagate $rootdir$hddrepo/incoming"
 
 	echo "Finalizing local repository... "
-	rm $rootdir$hddrepo/incoming/input.conf
-	cp $customdir/$dist.debarchiver \
-		$rootdir$hddrepo/incoming/input.conf ||
-		fatal "couldn't create $rootdir$hddrepo/incoming/input.conf"
-	echo "\$destdir = \"$hddrepo/dists\";" >> \
-		$rootdir$hddrepo/incoming/input.conf
-	echo "\$inputdir = \"$hddrepo/incoming\";" >> \
-		$rootdir$hddrepo/incoming/input.conf
-	echo "deb file://$hddrepo/ $dist main contrib non-free" > \
-		$rootdir/etc/apt/sources.list
-	echo "deb-src file://$hddrepo/ $dist main contrib non-free" >> \
+	echo "deb file://$hddrepo/ installation main contrib non-free" > \
 		$rootdir/etc/apt/sources.list
 
 	echo "Copying pre-generated filelists... "
@@ -537,7 +509,7 @@ export BOOTSTRAP_REQUIRED=\$(cat \$1/var/tmp/required.lst)
 export BOOTSTRAP_BASE=\$(cat \$1/var/tmp/base.lst)
 
 debootstrap --arch solaris-i386 --components=main,contrib,non-free --keep-debootstrap-dir \\
-    $dist \$1 file://\$2 \$2/$dist.bootstrap &> /tmp/install-base-debootstrap.log
+    installation \$1 file://\$2 \$2/$dist.bootstrap &> /tmp/install-base-debootstrap.log
 
 for pid in \`ps -ef|awk '/devfsadmd/ {print \$2}'\`; do
 	if pfiles \$pid 2>/dev/null | grep \$1 >/dev/null; then
@@ -611,7 +583,6 @@ echo \"Warning: Fake start-stop-daemon called, doing nothing\"" > "$rootdir/sbin
 	chroot $environ apt-get -y install g++
 	chroot $environ apt-get -y install sunwtoo
 	chroot $environ apt-get -y install devscripts
-	chroot $environ apt-get -y install debarchiver
 	chroot $environ apt-get -y install gnome-devel
 	chroot $environ apt-get -y install kdelibs-bin
 	chroot $environ apt-get -y install libqt3-mt-dev
