@@ -429,7 +429,7 @@ EOF
 
 	rm -f /tmp/debpaths.new
 	cat /tmp/debpaths | while read p f; do
-		f=$(find $rootdir$hddrepo/dists/$dist -name "${p}_*.deb")
+		f=$(find $rootdir$hddrepo/dists/installation -name "${p}_*.deb")
 		f=$(echo $f|sed -e "s;$rootdir;;" -e "s;/;;")
 		echo "$p $f" >> /tmp/debpaths.new
 	done
