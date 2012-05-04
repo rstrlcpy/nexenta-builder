@@ -105,6 +105,18 @@ runtime-perl-512 \
 library-perl-5-sun-solaris \
 "
 
+NM_PLUGINS="\
+nmv-autosync \
+nmc-autosync \
+nmv-comstar \
+nmc-comstar \
+nmv-autosmart \
+nmc-autosmart \
+nms-rrdaemon \
+remote-rep \
+"
+
+
 NM_STUFF="\
 developer-versioning-rcs \
 library-perl-5-archive-zip \
@@ -161,6 +173,7 @@ nmv \
 chpasswd \
 runtime-tcl-8 \
 mapmgr \
+$NM_PLUGINS \
 "
 
 REQ_DEBS="$REQ_DEBS"
@@ -684,9 +697,6 @@ profiles="1"
 dot_screenrc="nza-dot-screenrc"
 release_file="nza4-release.txt"
 apt_sources="http://nexenta.com/apt-nza siddy-stable main contrib non-free"
-plugin_sources=
-#builtin_plugins_dir="$extra_dir/extradebs"
-#builtin_plugins="nlm-com nmc-storagelink nms-storagelink nms-delorean nmc-delorean nms-autosync nmc-autosync nmv-autosync remote-rep nms-rrdaemon nms-comstar nmc-comstar nmv-comstar nms-autosmart nmc-autosmart nmv-autosmart"
 ks_min_mem_required="768"
 ks_rootdisk_type="zfs"
 ks_rootdisks=
