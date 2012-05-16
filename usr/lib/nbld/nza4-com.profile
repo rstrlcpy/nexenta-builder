@@ -656,6 +656,7 @@ driver-storage-smp \
 driver-storage-sv \
 driver-storage-vioblk \
 driver-misc-virtio \
+driver-network-vioif \
 driver-usb-ugen \
 driver-usb \
 driver-x11-winlock \
