@@ -397,6 +397,11 @@ EOF
 			fi
 			cp $customdir/nabat-config $rootdir$bin_dir/nabat-config
 			chmod 744 $rootdir$bin_dir/nabat-config
+
+			# This file contains items for menu
+			# that will be used in installer
+			# to setup interface language
+			cp $customdir/languages $rootdir$hddrepo
 	fi
 
 	if test "x$ks_license_text" != x; then

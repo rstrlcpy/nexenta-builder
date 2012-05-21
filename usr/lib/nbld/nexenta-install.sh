@@ -72,6 +72,7 @@ MDISCO="/usr/bin/mdisco"
 HDDISCO="/usr/bin/hddisco"
 testusr=n3x3nt4
 signature=`date '+%F-%N'`
+LANGS_FILE=$REPO/languages
 sysmem=`prtconf | grep 'Memory size:' | nawk '{ print $3 }'`
 set -i reposize
 set -i spaceneeded
@@ -2327,6 +2328,35 @@ getrand_10_200() {
 	perl -e "print int(rand(200)) + 10"
 }
 
+configure_language()
+{
+	local lang_item=""
+
+	# if language was defined via profile (auto installation),
+	# then we do not ask user about it
+	if test "x$language" != x; then
+		# We need to be sure that language
+		# that defined via profile is correct
+		for lng in `cat $LANGS_FILE | $AWK '{print $1}'`; do
+			test "x$lng" = x$language && return
+		done
+		# If language is incorrect,
+		# then we set if to default 'en'
+		language="en"
+		return
+	fi
+
+	$DIALOG --nocancel --radiolist 'Please select interface languange...' 15 40 12 `cat $LANGS_FILE` 2>$DIALOG_RES
+
+	language=$(dialog_res)
+}
+
+set_language()
+{
+
+	echo "language = $language" >> $TMPDEST/nmsrc
+}
+
 configure_network()
 {
 	local numconfigured=0
@@ -4005,6 +4035,7 @@ if test "x$(extract_args auto_install)" != x; then
 	_KS_dns2="$(extract_args dns_ip_2)"
 	loghost="$(extract_args loghost)"
 	logport="$(extract_args logport)"
+	language="$(extract_args language)"
 fi
 
 installcd=$(cat /.volid 2>/dev/null)
@@ -4218,6 +4249,11 @@ fi
 if test "x$rawdump" != x; then
 	oneline_info "Activating crash dump service..."
 	activate_dump
+fi
+
+if test -f $LANGS_FILE; then
+	configure_language
+	set_language
 fi
 
 if [ $UPGRADE -eq 0 ]; then
