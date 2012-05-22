@@ -2354,7 +2354,7 @@ configure_language()
 set_language()
 {
 
-	echo "language = $language" >> $TMPDEST/nmsrc
+	echo "language = $language" >> $TMPDEST/etc/nmsrc
 }
 
 configure_network()
