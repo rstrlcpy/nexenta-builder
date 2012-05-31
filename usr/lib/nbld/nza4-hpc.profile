@@ -347,7 +347,6 @@ system-library-libfcoe \
 system-library-platform \
 system-library-policykit \
 system-library-processor \
-system-library-security-crypto-pkcs11-kms \
 system-library-security-gss-diffie-hellman \
 system-library-security-gss-spnego \
 system-library-security-gss \
