@@ -343,7 +343,6 @@ system-kernel-dtrace-providers-xdt \
 system-kernel-rsmops \
 system-library-install-libinstzones \
 system-library-libfcoe \
-system-library-security-crypto-pkcs11-kms \
 system-library-security-gss \
 system-library-security-gss-diffie-hellman \
 system-library-security-gss-spnego \
