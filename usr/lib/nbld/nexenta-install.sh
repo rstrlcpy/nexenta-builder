@@ -3881,7 +3881,7 @@ extract_args()
 		fi
 	fi
 	# First we try to get prop value from kernel line
-	value=$(/usr/sbin/prtconf -v /devices|/usr/bin/sed -n "/$request_prop/{;n;p;}"|/usr/bin/sed -e "s/^\s*value=\|'//g")
+    value=$(/usr/sbin/prtconf -v /devices|/usr/bin/sed -ne "/$request_prop/{;n;s/^[[:space:]]*value=//;s/'//g;p;}")
 
 	# Second we try to get prop value from profile
 	# if it available and it not found at kernel line
