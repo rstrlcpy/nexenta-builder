@@ -2764,6 +2764,11 @@ customize_hdd_install()
 		touch -r /etc/issue $TMPDEST/etc/issue.net
     fi
 
+	if test "x$_KS_build_number" != "x"; then
+	    test -d /var/lib/nza || mkdir /var/lib/nza
+	    echo $_KS_build_number > $TMPDEST/var/lib/nza/.build
+	fi
+
 	apply_kbd
 
 	customize_common

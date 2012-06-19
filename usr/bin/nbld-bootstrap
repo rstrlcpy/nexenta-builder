@@ -40,6 +40,7 @@
 test ! -f /etc/nbld.cf && echo "Error: can't find /etc/nbld.cf" && exit 1
 . /etc/nbld.cf
 
+build_number="$NBLD_BUILD_NUMBER"       # Nightly build number
 repo="$NBLD_REPO"		        # APT repository (must exist)
 repolock="$repo/dists/debarchiver.lock" # APT debarchiver's lock
 dist="$NBLD_DISTRO-$NBLD_BRANCH"	# IN repository's distribution name
@@ -345,7 +346,8 @@ EOF
 	done
 	echo "_KS_ifaces='$ks_ifaces'" >> $install_profile
 	echo "_KS_apt_sources='$apt_sources'" >> $install_profile
-    test "x$issue_files_content" != x && echo "_KS_issue_files_content='$issue_files_content'" >> $install_profile
+	test "x$build_number" != x && echo "_KS_build_number='build $build_number'" >> $install_profile
+	test "x$issue_files_content" != x && echo "_KS_issue_files_content='$issue_files_content'" >> $install_profile
 	test "x$plugin_sources" != x && echo "_KS_plugin_sources='$plugin_sources'" >> $install_profile
 	echo "_KS_profile_selected='$defprofile'" >> $install_profile
 	test "x$ks_root_passwd" != x && echo "_KS_root_passwd='$ks_root_passwd'" >> $install_profile
