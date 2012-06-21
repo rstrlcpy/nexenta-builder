@@ -101,6 +101,7 @@ terminal-dialog \
 terminal-screen \
 base-files \
 \
+runtime-perl-510-extra \
 runtime-perl-512 \
 library-perl-5-sun-solaris \
 "
