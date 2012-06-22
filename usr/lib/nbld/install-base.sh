@@ -75,10 +75,10 @@ system-library \
 system-library-storage-scsi-plugins \
 compress-bzip2 \
 system-library-math \
+runtime-perl-510-extra \
 library-zlib"
 
 #runtime-perl-510 \
-#runtime-perl-510-extra \
 #runtime-perl-510-module-sun-solaris"
 
 MAINPKGS="\
