@@ -4076,10 +4076,17 @@ if test "x$_KS_license_text" != x -a \
 	if ! test -f "$lic_text"; then
 		lic_text=$(extract_lic_text $_KS_license_text)
 	fi
-	if test -f "$lic_text" && \
-	   ! show_license "$lic_text"; then
-		aborted
-	fi
+	
+	while true; do
+	    if test -f "$lic_text" && \
+		! show_license "$lic_text"; then
+		$DIALOG \
+		--defaultno \
+		--yesno "Are you sure you want to interrupt NexentaStor installation and power off the computer" 0 0 && poweroff
+	    else
+		break
+	    fi
+	done
 fi
 
 if boolean_check $_KS_welcome_head; then
