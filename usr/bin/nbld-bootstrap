@@ -118,6 +118,8 @@ fi
 
 test -d $rootdir && umount $rootdir/proc 2>/dev/null
 
+export customdir=$customdir
+
 if test -f $customdir/$mode.profile; then
 	. $customdir/$mode.profile
 elif test -f $mode.profile; then
