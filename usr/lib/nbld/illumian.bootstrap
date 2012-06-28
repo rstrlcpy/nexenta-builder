@@ -111,7 +111,6 @@ second_stage_install () {
     fi
 
 	core_pkgs_2="text-locale \
-	             base-files \
 				 library-security-trousers \
 				 library-libidn \
 				 library-zlib \

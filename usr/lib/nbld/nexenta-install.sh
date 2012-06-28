@@ -2287,7 +2287,7 @@ EOF
 		#
 		# force-upgrade new /bin stuff
 		#
-                filelist=$(chroot $TMPDEST $chrootenv find $locrepo -name "base-files_*.deb" -or -name "debianutils_*.deb" -or -name "gzip_*.deb" -or -name "coreutils_*.deb" -or -name "sed_*.deb" -or -name "grep_*.deb" -or -name "tar_*.deb")
+                filelist=$(chroot $TMPDEST $chrootenv find $locrepo -name "debianutils_*.deb" -or -name "gzip_*.deb" -or -name "coreutils_*.deb" -or -name "sed_*.deb" -or -name "grep_*.deb" -or -name "tar_*.deb")
                 chroot $TMPDEST /usr/bin/env -i PATH=/sbin:/bin:/usr/sbin:$PATH LOGNAME=root HOME=/root TERM=xterm \
 			/usr/bin/dpkg --force-all --unpack $filelist 2>> $UPGRADE_LOG 1>&2
 	fi

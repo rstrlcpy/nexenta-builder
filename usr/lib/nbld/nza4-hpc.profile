@@ -22,7 +22,6 @@ REQ_DEBS="\
     text-locale \
     bash \
     debianutils \
-    base-files \
     nexenta-ldconfig \
     libidn11 \
     wget \

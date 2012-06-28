@@ -95,8 +95,7 @@ library-security-trousers \
 library-libxml2 \
 compress-bzip2 \
 package-dpkg \
-library-security-openssl \
-base-files"
+library-security-openssl"
 
 #runtime-perl-510 \
 #text-gawk"
