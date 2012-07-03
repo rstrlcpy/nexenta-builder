@@ -349,7 +349,6 @@ EOF
 	echo "_KS_ifaces='$ks_ifaces'" >> $install_profile
 	echo "_KS_apt_sources='$apt_sources'" >> $install_profile
 	test "x$build_number" != x && echo "_KS_build_number='build $build_number'" >> $install_profile
-	test "x$issue_files_content" != x && echo "_KS_issue_files_content='$issue_files_content'" >> $install_profile
 	test "x$plugin_sources" != x && echo "_KS_plugin_sources='$plugin_sources'" >> $install_profile
 	echo "_KS_profile_selected='$defprofile'" >> $install_profile
 	test "x$ks_root_passwd" != x && echo "_KS_root_passwd='$ks_root_passwd'" >> $install_profile
@@ -658,8 +657,6 @@ crle -u -c $rootdir/var/ld/ld.config -l /lib:/usr/lib:/usr/gnu/lib
 crle -64 -u -c $rootdir/var/ld/64/ld.config -l /lib/64:/usr/lib/64:/usr/gnu/lib/64
 
 devfsadm -r $rootdir -u
-
-echo "$product_title $sw_version $sw_description" > $rootdir/etc/issue
 
 CWD=`dirname $0`
 $CWD/nbld-livecd || exit 1

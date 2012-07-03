@@ -2287,7 +2287,7 @@ EOF
 		#
 		# force-upgrade new /bin stuff
 		#
-                filelist=$(chroot $TMPDEST $chrootenv find $locrepo -name "debianutils_*.deb" -or -name "gzip_*.deb" -or -name "coreutils_*.deb" -or -name "sed_*.deb" -or -name "grep_*.deb" -or -name "tar_*.deb")
+                filelist=$(chroot $TMPDEST $chrootenv find $locrepo -name "release-name_*.deb" -or -name "debianutils_*.deb" -or -name "gzip_*.deb" -or -name "coreutils_*.deb" -or -name "sed_*.deb" -or -name "grep_*.deb" -or -name "tar_*.deb")
                 chroot $TMPDEST /usr/bin/env -i PATH=/sbin:/bin:/usr/sbin:$PATH LOGNAME=root HOME=/root TERM=xterm \
 			/usr/bin/dpkg --force-all --unpack $filelist 2>> $UPGRADE_LOG 1>&2
 	fi
@@ -2755,14 +2755,6 @@ customize_hdd_install()
 		touch $TMPDEST/export/home/$user/.hushlogin
 		printlog "Disabled MOTD for '$user' user"
 	fi
-
-    if test "x$_KS_issue_files_content" != "x"; then
-        echo $_KS_issue_files_content > $TMPDEST/etc/issue
-        echo $_KS_issue_files_content > $TMPDEST/etc/issue.net
-		# Revert release timestamp
-		touch -r /etc/issue $TMPDEST/etc/issue
-		touch -r /etc/issue $TMPDEST/etc/issue.net
-    fi
 
 	if test "x$_KS_build_number" != "x"; then
 	    test -d /var/lib/nza || mkdir /var/lib/nza

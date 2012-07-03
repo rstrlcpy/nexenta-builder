@@ -51,7 +51,6 @@ PKGSPATH="$2"
 
 PKGS=" \
 sunwcsd \
-release-name \
 sunwcs \
 archiver-gnu-tar \
 compress-gzip \
@@ -95,7 +94,8 @@ library-security-trousers \
 library-libxml2 \
 compress-bzip2 \
 package-dpkg \
-library-security-openssl"
+library-security-openssl \
+release-name"
 
 #runtime-perl-510 \
 #text-gawk"
