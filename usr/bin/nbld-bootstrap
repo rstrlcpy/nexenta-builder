@@ -57,7 +57,6 @@ install_profile="$rootdir$hddrepo/defaults"
 pkglist="$NBLD_TMP/debootstrap-pkglist.tmp"
 
 product_title="NexentaOS"
-release_file="release.txt"
 apt_sources="http://apt.gnusolaris.org elatte-testing main contrib non-free"
 
 # do not show license by default
@@ -490,11 +489,6 @@ EOF
 	mv $rootdir/etc/syslog.conf $rootdir/etc/syslog.conf.unmodified
 	cp $customdir/nexenta-syslog.conf $rootdir/etc/syslog.conf
 	chmod 644 $rootdir/etc/syslog.conf
-	if test "x$release_file" != "x"; then
-		cp $customdir/$release_file $rootdir/etc/release
-		sed -e "s/__autoversion__/$sw_version/" -i $rootdir/etc/release
-		chmod 444 $rootdir/etc/release
-	fi
 	echo "export TERMINFO=/usr/share/lib/terminfo" >> $rootdir/root/.bash_profile
 	echo "export TERM=sun-color" >> $rootdir/root/.bash_profile
 

@@ -695,7 +695,6 @@ desc1="NexentaStor Appliance installation profile"
 longdesc1=""
 profiles="1"
 dot_screenrc="nza-dot-screenrc"
-release_file="nza4-release.txt"
 apt_sources="http://nexenta.com/apt-nza siddy-stable main contrib non-free"
 plugin_sources=
 builtin_plugins_dir="$extra_dir/extradebs"

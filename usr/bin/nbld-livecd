@@ -116,7 +116,6 @@ USRMOUNT=/lib/svc/method/nexenta-usrmount
 GRUB_MENU=${CUSTOM_DIR}/grub_menu.txt
 HDD_GRUB_MENU=${CUSTOM_DIR}/hdd_grub_menu.txt
 SERVER_GRUB_MENU=${CUSTOM_DIR}/${NBLD_DEFAULT_MODE}_grub-menu.txt
-RELEASE_FILE=${CUSTOM_DIR}/release.txt
 MINI_FILELIST=${CUSTOM_DIR}/filelist_miniroot.txt
 CD_DIRLIST=.cd_dirlist
 DHCP_EVENTHOOK=${CUSTOM_DIR}/eventhook
