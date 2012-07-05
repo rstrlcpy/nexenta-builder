@@ -22,7 +22,7 @@ REQ_DEBS="\
     text-locale \
     bash \
     debianutils \
-    base-files \
+    release-name \
     nexenta-ldconfig \
     libidn11 \
     wget \
@@ -687,8 +687,7 @@ product_title="NexentaStor"
 model_id="STOR_UNIFIED"
 model_name="HPC Open Storage Appliance"
 os_version="v4.0"
-sw_version="v4.0.0"
-issue_files_content="$model_name ($sw_version)"
+sw_version="v4.0.1"
 rootsize1="1024"
 profile1="hpc-appliance"
 lines1="10000"
@@ -696,7 +695,6 @@ desc1="NexentaStor Appliance installation profile"
 longdesc1=""
 profiles="1"
 dot_screenrc="nza-dot-screenrc"
-release_file="nza4-release.txt"
 apt_sources="http://nexenta.com/apt-nza siddy-stable main contrib non-free"
 plugin_sources=
 builtin_plugins_dir="$extra_dir/extradebs"

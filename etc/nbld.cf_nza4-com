@@ -83,6 +83,11 @@ NBLD_DEBUG="no"
 NBLD_DEFAULT_MODE="nza4-com"
 
 #
+# Shows build number in /etc/issue if defined
+#
+NBLD_BUILD_NUMBER=
+
+#
 # --------- DO NOT MODIFY THIS SECTION ------------
 #
 test `whoami` != "root" && echo "Insufficient privileges to run $0" && exit 1

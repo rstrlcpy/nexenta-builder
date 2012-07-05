@@ -47,6 +47,11 @@ _KS_callback_post_install()
 	# Permit SSH root logins
 	sed -i -e "s/\s*PermitRootLogin.*no/PermitRootLogin yes/" $TMPDEST/etc/ssh/sshd_config
 
+	# Disable GSS-API for SSH and restrict ssh-access to Appliance according to #8630
+	echo "GSSAPIAuthentication no" >> $TMPDEST/etc/ssh/sshd_config
+	echo "GSSAPIKeyExchange no" >> $TMPDEST/etc/ssh/sshd_config
+	echo "AllowUsers root $_KS_user_name" >> $TMPDEST/etc/ssh/sshd_config
+
 	# Make sure no kernel/user logging goes to the /dev/console
 	sed -i -e "/\/dev\/sysmsg/d" $TMPDEST/etc/syslog.conf
 

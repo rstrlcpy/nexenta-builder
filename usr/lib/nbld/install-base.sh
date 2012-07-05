@@ -51,7 +51,6 @@ PKGSPATH="$2"
 
 PKGS=" \
 sunwcsd \
-release-name \
 sunwcs \
 archiver-gnu-tar \
 compress-gzip \
@@ -75,10 +74,10 @@ system-library \
 system-library-storage-scsi-plugins \
 compress-bzip2 \
 system-library-math \
+runtime-perl-510-extra \
 library-zlib"
 
 #runtime-perl-510 \
-#runtime-perl-510-extra \
 #runtime-perl-510-module-sun-solaris"
 
 MAINPKGS="\
@@ -96,7 +95,7 @@ library-libxml2 \
 compress-bzip2 \
 package-dpkg \
 library-security-openssl \
-base-files"
+release-name"
 
 #runtime-perl-510 \
 #text-gawk"

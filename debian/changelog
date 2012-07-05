@@ -1,3 +1,9 @@
+nexenta-builder (40-1-0) unstable; urgency=low
+
+  * #9571 - fixed stupid typo
+
+ -- Nexenta Systems <maintainer@nexenta.com>  Wed, 23 May 2012 4:00:00 +0300
+
 nexenta-builder (40-0-0) unstable; urgency=low
 
   * Move to Illumos

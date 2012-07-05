@@ -2287,7 +2287,7 @@ EOF
 		#
 		# force-upgrade new /bin stuff
 		#
-                filelist=$(chroot $TMPDEST $chrootenv find $locrepo -name "base-files_*.deb" -or -name "debianutils_*.deb" -or -name "gzip_*.deb" -or -name "coreutils_*.deb" -or -name "sed_*.deb" -or -name "grep_*.deb" -or -name "tar_*.deb")
+                filelist=$(chroot $TMPDEST $chrootenv find $locrepo -name "release-name_*.deb" -or -name "debianutils_*.deb" -or -name "gzip_*.deb" -or -name "coreutils_*.deb" -or -name "sed_*.deb" -or -name "grep_*.deb" -or -name "tar_*.deb")
                 chroot $TMPDEST /usr/bin/env -i PATH=/sbin:/bin:/usr/sbin:$PATH LOGNAME=root HOME=/root TERM=xterm \
 			/usr/bin/dpkg --force-all --unpack $filelist 2>> $UPGRADE_LOG 1>&2
 	fi
@@ -2354,7 +2354,7 @@ configure_language()
 set_language()
 {
 
-	echo "language = $language" >> $TMPDEST/nmsrc
+	echo "language = $language" >> $TMPDEST/etc/nmsrc
 }
 
 configure_network()
@@ -2756,13 +2756,10 @@ customize_hdd_install()
 		printlog "Disabled MOTD for '$user' user"
 	fi
 
-    if test "x$_KS_issue_files_content" != "x"; then
-        echo $_KS_issue_files_content > $TMPDEST/etc/issue
-        echo $_KS_issue_files_content > $TMPDEST/etc/issue.net
-		# Revert release timestamp
-		touch -r /etc/issue $TMPDEST/etc/issue
-		touch -r /etc/issue $TMPDEST/etc/issue.net
-    fi
+	if test "x$_KS_build_number" != "x"; then
+	    test -d /var/lib/nza || mkdir /var/lib/nza
+	    echo $_KS_build_number > $TMPDEST/var/lib/nza/.build
+	fi
 
 	apply_kbd
 
@@ -3881,7 +3878,7 @@ extract_args()
 		fi
 	fi
 	# First we try to get prop value from kernel line
-	value=$(/usr/sbin/prtconf -v /devices|/usr/bin/sed -n "/$request_prop/{;n;p;}"|/usr/bin/sed -e "s/^\s*value=\|'//g")
+    value=$(/usr/sbin/prtconf -v /devices|/usr/bin/sed -ne "/$request_prop/{;n;s/^[[:space:]]*value=//;s/'//g;p;}")
 
 	# Second we try to get prop value from profile
 	# if it available and it not found at kernel line
