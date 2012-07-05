@@ -1,8 +1,19 @@
 nexenta-builder (40-1-0) unstable; urgency=low
 
   * #9571 - fixed stupid typo
+  * #8630 - by default disable GSS-API for SSH and allow SSH connect only for root and admin-user
+  * #9801 - Should adjust nexenta-builder for the latest merge from illumos and temporary exclude vio/virtio drivers from build
+  * #9842 - fix 'sed' cmd line in the sub extract_args()
+  * #9571 - fixed abbreviation spelling of Japanese language
+  * #7808 - added build number in /var/lib/nza/.build for nightly builds
+  * #10035 - runtime-perl-510-extra package must be included in iso list and list of packages for HD installation
+  * #10053 - added yesno dialog to prevent from falling into console when the license agreement is declined.
+  * #9780 - nexenta builder profile redesign for both nza4-com and nza4-eval
+  * #7483 - show appliance version -c doesn't work
+  * #10151 - Should fix code of builder according to new release-files
+  * #10176 - Should take /etc/release from release-name instead of generating this by installer
 
- -- Nexenta Systems <maintainer@nexenta.com>  Wed, 23 May 2012 4:00:00 +0300
+ -- Nexenta Systems <maintainer@nexenta.com>  Thu, 05 Jul 2012 12:27:00 +0300
 
 nexenta-builder (40-0-0) unstable; urgency=low
 
