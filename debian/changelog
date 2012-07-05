@@ -1,8 +1,8 @@
-nexenta-builder (40-1-0) unstable; urgency=low
+nexenta-builder (40-0-1) unstable; urgency=low
 
-  * #9571 - fixed stupid typo
+  * Merged default to stable-4.0
 
- -- Nexenta Systems <maintainer@nexenta.com>  Wed, 23 May 2012 4:00:00 +0300
+ -- Nexenta Systems <maintainer@nexenta.com>  Thu, 05 Jul 2012 12:25:00 +0300
 
 nexenta-builder (40-0-0) unstable; urgency=low
 
