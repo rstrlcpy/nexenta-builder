@@ -1042,7 +1042,17 @@ autopart()
 
 	if test $fstype = "zfs"; then
 		zpool create -f -m legacy tmp $d || printlog "Cannot create temporary ZFS pool on disk '$d'"
-		zpool destroy tmp || printlog "Cannot destroy temporary ZFS pool on disk '$d'"
+
+		counter=0
+		while ! zpool destroy -f tmp; do
+		    counter=$(( $counter + 1 ))
+		    sleep 5
+		    if [ $counter -eq 10 ]; then
+			printlog "Cannot destroy temporary ZFS pool on disk '$d'"
+			break
+		    fi
+		done
+		
 		if ! zdb -l /dev/rdsk/${d}s0 | grep devid >/dev/null; then
 			printlog "Warning! Disk '$d' is not labeled correctly: devid is missing"
 		fi
