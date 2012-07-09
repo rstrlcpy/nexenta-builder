@@ -10,6 +10,6 @@ while true; do
 	sleep 1
 	tail $LOGFILE >/dev/null 2>&1
 	tail $LOGFILE >/dev/null 2>&1
-	tail.pl -f $LOGFILE
+	tail -f $LOGFILE
 	break
 done

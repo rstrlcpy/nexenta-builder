@@ -469,8 +469,6 @@ EOF
 	chmod 755 $rootdir/usr/bin/tetris
 	cp -f $customdir/nexenta-log $rootdir/usr/bin/install-log
 	chmod 755 $rootdir/usr/bin/install-log
-	cp -f $customdir/tail.pl $rootdir/usr/bin
-	chmod 755 $rootdir/usr/bin/tail.pl
 	screen_title="$product_title $os_version"
 	test "x$sw_version" != "x" && screen_title="$screen_title, software $sw_version"
 	cat << EOF > $rootdir/root/.screenrc
