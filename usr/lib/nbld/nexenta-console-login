@@ -56,22 +56,21 @@ if test ! -f $FIRSTSTART; then
 
 	if test -f $TRYREBOOT; then
 		touch $FIRSTSTART
+
 		for UTIL in uadmin sleep echo eject sync
 		do
 			FPATH_UTIL=`which $UTIL`
-			UTIL_NEED_COPY=$( echo $FPATH_UTIL | grep /usr/ | wc -l )
-			if [ $UTIL_NEED_COPY -ge 1 ] ; then
+			if echo $FPATH_UTIL | grep /usr/ 2>&1 >/dev/null ; then
 				cp $FPATH_UTIL /
 			fi
-			COUNT_LIBS_COPY=$( ldd $FPATH_UTIL | grep /usr/ | wc -l )
-			if [ $COUNT_LIBS_COPY -ge 1 ] ; then
+			if ldd $FPATH_UTIL | grep /usr/ 2>&1 >/dev/null ; then
 				ldd $FPATH_UTIL | grep /usr/ | awk '{print "cp "$3" /lib/"}' | /bin/sh
 			fi
 		done
 
 		/sync
 		/eject -f cdrom 2>/dev/null
-		/echo "Rebooting into new root filesystem" >/dev/msglog
+		/echo "Rebooting into new root filesystem after 10 sec ..." >/dev/msglog
 		/sleep 10
 
 		/sbin/uadmin 2 8 2>/dev/null
