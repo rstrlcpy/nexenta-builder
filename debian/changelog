@@ -1,4 +1,4 @@
-nexenta-builder (40-1-0) unstable; urgency=low
+nexenta-builder (40-0-1) unstable; urgency=low
 
   * #9571 - fixed stupid typo
   * #8630 - by default disable GSS-API for SSH and allow SSH connect only for root and admin-user
@@ -12,8 +12,10 @@ nexenta-builder (40-1-0) unstable; urgency=low
   * #7483 - show appliance version -c doesn't work
   * #10151 - Should fix code of builder according to new release-files
   * #10176 - Should take /etc/release from release-name instead of generating this by installer
+  * #10145 - pxe deploy hangs
+  * #10149 - inclusion of tail.pl seems unnecessary
 
- -- Nexenta Systems <maintainer@nexenta.com>  Thu, 05 Jul 2012 12:27:00 +0300
+ -- Nexenta Systems <maintainer@nexenta.com>  Wed, 11 Jul 2012 08:52:00 +0300
 
 nexenta-builder (40-0-0) unstable; urgency=low
 
