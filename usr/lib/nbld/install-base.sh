@@ -75,6 +75,8 @@ system-library-storage-scsi-plugins \
 compress-bzip2 \
 system-library-math \
 runtime-perl-510-extra \
+library-perl-5-text-wrapi18n \
+library-perl-5-text-charwidth \
 library-zlib"
 
 #runtime-perl-510 \

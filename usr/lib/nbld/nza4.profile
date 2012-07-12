@@ -103,6 +103,8 @@ terminal-screen \
 runtime-perl-510-extra \
 runtime-perl-512 \
 library-perl-5-sun-solaris \
+library-perl-5-text-wrapi18n \
+library-perl-5-text-charwidth \
 "
 
 NM_STUFF="\
