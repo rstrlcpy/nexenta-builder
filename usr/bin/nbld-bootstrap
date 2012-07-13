@@ -6,7 +6,7 @@
 #
 # It uses three main components:
 #    1) apt
-#    2) debarchiver
+#    2) reprepro
 #    3) debootstrap
 #
 # Therefore it is required those packages to be pre-installed.
@@ -42,7 +42,6 @@ test ! -f /etc/nbld.cf && echo "Error: can't find /etc/nbld.cf" && exit 1
 
 build_number="$NBLD_BUILD_NUMBER"       # Nightly build number
 repo="$NBLD_REPO"		        # APT repository (must exist)
-repolock="$repo/dists/debarchiver.lock" # APT debarchiver's lock
 dist="$NBLD_DISTRO-$NBLD_BRANCH"	# IN repository's distribution name
 distro=$NBLD_DISTRO
 rootdir="$NBLD_MINIROOT"                # bootstrap output
@@ -84,8 +83,7 @@ EOF
 	exit 1
 }
 fatal() { echo "Error: $1"; exit 1; }
-cleanup() { if test "x$repolock_set" = xyes; then rmdir $repolock 2>/dev/null;
-	repolock_set=no; echo "Lock $repolock removed"; fi; umount /etc/mnttab 2>/dev/null; }
+cleanup() { umount /etc/mnttab 2>/dev/null; }
 trap "cleanup" INT EXIT TERM QUIT
 
 UUID=`id -u`
@@ -106,7 +104,6 @@ while test "x$1" != x; do
 done
 
 # Recalculate some globals
-repolock="$repo/dists/debarchiver.lock"
 install_profile="$rootdir$hddrepo/defaults"
 environ="$rootdir /usr/bin/env -i PATH=/usr/gnu/bin:/usr/bin:/sbin:/usr/sbin LOGNAME=root HOME=/root TERM=xterm"
 
@@ -197,8 +194,6 @@ BOOTSTRAP_REQUIRED=`cat $pkglist`
 BOOTSTRAP_REQUIRED="$BOOTSTRAP_REQUIRED $STAGE0_DEBS"
 
 	export BOOTSTRAP_REQUIRED BOOTSTRAP_BASE
-#	while ! mkdir $repolock 2>/dev/null; do sleep 1; done
-#	repolock_set=yes
 	/bin/bash debootstrap \
 		    --verbose \
 		    --arch solaris-i386 \
@@ -211,8 +206,6 @@ BOOTSTRAP_REQUIRED="$BOOTSTRAP_REQUIRED $STAGE0_DEBS"
 		    $repo \
 		    $customdir/$distro.bootstrap ||
 		fatal "couldn't complete bootstrap of the InstallCD archive"
-#	repolock_set=no
-#	rmdir $repolock 2>/dev/null
 	echo $BOOTSTRAP_REQUIRED > /tmp/required-$profile1.lst
 	echo $BOOTSTRAP_BASE > /tmp/base-$profile1.lst
 	cp $rootdir/debootstrap/debpaths /tmp
@@ -285,8 +278,6 @@ Bootstrapping $mode CD media...
 ------------------------------------------------------------------------------
 EOF
 export BOOTSTRAP_REQUIRED BOOTSTRAP_BASE
-#while ! mkdir $repolock 2>/dev/null; do sleep 1; done
-#repolock_set=yes
 export FAKEROOT=yes
 /bin/bash /usr/sbin/debootstrap \
 	    --verbose \
@@ -298,8 +289,6 @@ export FAKEROOT=yes
 	    $rootdir \
 	    $repo \
 	    $customdir/$distro.bootstrap || fatal "couldn't complete bootstrap"
-#repolock_set=no
-#rmdir $repolock 2>/dev/null
 if test "x$mode" = "xinstall"; then
 	echo "Creating local repository... "
 	test -d $rootdir$hddrepo || mkdir $rootdir$hddrepo
@@ -320,7 +309,6 @@ EOF
 
 	rm -rf $rootdir/var/cache/stage0_archive
 	rm -f $rootdir/var/cache/apt/archive/*.deb
-	rm -rf /var/cache/debarchiver/cache.db
 
 	echo "deb file://$hddrepo installation main contrib non-free" > \
 		$rootdir/etc/apt/sources.list
@@ -554,7 +542,7 @@ echo \"Warning: Fake start-stop-daemon called, doing nothing\"" > "$rootdir/sbin
 	chroot $environ apt-get -y install g++
 	chroot $environ apt-get -y install developer-linker
 	chroot $environ apt-get -y install devscripts
-	chroot $environ apt-get -y install debarchiver
+	chroot $environ apt-get -y install reprepro
 	chroot $environ apt-get -y install gnome-devel
 	chroot $environ apt-get -y install kdelibs-bin
 	chroot $environ apt-get -y install libqt3-mt-dev
