@@ -4,6 +4,6 @@ nmc-comstar \
 nlm-eval \
 "
 
-source $customdir/nza4.profile
+source $NBLD_LIBDIR/nza4.profile
 
 ks_license_text="nlm-eval:/etc/license_text"
