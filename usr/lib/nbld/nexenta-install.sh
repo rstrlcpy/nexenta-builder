@@ -2369,6 +2369,26 @@ configure_language()
 	language=$(dialog_res)
 }
 
+set_passwd()
+{
+	local username=$1
+	local passwd=$2
+
+	# Delete any existing password
+	passwd -d "$username" 2>/dev/null >/dev/null
+
+	# Remove LD_LIBRARY_PATH after gcc on illumian has been fixed
+	LD_LIBRARY_PATH=/usr/gcc/4.4/lib expect <<SET_PASSWD
+log_user 0
+spawn passwd "$username"
+expect {
+	Enter existing login password: {send \r ; exp_continue}
+	New Password: {send "$passwd\r" ; exp_continue}
+	eof exit
+}
+SET_PASSWD
+}
+
 set_language()
 {
 
@@ -2627,7 +2647,7 @@ customize_hdd_install()
 	cp /etc/passwd /etc/passwd.$$
 	cp /etc/shadow /etc/shadow.$$
 
-	echo "root:$pass1" | chpasswd
+	set_passwd root $pass1
 	mv $TMPDEST/etc/passwd /tmp/passwd.tmp
 	cat /etc/passwd | grep ^root: > $TMPDEST/etc/passwd
 	cat /tmp/passwd.tmp | grep ^root: -v >> $TMPDEST/etc/passwd
@@ -2698,7 +2718,7 @@ customize_hdd_install()
 	cp /etc/passwd /etc/passwd.$$
 	cp /etc/shadow /etc/shadow.$$
 
-	echo "$user:$pass1" | chpasswd
+	set_passwd "$user" "$pass1"
 	cat /etc/passwd | egrep "^$user" >> $TMPDEST/etc/passwd
 	cat /etc/shadow | egrep "^$user" |  $AWK -F: '{print $1":"$2":"$3"::::::"}' >> $TMPDEST/etc/shadow
 
