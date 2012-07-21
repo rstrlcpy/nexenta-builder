@@ -90,5 +90,5 @@ NBLD_BUILD_NUMBER=
 #
 # --------- DO NOT MODIFY THIS SECTION ------------
 #
-test `whoami` != "root" && echo "Insufficient privileges to run $0" && exit 1
-test ! -f "$NBLD_LIBDIR/nexenta-install.sh" && echo "NBLD_LIBDIR is not properly set" && exit 1
+test `whoami` = "root" || (echo "Insufficient privileges to run $0" && exit 1)
+test -f "$NBLD_LIBDIR/nexenta-install.sh" || (echo "NBLD_LIBDIR is not properly set" && exit 1)

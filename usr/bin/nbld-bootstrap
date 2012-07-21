@@ -37,7 +37,7 @@
 #
 ##############################################################################
 
-test ! -f /etc/nbld.cf && echo "Error: can't find /etc/nbld.cf" && exit 1
+test -f /etc/nbld.cf || (echo "Error: can't find /etc/nbld.cf" && exit 1)
 . /etc/nbld.cf
 
 build_number="$NBLD_BUILD_NUMBER"       # Nightly build number
@@ -83,8 +83,10 @@ EOF
 	exit 1
 }
 fatal() { echo "Error: $1"; exit 1; }
-cleanup() { umount /etc/mnttab 2>/dev/null; }
+cleanup() { umount /etc/mnttab 2>/dev/null; umount $rootdir/proc 2>/dev/null; }
+abort() { echo "Error: subprocess exited with non-zero status: $?"; exit 1; }
 trap "cleanup" INT EXIT TERM QUIT
+trap "abort" ERR
 
 UUID=`id -u`
 #if [ `whoami` != "root" ]; then
@@ -429,8 +431,6 @@ EOF
 	# save list of packages for APT installation
 	echo "$STAGE0_APTINST $STAGE0_DRIVERS $STAGE0_HDD_END $ADD_PLUGINS" > $rootdir$hddrepo/aptinst.lst
 
-	chroot $environ umount /proc
-
 	echo "Preparing hwdisco ... "
 	cp $customdir/hwdisco.pl $rootdir$hddrepo/hwdisco
 
@@ -597,7 +597,6 @@ for pid in `ps -ef | awk '/devfsadmd/ {print $2}'`; do
 	fi
 done
 sleep 2
-umount $rootdir/devices 2>/dev/null 1>&2
 
 rm -f $rootdir/etc/zfs/zpool.cache
 
