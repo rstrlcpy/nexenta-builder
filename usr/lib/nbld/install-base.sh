@@ -61,6 +61,7 @@ package-dpkg-apt \
 text-gnu-sed \
 text-gnu-grep \
 file-gnu-coreutils \
+file-gnu-findutils \
 package-dpkg \
 library-security-libgpg-error \
 system-library-security-libgcrypt \

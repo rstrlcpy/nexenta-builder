@@ -46,7 +46,20 @@ first_stage_install () {
 
     touch $TARGET/var/lib/dpkg/{status,available,lock}
 
-    for pkg in sunwcsd sunwcs shell-bash archiver-gnu-tar package-dpkg library-zlib compress-gzip compress-bzip2 system-library system-library-math; do
+    core_pkgs_0="sunwcsd \
+                 sunwcs \
+                 shell-bash \
+                 archiver-gnu-tar \
+                 file-gnu-coreutils \
+                 file-gnu-findutils \
+                 package-dpkg \
+                 library-zlib \
+                 compress-gzip \
+                 compress-bzip2 \
+                 system-library \
+                 system-library-math"
+
+    for pkg in $core_pkgs_0; do
         extract $pkg
     done
 
