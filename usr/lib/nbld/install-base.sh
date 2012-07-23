@@ -128,7 +128,6 @@ function dpkginst
 
 mkdir -p $TARGET/var/lib/dpkg/updates
 mkdir -p $TARGET/var/lib/dpkg/info
-mkdir -p $TARGET/var/lib/dpkg/alien
 mkdir -p $TARGET/var/lib/dpkg/alternatives
 mkdir -p $TARGET/var/lib/dpkg/parts
 mkdir -p $TARGET/var/lib/dpkg/triggers

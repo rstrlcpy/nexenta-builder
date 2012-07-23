@@ -628,9 +628,6 @@ function create_mini_stage2
 
 	find . -print | ${CPIO} -pdum ${RAMDISK_MNT} 2> /dev/null
 
-	# clean up NLU environment on target, but keep on source
-	rm -rf ${RAMDISK_MNT}/tmp/*
-
 	echo "done"
 	cd ${OLDPWD}
 

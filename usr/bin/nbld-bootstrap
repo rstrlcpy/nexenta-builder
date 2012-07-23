@@ -503,9 +503,6 @@ EOF
 	done
 fi
 
-# do not trigger postinst.sh
-rm -f $rootdir/tmp/nlubin/env.sh
-
 if test "x$mode" = xbase; then
 	# do some base mode customizations
 	baserepo=$repo

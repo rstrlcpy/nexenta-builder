@@ -140,10 +140,8 @@ function bootstrap_repository
 	CONFIGD=/lib/svc/bin/svc.configd
 	SVCCFG=/usr/sbin/svccfg
 	DTD=${FAKEROOT}/usr/share/lib/xml/dtd/service_bundle.dtd.1
-	SVCENV="NLU_ENABLED=1 LD_NOAUXFLTR=1 LD_LIBRARY_PATH=/tmp/nlulib \
-		LD_LIBRARY_PATH_64=/tmp/nlulib/64 SVCCFG_CHECKHASH=1 \
-		PKG_INSTALL_ROOT=${alt_root} SVCCFG_DTD=${DTD} \
-		SVCCFG_REPOSITORY=${REPO_FILE} SVCCFG_CONFIGD_PATH=${CONFIGD}"
+	SVCENV="LD_NOAUXFLTR=1 SVCCFG_CHECKHASH=1 PKG_INSTALL_ROOT=${alt_root} \
+		SVCCFG_DTD=${DTD} SVCCFG_REPOSITORY=${REPO_FILE} SVCCFG_CONFIGD_PATH=${CONFIGD}"
 
 	# Create the repository with smf/manifest property
 	eval "${SVCENV} ${SVCCFG} add smf/manifest"
@@ -297,9 +295,6 @@ function customize_mini
 	#
 	bootstrap_repository $1
 
-	# clean up NLU environment on target, but keep on source
-	rm -rf $1/tmp/*
-
 	cd ${oldpwd}
 }
 
@@ -397,12 +392,6 @@ function create_mini
 
 	mkdir -p ${RAMDISK_MNT}/root
 	chown root:root ${RAMDISK_MNT}/root
-
-	if test -f ${FAKEROOT}/var/lib/dpkg/alien/nexenta-sunw/ld32; then
-		cp ${FAKEROOT}/var/lib/dpkg/alien/nexenta-sunw/ld32 ${RAMDISK_MNT}/lib/ld.so.1
-		test -d ${RAMDISK_MNT}/root/lib/amd64 && \
-			cp ${FAKEROOT}/var/lib/dpkg/alien/nexenta-sunw/ld64 ${RAMDISK_MNT}/lib/amd64/ld.so.1
-	fi
 
 	rm -f ${RAMDISK_MNT}/root/.screenrc
 	touch ${RAMDISK_MNT}/.nexenta-first-start
