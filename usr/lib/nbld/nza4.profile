@@ -100,7 +100,6 @@ library-security-libassuan \
 terminal-dialog \
 terminal-screen \
 \
-runtime-perl-510-extra \
 runtime-perl-512 \
 library-perl-5-sun-solaris \
 library-perl-5-text-wrapi18n \
