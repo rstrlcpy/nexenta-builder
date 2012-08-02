@@ -959,19 +959,21 @@ autopart_zfs()
 	local config=$2
 	local s0_slices=$(echo $autodisks|sed -e "s/\(d[0-9]\+\)/\1s0/g")
 	local hot_spare_cmd="spare $3"
-
+	local zpool_version="$(extract_args zpool-version)"
+	
 	zfs_root_slices=$s0_slices
 
 	oneline_info "Preparing $config-type ZFS volume using '$s0_slices'... "
 
 	test ! -d $TMPDEST && mkdir -p $TMPDEST
-
+	
+	test "x$zpool_version" != "x" && zpool_prop="-o version=$zpool_version"
 	test $config = "pool" && config=""
 	test "x$3" = "x" && hot_spare_cmd=""
-	if ! zpool create -f -O compression=on -m /syspool $ZFS_ROOTPOOL $config $s0_slices $hot_spare_cmd 2>$AUTOPART_FMT_ERR; then
+	if ! zpool create -f -O compression=on $zpool_prop -m /syspool $ZFS_ROOTPOOL $config $s0_slices $hot_spare_cmd 2>$AUTOPART_FMT_ERR; then
 		zpool destroy $ZFS_ROOTPOOL 2>/dev/null
 		sync
-		if ! zpool create -f -O compression=on -m /syspool $ZFS_ROOTPOOL $config $s0_slices $hot_spare_cmd 2>$AUTOPART_FMT_ERR; then
+		if ! zpool create -f -O compression=on $zpool_prop -m /syspool $ZFS_ROOTPOOL $config $s0_slices $hot_spare_cmd 2>$AUTOPART_FMT_ERR; then
 			oneline_msgbox Error "Cannot create ZFS 'root' pool using disk(s) $disks with error:\n\n $(cat $AUTOPART_FMT_ERR)\n"
 			return 1
 		fi
