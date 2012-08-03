@@ -960,6 +960,7 @@ autopart_zfs()
 	local s0_slices=$(echo $autodisks|sed -e "s/\(d[0-9]\+\)/\1s0/g")
 	local hot_spare_cmd="spare $3"
 	local zpool_version="$(extract_args zpool-version)"
+	local zpool_prop=''
 	
 	zfs_root_slices=$s0_slices
 
@@ -967,7 +968,12 @@ autopart_zfs()
 
 	test ! -d $TMPDEST && mkdir -p $TMPDEST
 	
-	test "x$zpool_version" != "x" && zpool_prop="-o version=$zpool_version"
+	if echo $zpool_version | grep -Eq '^[0-9]{1,2}$'; then
+	    if [ $zpool_version -ge '1' -a $zpool_version -le '28' ]; then
+		zpool_prop="-o version=$zpool_version"
+	    fi
+	fi
+	
 	test $config = "pool" && config=""
 	test "x$3" = "x" && hot_spare_cmd=""
 	if ! zpool create -f -O compression=on $zpool_prop -m /syspool $ZFS_ROOTPOOL $config $s0_slices $hot_spare_cmd 2>$AUTOPART_FMT_ERR; then
