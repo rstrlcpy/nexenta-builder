@@ -4168,7 +4168,7 @@ while true; do
 						fi
 					fi
 					printlog "Selected '$ROOTDISK_TYPE' configuration."
-					oneline_info "Auto partitioning '$autodisk' for '$ROOTDISK_TYPE' configuration..."
+					oneline_info "Auto partitioning '$autodisk $result_disk_spare' for '$ROOTDISK_TYPE' configuration..."
 					if test "x$ROOTDISK_TYPE" = xufs; then
 						find_zpool_by_disk_and_destroy $autodisk || continue
 						if ! autopart $autodisk "ufs"; then
@@ -4191,6 +4191,23 @@ while true; do
 							# always # assume mirror configuration if 2+ disks selected.
 							pool_type="mirror"
 						fi
+						
+						stop_requested=0
+						for d in $result_disk_spare; do
+						    if ! find_zpool_by_disk_and_destroy $d; then
+								stop_requested=1
+								break
+						    fi
+						done
+						
+						test $stop_requested == 1 && continue
+						
+						for d in $result_disk_spare; do
+							autopart $d "zfs"
+						done
+						
+						result_disk_spare=`echo $result_disk_spare|sed -e 's/\(c[0-9]\+[^[:space:]]*d[0-9]\+\)/\1s0/g'`
+						
 						autopart_zfs "$autodisk" $pool_type "$result_disk_spare" || continue
 					fi
 				else
