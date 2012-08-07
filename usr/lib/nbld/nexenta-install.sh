@@ -961,19 +961,19 @@ autopart_zfs()
 	local hot_spare_cmd="spare $3"
 	local zpool_version="$(extract_args zpool-version)"
 	local zpool_prop=''
-	
+
 	zfs_root_slices=$s0_slices
 
 	oneline_info "Preparing $config-type ZFS volume using '$s0_slices'... "
 
 	test ! -d $TMPDEST && mkdir -p $TMPDEST
-	
+
 	if echo $zpool_version | grep -Eq '^[0-9]{1,2}$'; then
 	    if [ $zpool_version -ge '1' -a $zpool_version -le '28' ]; then
 		zpool_prop="-o version=$zpool_version"
 	    fi
 	fi
-	
+
 	test $config = "pool" && config=""
 	test "x$3" = "x" && hot_spare_cmd=""
 	if ! zpool create -f -O compression=on $zpool_prop -m /syspool $ZFS_ROOTPOOL $config $s0_slices $hot_spare_cmd 2>$AUTOPART_FMT_ERR; then
@@ -1060,7 +1060,7 @@ autopart()
 			break
 		    fi
 		done
-		
+
 		if ! zdb -l /dev/rdsk/${d}s0 | grep devid >/dev/null; then
 			printlog "Warning! Disk '$d' is not labeled correctly: devid is missing"
 		fi
@@ -3239,6 +3239,11 @@ customize_sources()
 		echo "deb-src $_KS_plugin_sources" >> $APTSOURCES
 	fi
 	rm -f "$TMPDEST/var/lib/apt/lists/*" 2>/dev/null 1>&2
+
+	# Disable downloading of Translation's indexes
+	# because our APT does not contains Translation section
+	echo 'Acquire::Languages "none";' > $TMPDEST/etc/apt/apt.conf.d/99translation
+
 	printlog "Installed /etc/apt/sources.list"
 }
 
@@ -4086,7 +4091,7 @@ if test "x$_KS_license_text" != x -a \
 	if ! test -f "$lic_text"; then
 		lic_text=$(extract_lic_text $_KS_license_text)
 	fi
-	
+
 	while true; do
 	    if test -f "$lic_text" && \
 		! show_license "$lic_text"; then
@@ -4191,7 +4196,7 @@ while true; do
 							# always # assume mirror configuration if 2+ disks selected.
 							pool_type="mirror"
 						fi
-						
+
 						stop_requested=0
 						for d in $result_disk_spare; do
 						    if ! find_zpool_by_disk_and_destroy $d; then
@@ -4199,15 +4204,15 @@ while true; do
 								break
 						    fi
 						done
-						
+
 						test $stop_requested == 1 && continue
-						
+
 						for d in $result_disk_spare; do
 							autopart $d "zfs"
 						done
-						
+
 						result_disk_spare=`echo $result_disk_spare|sed -e 's/\(c[0-9]\+[^[:space:]]*d[0-9]\+\)/\1s0/g'`
-						
+
 						autopart_zfs "$autodisk" $pool_type "$result_disk_spare" || continue
 					fi
 				else
