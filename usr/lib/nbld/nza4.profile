@@ -534,7 +534,6 @@ driver-i86pc-ioat \
 driver-i86pc-platform \
 driver-network-afe \
 driver-network-amd8111s \
-driver-network-arbel \
 driver-network-arn \
 driver-network-atge \
 driver-network-ath \
