@@ -460,6 +460,19 @@ function customize_mini
 	cd ${oldpwd}
 }
 
+function get_directory_size
+{
+	# use stat, because only it returns correct size in any cases (zfs compression, dedup)
+	directory=$1
+	total_size=0
+	for file in `find $directory -type f`; do
+		size=`stat -c %s $file`
+		((total_size = total_size + size))
+	done
+	((total_size = total_size / 1024))
+	echo $total_size
+}
+
 function create_mini
 {
 	echo "Creating miniroots...."
@@ -552,15 +565,19 @@ function create_mini
 
 	rm -rf ${MINIROOT_STAGING_64b}/tmp/*
 	rm -rf ${MINIROOT_STAGING_32b}/tmp/*
-	
+
 	rm -f ${MINIROOT_STAGING_64b}/dev/{*dsk/*,cfg/*,scsi/*/*}
 	rm -f ${MINIROOT_STAGING_32b}/dev/{*dsk/*,cfg/*,scsi/*/*}
-	
+
 	# Find out the size of miniroot staging area
 	sync; sync; sync
-	sleep 5 #this should give du time to see the correct file size
-	total_size_32b=`du -sk ${MINIROOT_STAGING_32b} | nawk '{print $1}'`
-	total_size_64b=`du -sk ${MINIROOT_STAGING_64b} | nawk '{print $1}'`
+	echo "  Calculating size of miniroot32b..."
+	total_size_32b=$(get_directory_size ${MINIROOT_STAGING_32b})
+	echo "    done: $total_size_32b KB"
+
+	echo "  Calculating size of miniroot64b..."
+	total_size_64b=$(get_directory_size ${MINIROOT_STAGING_64b})
+	echo "    done: $total_size_64b KB"
 
 	# Add some extra space for our root filesystem
 	if [ "${MODE}" = "livecd" ]; then
