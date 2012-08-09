@@ -127,6 +127,11 @@ result_disk_spare=""
 
 auto_install=""
 MACHINESIG=""
+
+# Variables that used to configure destination SMF
+SVCENV=""
+SVCCFG=""
+
 dialog_cmd() {
 	echo dialog\ --backtitle\ $TITLE-Installer-$MACHINESIG\ --keep-window\ --colors
 }
@@ -3154,6 +3159,36 @@ vfstab_setup()
 	fi
 }
 
+setup_smf_environment_variables()
+{
+	local DBFILE=${TMPDEST}/etc/svc/repository.db
+	local CONFIGD=${TMPDEST}/lib/svc/bin/svc.configd
+	local DTD=${TMPDEST}/usr/share/lib/xml/dtd/service_bundle.dtd.1
+	SVCCFG=${TMPDEST}/usr/sbin/svccfg
+	SVCENV="PKG_INSTALL_ROOT=${TMPDEST} SVCCFG_DTD=${DTD} \
+	SVCCFG_REPOSITORY=${DBFILE} SVCCFG_CONFIGD_PATH=${CONFIGD}"
+}
+
+configure_coreadm()
+{
+	# Core files will be stored on separately dataset
+	zfs create $ZFS_ROOTPOOL/cores
+	zfs set mountpoint=/var/cores syspool/cores
+	zfs set quota=1g syspool/cores
+
+	# First need to import coreadm manifest to change its properties
+	eval "${SVCENV} ${SVCCFG} import ${TMPDEST}/lib/svc/manifest/system/coreadm.xml"
+
+	# Enable syslog to track when global cores are dumped
+	eval "${SVCENV} ${SVCCFG} -s svc:/system/coreadm:default setprop config_params/global_log_enabled = boolean: true >/dev/null 2>&1"
+
+	# Core file will contains all possible information
+	eval "${SVCENV} ${SVCCFG} -s svc:/system/coreadm:default setprop config_params/global_content = astring: all >/dev/null 2>&1"
+
+	# Core files will be dumped as core.<Executable file name>.<PID>.<timestamp> to /var/cores directory
+	eval "${SVCENV} ${SVCCFG} -s svc:/system/coreadm:default setprop config_params/global_pattern = astring: '/var/cores/core.%f.%p.%t' >/dev/null 2>&1"
+}
+
 configure_repository()
 {
 	plat='none'
@@ -3163,14 +3198,8 @@ configure_repository()
 	chown root:sys ${TMPDEST}/etc/svc/repository.db
 
 	CWD=`pwd`
-    DBFILE=${TMPDEST}/etc/svc/repository.db
-	CONFIGD=${TMPDEST}/lib/svc/bin/svc.configd
-	SVCCFG=${TMPDEST}/usr/sbin/svccfg
-	DTD=${TMPDEST}/usr/share/lib/xml/dtd/service_bundle.dtd.1
-	SVCENV="PKG_INSTALL_ROOT=${TMPDEST} SVCCFG_DTD=${DTD} \
-	SVCCFG_REPOSITORY=${DBFILE} SVCCFG_CONFIGD_PATH=${CONFIGD}"
 
-    cd ${TMPDEST}/etc/svc/profile
+	cd ${TMPDEST}/etc/svc/profile
 
 	rm -f inetd_services.xml >/dev/null 2>&1
 	$LN -fs inetd_generic.xml inetd_services.xml >/dev/null 2>&1
@@ -4299,7 +4328,9 @@ done
 customize_X
 
 oneline_info "Preparing System Services..."
+setup_smf_environment_variables
 configure_repository
+configure_coreadm
 
 install_grub
 
