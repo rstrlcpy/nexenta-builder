@@ -584,8 +584,8 @@ function create_mini
 		(( total_size_32b += total_size_32b * 50 / 100 ))
 		(( total_size_64b += total_size_64b * 50 / 100 ))
 	else
-		(( total_size_32b += total_size_32b * 15 / 100 ))
-		(( total_size_64b += total_size_64b * 15 / 100 ))
+		(( total_size_32b += total_size_32b * 30 / 100 ))
+		(( total_size_64b += total_size_64b * 30 / 100 ))
 	fi
 
 	echo "  Create 32 bit miniroot..."
