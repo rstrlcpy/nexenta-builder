@@ -2862,6 +2862,9 @@ customize_common()
 
 	cp /etc/rtc_config $TMPDEST/etc/rtc_config
 	printlog "Installed /etc/rtc_config"
+
+	echo "* Do not use SMP during core dumping" >> $TMPDEST/etc/system
+	echo "set dump_plat_mincpu = 0" >> $TMPDEST/etc/system
 }
 
 customize_hdd_upgrade()
