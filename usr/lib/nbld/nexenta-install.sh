@@ -3221,9 +3221,70 @@ configure_repository()
 
 	eval "${SVCENV} ${SVCCFG} apply ${TMPDEST}/etc/svc/profile/platform.xml >/dev/null 2>&1"
 
-    cd $CWD
+	cd $CWD
 
 	printlog "SMF repository configured at /etc/svc/repository.db"
+}
+
+disable_services()
+{
+    local profile_name="${TMPDEST}/etc/svc/profile/site/nexenta_disabled.xml"
+    local svclist="$_KS_disable_services"
+    local license=$(cat <<EOF
+<!--\n
+CDDL HEADER START\n\n
+
+The contents of this file are subject to the terms of the\n
+Common Development and Distribution License (the "License").\n
+You may not use this file except in compliance with the License.\n\n
+
+You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE\n
+or http://www.opensolaris.org/os/licensing.\n
+See the License for the specific language governing permissions\n
+and limitations under the License.\n\n
+
+When distributing Covered Code, include this CDDL HEADER in each\n
+file and include the License file at usr/src/OPENSOLARIS.LICENSE.\n
+If applicable, add the following below this CDDL HEADER, with the\n
+fields enclosed by brackets "[]" replaced with your own identifying\n
+information: Portions Copyright [yyyy] [name of copyright owner]\n\n
+
+CDDL HEADER END\n\n
+
+Copyright 2010 Sun Microsystems, Inc.  All rights reserved.\n
+Use is subject to license terms.\n\n
+
+Default service profile, containing a typical set of active service\n
+instances.\n\n
+
+NOTE:  Service profiles delivered by this package are not editable,\n
+and their contents will be overwritten by package or patch\n
+operations, including operating system upgrade.  Make customizations\n
+in a different file.  The paths, /etc/svc/profile/site.xml and\n
+/var/svc/profile/site.xml, are distinguished location for site-specific\n
+service profiles, treated otherwise equivalently to this file.\n\n
+
+Service profile to deactivate the following service\n\n
+-->\n
+EOF
+)
+
+    echo "<?xml version='1.0'?>" > $profile_name
+    echo "<!DOCTYPE service_bundle SYSTEM '/usr/share/lib/xml/dtd/service_bundle.dtd.1'>" >> $profile_name
+    echo -e $license >> $profile_name
+    echo "<service_bundle type='profile' name='default'>" >> $profile_name
+
+    for i in $svclist; do 
+	svc=`echo $i | cut -d':' -f1`
+	instance=`echo $i | cut -d':' -f2`
+
+	echo -e "\t<service name='${svc}' version='1' type='service'>" >> $profile_name
+	echo -e "\t\t<instance name='${instance}' enabled='false'/>" >> $profile_name
+	echo -e "\t</service>" >> $profile_name
+    done
+
+    echo "</service_bundle>" >> $profile_name
+
 }
 
 update_boot_archive()
@@ -4334,6 +4395,7 @@ oneline_info "Preparing System Services..."
 setup_smf_environment_variables
 configure_repository
 configure_coreadm
+disable_services
 
 install_grub
 
