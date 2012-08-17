@@ -83,7 +83,10 @@ EOF
 	exit 1
 }
 fatal() { echo "Error: $1"; exit 1; }
-cleanup() { umount /etc/mnttab 2>/dev/null; umount $rootdir/proc 2>/dev/null; }
+cleanup() {
+	umount /etc/mnttab 2>/dev/null || true
+	umount $rootdir/proc 2>/dev/null || true
+}
 abort() { echo "Error: subprocess exited with non-zero status: $?"; exit 1; }
 trap "cleanup" INT EXIT TERM QUIT
 trap "abort" ERR
@@ -431,6 +434,8 @@ EOF
 
 	# save list of packages for APT installation
 	echo "$STAGE0_APTINST $STAGE0_DRIVERS $STAGE0_HDD_END $ADD_PLUGINS" > $rootdir$hddrepo/aptinst.lst
+
+	chroot $environ umount /proc
 
 	echo "Preparing hwdisco ... "
 	cp $customdir/hwdisco.pl $rootdir$hddrepo/hwdisco

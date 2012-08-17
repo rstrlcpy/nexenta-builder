@@ -612,7 +612,7 @@ function create_mini_stage2
 		echo "Cannot mount UFS image via loopback file system."
 		fatal_error
 	fi
- 	newfs ${lofidev} < /dev/null 2> /dev/null
+ 	newfs -m 0 -o space ${lofidev} < /dev/null 2> /dev/null
 	if [ $? -ne 0 ]; then
 		echo "Cannot create UFS file system on ${lofidev}."
 		fatal_error
@@ -644,7 +644,7 @@ function create_mini_stage2
 
 	# Compress miniroot image
 	test -d ${DEST} || mkdir -p ${DEST}
- 	gzip -c ${RAMDISK_FILE} > ${DEST}/miniroot
+ 	gzip -9 -c ${RAMDISK_FILE} > ${DEST}/miniroot
 	sync; sync
 	sleep 1
 	du -sh ${DEST}/miniroot | read size name
