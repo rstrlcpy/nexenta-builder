@@ -2,6 +2,7 @@ Source: nexenta-builder
 Section: devel
 Priority: optional
 Maintainer: Nexenta Systems <maintainer@nexenta.com>
+Build-Depends: package-dpkg-debhelper (>= 40-0-13)
 
 Package: nexenta-builder
 Architecture: solaris-i386
