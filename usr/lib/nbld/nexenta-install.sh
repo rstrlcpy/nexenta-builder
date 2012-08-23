@@ -1029,6 +1029,7 @@ autopart()
 	local root_min_bytes=$(($root_min_size*1024*1024))
 	local swap_size=$AUTOPART_SWAP_SIZE
 	local swap_bytes=$(($swap_size*1024*1024))
+	local partition_max_bytes="2000000000000"
 
 	if test $(($cyls*$csize)) -lt $root_min_bytes; then
 		oneline_msgbox Error "Disk size is too small and cannot even fit a root partition.\nNeeded at least $root_min_size MB."
@@ -1038,6 +1039,14 @@ autopart()
 	if test $(($cyls*$csize)) -lt $(($root_min_bytes+$swap_bytes)); then
 		oneline_msgbox Error "Disk size is too small.\nNeeded at least $(($root_min_size+$swap_size)) MB."
 		return 1
+	fi
+
+	if test $(($cyls*$csize)) -gt $partition_max_bytes; then
+		if ! oneline_Yn_ask "Disk size $(basename $phys) exceeds maximum partition size of 2TB and will be shrunk. Proceed?"; then
+		    return 1
+		fi
+		cyls=$(($partition_max_bytes/$csize))
+		oneline_info "Auto partitioning '$autodisk $result_disk_spare' for '$ROOTDISK_TYPE' configuration..."
 	fi
 
 	if ! fdisk -B $phys >/dev/null 2>&1; then
@@ -3435,7 +3444,7 @@ aborted()
 	oneline_msgbox Warning "Installation has been interrupted."
 	cleanup
 	screen -X quit >/dev/null
-	exit 1
+	poweroff
 }
 
 kbd_layouts()
@@ -4208,9 +4217,7 @@ if test "x$_KS_license_text" != x -a \
 	while true; do
 	    if test -f "$lic_text" && \
 		! show_license "$lic_text"; then
-		$DIALOG \
-		--defaultno \
-		--yesno "Are you sure you want to interrupt NexentaStor installation and power off the computer" 0 0 && poweroff
+		oneline_yN_ask "Are you sure you want to interrupt NexentaStor installation and power off the computer" && aborted
 	    else
 		break
 	    fi
@@ -4301,9 +4308,16 @@ while true; do
 							fi
 						done
 						test $stop_requested == 1 && continue
+
+						stop_requested=0
 						for d in `echo $autodisk|sed -e "s/ /\n/g"`; do
-							autopart $d "zfs"
+							if ! autopart $d "zfs"; then
+								stop_requested=1
+								break
+							fi
 						done
+						test $stop_requested == 1 && continue
+
 						pool_type="pool"
 						if  echo "$(dialog_res)" | grep " " >/dev/null; then
 							# always # assume mirror configuration if 2+ disks selected.
@@ -4317,12 +4331,16 @@ while true; do
 								break
 						    fi
 						done
-
 						test $stop_requested == 1 && continue
 
+						stop_requested=0
 						for d in $result_disk_spare; do
-							autopart $d "zfs"
+							if ! autopart $d "zfs"; then
+								stop_requested=1
+								break
+							fi
 						done
+						test $stop_requested == 1 && continue
 
 						result_disk_spare=`echo $result_disk_spare|sed -e 's/\(c[0-9]\+[^[:space:]]*d[0-9]\+\)/\1s0/g'`
 
