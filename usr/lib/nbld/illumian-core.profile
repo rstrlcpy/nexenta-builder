@@ -100,8 +100,8 @@ library-security-libassuan \
 terminal-dialog \
 terminal-screen \
 \
-runtime-perl-510-extra \
 runtime-perl-512 \
+runtime-perl \
 library-perl-5-sun-solaris \
 "
 
@@ -117,6 +117,9 @@ system-kernel \
 system-kernel-platform \
 package-dpkg-apt \
 package-dpkg \
+runtime-perl-512 \
+runtime-perl \
+library-perl-5-sun-solaris \
 "
 
 #
@@ -195,6 +198,9 @@ mdisco \
 shell-expect \
 service-file-system-nfs \
 system-file-system-nfs \
+runtime-perl-512 \
+runtime-perl \
+library-perl-5-sun-solaris \
 "
 
 
@@ -585,7 +591,10 @@ driver-xvm-pv \
 # STAGE0_EXCLUDE_DEBS -
 #
 #
-STAGE0_EXCLUDE_DEBS=""
+STAGE0_EXCLUDE_DEBS="\
+runtime-perl-510 \
+runtime-perl-510-extra \
+"
 
 #
 # LOCAL_ARCHIVE_DEBS - the content of on-ISO APT repository
