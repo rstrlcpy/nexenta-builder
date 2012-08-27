@@ -170,6 +170,8 @@ system-network \
 system-network-routing \
 system-scheduler-fss \
 service-storage-avs-cache-management \
+service-storage-media-volume-manager \
+service-storage-removable-media \
 storage-svm \
 system-library-iconv-utf-8 \
 media-cdrtools \
