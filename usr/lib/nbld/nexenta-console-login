@@ -70,7 +70,7 @@ if test ! -f $FIRSTSTART; then
 
 		/sync
 		/eject -f cdrom 2>/dev/null
-		/echo "Rebooting into new root filesystem after 10 sec ..." >/dev/msglog
+		/echo "Rebooting into new root filesystem in 10 sec ..." >/dev/msglog
 		/sleep 10
 
 		/sbin/uadmin 2 8 2>/dev/null

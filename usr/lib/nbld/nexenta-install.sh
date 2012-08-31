@@ -3441,9 +3441,8 @@ aborted_sig()
 
 aborted()
 {
-	oneline_msgbox Warning "Installation has been interrupted."
+	oneline_msgbox Warning "Installation has been interrupted. Press Ok to power off"
 	cleanup
-	screen -X quit >/dev/null
 	poweroff
 }
 
