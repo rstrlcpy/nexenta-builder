@@ -648,6 +648,8 @@ driver-usb \
 driver-x11-winlock \
 driver-x11-xsvc \
 driver-xvm-pv \
+driver-storage-pvscsi \
+driver-network-vmxnet3s \
 "
 
 #
