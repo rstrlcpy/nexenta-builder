@@ -12,7 +12,6 @@ nlm-com \
 
 source $NBLD_LIBDIR/nza4.profile
 
-ks_license_text="nlm-com:/etc/license_text"
 ks_disable_services="\
 system/zones:default \
 system/zones-monitoring:default \

@@ -162,6 +162,7 @@ nmv \
 chpasswd \
 runtime-tcl-8 \
 mapmgr \
+nexenta-eula \
 $NM_PLUGINS \
 "
 
@@ -684,6 +685,7 @@ longdesc1=""
 profiles="1"
 dot_screenrc="nza-dot-screenrc"
 apt_sources="http://nexenta.com/apt-nza siddy-stable main contrib non-free"
+ks_license_text="nexenta-eula:/etc/nexenta-eula"
 ks_min_mem_required="768"
 ks_rootdisk_type="zfs"
 ks_rootdisks=
