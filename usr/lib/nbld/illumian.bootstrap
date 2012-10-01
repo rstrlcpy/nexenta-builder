@@ -118,6 +118,8 @@ second_stage_install () {
 				 compress-bzip2 \
 				 compress-gzip \
 				 system-library-gcc-44-runtime \
+				 library-gcc-libstdc++ \
+				 library-gcc-libgcc \
 				 library-libxml2 \
 				 package-dpkg \
 				 library-ncurses \
