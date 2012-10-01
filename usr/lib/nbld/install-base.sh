@@ -69,6 +69,8 @@ library-pth \
 library-readline \
 crypto-gnupg \
 system-library-gcc-44-runtime \
+library-gcc-libstdc++ \
+library-gcc-libgcc \
 library-gmp \
 system-data-keyboard-keytables \
 system-library \
@@ -88,6 +90,8 @@ sunwcsd \
 library-libtecla \
 system-library \
 system-library-gcc-44-runtime \
+library-gcc-libstdc++ \
+library-gcc-libgcc \
 library-zlib \
 system-boot-grub \
 system-library-math \
