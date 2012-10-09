@@ -331,6 +331,9 @@ function customize_mini
 	# Make sure root special device is known at boot time
 	echo "/devices/ramdisk:a\t-\t/\t\tufs\t1\tno\trw" >> $1/etc/vfstab
 
+	# Increases amount of MSI a PCI can allocate. Fixes #11636
+	echo "set ddi_msix_alloc_limit=6" >> $1/etc/system
+
 	# Get us as much swap space as possible
 	echo "set tmpfs:tmpfs_minfree=1" >> $1/etc/system
 	echo "set swapfs_minfree=0x40" >> $1/etc/system
