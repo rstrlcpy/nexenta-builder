@@ -23,3 +23,4 @@ network/dns/multicast:default \
 application/font/fc-cache:default \
 system/device/audio:default \
 "
+product_type='Enterprise Edition'

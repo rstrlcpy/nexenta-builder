@@ -461,8 +461,9 @@ EOF
 	chmod 755 $rootdir/usr/bin/tetris
 	cp -f $customdir/nexenta-log $rootdir/usr/bin/install-log
 	chmod 755 $rootdir/usr/bin/install-log
+	test "x$product_type" != "x" && product_title="$product_title $product_type"
+	test "x$sw_version" != "x" && os_version="$os_version ($sw_version)"
 	screen_title="$product_title $os_version"
-	test "x$sw_version" != "x" && screen_title="$screen_title, software $sw_version"
 	cat << EOF > $rootdir/root/.screenrc
 bindkey -k k1 select 1
 bindkey -k k2 select 2

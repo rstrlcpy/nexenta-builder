@@ -442,11 +442,6 @@ function customize_mini
 	# Set up dialog RC file for InstallCD
 	if [ "${MODE}" != "livecd" ]; then
 		cp ${DIALOGRC} $1/root/.dialogrc
-		if cat ${FAKEROOT}/${REPO}/defaults | grep "nlm-eval:" >/dev/null; then
-			sed -i -e "s/NexentaStor/Community Edition/" $1/root/.screenrc
-		elif cat ${FAKEROOT}/${REPO}/defaults | grep "nlm-com:" >/dev/null; then
-			sed -i -e "s/NexentaStor/Enterprise Edition/" $1/root/.screenrc
-		fi
 	fi
 
 	cp ${CUSTOM_DIR}/DRIVER-INSTALL.txt $1/
