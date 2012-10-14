@@ -6,7 +6,7 @@
 # REQ_DEBS
 #
 #
-REQ_DEBS="pciutils nexenta-keyring zlib1g gnupg sunwpiclr sunwdtrc sunwdtrp sunwrcmdc nexenta-sunw libssl1.0.0h libssh-4"
+REQ_DEBS="pciutils nexenta-keyring zlib1g gnupg sunwpiclr sunwdtrc sunwdtrp sunwrcmdc nexenta-sunw libssl1.0.0h libssh-4 nexenta-vmxnet3 nexenta-pvscsi"
 
 #
 # MINIMAL_CMN_DEBS
