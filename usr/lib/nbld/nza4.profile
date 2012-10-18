@@ -651,6 +651,7 @@ driver-x11-xsvc \
 driver-xvm-pv \
 driver-storage-pvscsi \
 driver-network-vmxnet3s \
+driver-ipmi \
 "
 
 #
