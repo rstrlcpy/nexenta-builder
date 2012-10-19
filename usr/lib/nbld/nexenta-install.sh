@@ -3673,10 +3673,13 @@ extract_lic_text()
 
 create_swap()
 {
+	local pagesize=$(test -f /usr/bin/pagesize && pagesize)
+	pagesize=${pagesize:-4096}
+
 	for sswap in `echo $slice_swap|sed -e "s/ /\n/g"`; do
 		if boolean_check $_KS_autopart_use_swap_zvol; then
 			local rawswap="/dev/zvol/dsk/$sswap";
-			zfs create -V ${AUTOPART_SWAP_SIZE}m $sswap
+			zfs create -V ${AUTOPART_SWAP_SIZE}m -o volblocksize=$pagesize $sswap
 			swap -a $rawswap 2>/dev/null 1>&2
 		else
 			swap -a $sswap 2>/dev/null 1>&2
