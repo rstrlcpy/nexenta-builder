@@ -262,6 +262,7 @@ shell-expect \
 library-perl-5-compiler-kit \
 service-file-system-nfs \
 system-file-system-nfs \
+release-name \
 "
 
 
