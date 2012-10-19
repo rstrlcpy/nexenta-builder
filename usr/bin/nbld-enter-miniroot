@@ -30,5 +30,4 @@
 test ! -f /etc/nbld.cf && echo "Error: can't find /etc/nbld.cf" && exit 1
 . /etc/nbld.cf
 
-NLU_ENABLED=1 LD_NOAUXFLTR=1 LD_LIBRARY_PATH=/tmp/nlulib \
-D_LIBRARY_PATH_64=/tmp/nlulib/64 chroot $NBLD_MINIROOT
+LD_NOAUXFLTR=1 chroot $NBLD_MINIROOT

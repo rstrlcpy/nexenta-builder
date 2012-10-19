@@ -1,5 +1,5 @@
 #
-# Copyright 2005 Nexenta Systems, Inc.  All rights reserved.
+# Copyright 2010 Nexenta Systems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 # $Id: hdd_grub_menu.txt 17654 2006-03-10 20:40:48Z mac $
@@ -10,7 +10,7 @@ default 0
 
 # menu timeout in second before default OS is booted
 # set to -1 to wait for user input
-timeout 30
+timeout 10
 
 # To enable grub serial console to ttya uncomment the following lines
 # and comment out the splashimage line below
@@ -48,14 +48,18 @@ background 0000FF
 #
 #   kernel /platform/i86pc/multiboot <boot-args> -B prop1=val1,prop2=val2,...
 
-title Install NexentaStor Community Edition (__autoversion__)
-	root (cd)
-	kernel$ /platform/i86pc/kernel/$ISADIR/unix -B atapi-cd-dma-enabled=0
-	module$ /platform/i86pc/$ISADIR/miniroot
-title Memory Subsystem Test (Hardware Verification)
-	root (cd)
-	kernel /boot/memtest86+.bin
-title Recovery Console
-	root (cd)
-	kernel$ /platform/i86pc/kernel/unix -B atapi-cd-dma-enabled=0 -s
-	module$ /platform/i86pc/miniroot
+# __date__
+#---------- ADDED BY BOOTADM - DO NOT EDIT ----------
+title NexentaStor Community Edition [Auto-detect 32-bit/64-bit]
+	findroot (pool_syspool,0,a)
+	bootfs syspool/rootfs-nmu-000
+	kernel$ /platform/i86pc/kernel/$ISADIR/unix
+	module$ /platform/i86pc/$ISADIR/boot_archive
+#---------------------END BOOTADM--------------------
+#---------- ADDED BY BOOTADM - DO NOT EDIT ----------
+title NexentaStor Community Edition [Safe Mode, 32-bit]
+	findroot (pool_syspool,0,a)
+	bootfs syspool/rootfs-nmu-000
+	kernel$ /platform/i86pc/kernel/unix -s
+	module$ /boot/x86.miniroot-safe
+#---------------------END BOOTADM--------------------

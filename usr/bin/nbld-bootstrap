@@ -6,7 +6,7 @@
 #
 # It uses three main components:
 #    1) apt
-#    2) debarchiver
+#    2) reprepro
 #    3) debootstrap
 #
 # Therefore it is required those packages to be pre-installed.
@@ -37,12 +37,11 @@
 #
 ##############################################################################
 
-test ! -f /etc/nbld.cf && echo "Error: can't find /etc/nbld.cf" && exit 1
+test -f /etc/nbld.cf || (echo "Error: can't find /etc/nbld.cf" && exit 1)
 . /etc/nbld.cf
 
 build_number="$NBLD_BUILD_NUMBER"       # Nightly build number
 repo="$NBLD_REPO"		        # APT repository (must exist)
-repolock="$repo/dists/debarchiver.lock" # APT debarchiver's lock
 dist="$NBLD_DISTRO-$NBLD_BRANCH"	# IN repository's distribution name
 distro=$NBLD_DISTRO
 rootdir="$NBLD_MINIROOT"                # bootstrap output
@@ -84,9 +83,13 @@ EOF
 	exit 1
 }
 fatal() { echo "Error: $1"; exit 1; }
-cleanup() { if test "x$repolock_set" = xyes; then rmdir $repolock 2>/dev/null;
-	repolock_set=no; echo "Lock $repolock removed"; fi; umount /etc/mnttab 2>/dev/null; }
+cleanup() {
+	umount /etc/mnttab 2>/dev/null || true
+	umount $rootdir/proc 2>/dev/null || true
+}
+abort() { echo "Error: subprocess exited with non-zero status: $?"; exit 1; }
 trap "cleanup" INT EXIT TERM QUIT
+trap "abort" ERR
 
 UUID=`id -u`
 #if [ `whoami` != "root" ]; then
@@ -106,7 +109,6 @@ while test "x$1" != x; do
 done
 
 # Recalculate some globals
-repolock="$repo/dists/debarchiver.lock"
 install_profile="$rootdir$hddrepo/defaults"
 environ="$rootdir /usr/bin/env -i PATH=/usr/gnu/bin:/usr/bin:/sbin:/usr/sbin LOGNAME=root HOME=/root TERM=xterm"
 
@@ -116,8 +118,6 @@ if mount | grep $rootdir 1>/dev/null 2>&1 && test -d $rootdir; then
 fi
 
 test -d $rootdir && umount $rootdir/proc 2>/dev/null
-
-export customdir=$customdir
 
 if test -f $customdir/$mode.profile; then
 	. $customdir/$mode.profile
@@ -197,8 +197,6 @@ BOOTSTRAP_REQUIRED=`cat $pkglist`
 BOOTSTRAP_REQUIRED="$BOOTSTRAP_REQUIRED $STAGE0_DEBS"
 
 	export BOOTSTRAP_REQUIRED BOOTSTRAP_BASE
-#	while ! mkdir $repolock 2>/dev/null; do sleep 1; done
-#	repolock_set=yes
 	/bin/bash debootstrap \
 		    --verbose \
 		    --arch solaris-i386 \
@@ -211,11 +209,9 @@ BOOTSTRAP_REQUIRED="$BOOTSTRAP_REQUIRED $STAGE0_DEBS"
 		    $repo \
 		    $customdir/$distro.bootstrap ||
 		fatal "couldn't complete bootstrap of the InstallCD archive"
-#	repolock_set=no
-#	rmdir $repolock 2>/dev/null
-	echo $BOOTSTRAP_REQUIRED > /tmp/required-$profile1.lst
-	echo $BOOTSTRAP_BASE > /tmp/base-$profile1.lst
-	cp $rootdir/debootstrap/debpaths /tmp
+	echo $BOOTSTRAP_REQUIRED > $NBLD_TMP/required-$profile1.lst
+	echo $BOOTSTRAP_BASE > $NBLD_TMP/base-$profile1.lst
+	cp $rootdir/debootstrap/debpaths $NBLD_TMP/
 	mv $rootdir/var/cache/apt/archives $rootdir/var/cache/stage0_archive
 	rm -rf $rootdir/var/cache/apt
 	rm -rf $rootdir/debootstrap
@@ -223,9 +219,9 @@ BOOTSTRAP_REQUIRED="$BOOTSTRAP_REQUIRED $STAGE0_DEBS"
 	if test "x$HDD_EXCLUDE_DEBS" != x; then
 		for excl_deb in `echo $HDD_EXCLUDE_DEBS|sed -e "s/ /\n/"`; do
 			find $rootdir/var/cache/stage0_archive -name "$excl_deb""_*.deb" | xargs rm
-			sed -e "/^$excl_deb/d" -i /tmp/required-$profile1.lst
-			sed -e "/^$excl_deb/d" -i /tmp/base-$profile1.lst
-			sed -e "/^$excl_deb/d" -i /tmp/debpaths
+			sed -e "/^$excl_deb/d" -i $NBLD_TMP/required-$profile1.lst
+			sed -e "/^$excl_deb/d" -i $NBLD_TMP/base-$profile1.lst
+			sed -e "/^$excl_deb/d" -i $NBLD_TMP/debpaths
 		done
 	fi
 fi
@@ -277,16 +273,14 @@ BOOTSTRAP_REQUIRED=$(cat $pkglist|egrep "^Required:"|sed -e "s/^Required: //")
 BOOTSTRAP_BASE=$(cat $pkglist|egrep "^Base:"|sed -e "s/^Base: //")
 echo "Selected `echo $BOOTSTRAP_REQUIRED|sed -e "s/\s/\n/g"|wc -l` required packages"
 echo "Selected `echo $BOOTSTRAP_BASE|sed -e "s/\s/\n/g"|wc -l` base packages"
-echo $BOOTSTRAP_REQUIRED > /tmp/required-$profile0.lst
-echo $(echo $BOOTSTRAP_BASE_MINIMAL $BOOTSTRAP_BASE | sed -e "s/\s/\n/g"| sort -u) > /tmp/base-$profile0.lst
+echo $BOOTSTRAP_REQUIRED > $NBLD_TMP/required-$profile0.lst
+echo $BOOTSTRAP_BASE_MINIMAL $BOOTSTRAP_BASE | sed -e "s/\s/\n/g" | sort -u > $NBLD_TMP/base-$profile0.lst
 cat << EOF
 ------------------------------------------------------------------------------
 Bootstrapping $mode CD media...
 ------------------------------------------------------------------------------
 EOF
 export BOOTSTRAP_REQUIRED BOOTSTRAP_BASE
-#while ! mkdir $repolock 2>/dev/null; do sleep 1; done
-#repolock_set=yes
 export FAKEROOT=yes
 /bin/bash /usr/sbin/debootstrap \
 	    --verbose \
@@ -298,8 +292,6 @@ export FAKEROOT=yes
 	    $rootdir \
 	    $repo \
 	    $customdir/$distro.bootstrap || fatal "couldn't complete bootstrap"
-#repolock_set=no
-#rmdir $repolock 2>/dev/null
 if test "x$mode" = "xinstall"; then
 	echo "Creating local repository... "
 	test -d $rootdir$hddrepo || mkdir $rootdir$hddrepo
@@ -314,22 +306,21 @@ Description: Installation repository
 EOF
 
 	for file in `ls -1 $rootdir/var/cache/stage0_archive/*.deb`; do
-		reprepro --ignore=wrongdistribution -b $rootdir$hddrepo --export=never includedeb installation $file >/tmp/reprepro.log.$$ 2>&1 || exit 1
+		reprepro --ignore=wrongdistribution -b $rootdir$hddrepo --export=never includedeb installation $file >$NBLD_TMP/reprepro.log.$$ 2>&1 || exit 1
 	done
 	reprepro -b $rootdir$hddrepo export installation || exit 1
 
 	rm -rf $rootdir/var/cache/stage0_archive
 	rm -f $rootdir/var/cache/apt/archive/*.deb
-	rm -rf /var/cache/debarchiver/cache.db
 
 	echo "deb file://$hddrepo installation main contrib non-free" > \
 		$rootdir/etc/apt/sources.list
 
 	echo "Copying pre-generated filelists... "
-	mv /tmp/required-$profile1.lst $rootdir$hddrepo
-	mv /tmp/base-$profile1.lst $rootdir$hddrepo
-	mv /tmp/required-$profile0.lst $rootdir$hddrepo
-	mv /tmp/base-$profile0.lst $rootdir$hddrepo
+	cp $NBLD_TMP/required-$profile1.lst $rootdir$hddrepo
+	cp $NBLD_TMP/base-$profile1.lst $rootdir$hddrepo
+	cp $NBLD_TMP/required-$profile0.lst $rootdir$hddrepo
+	cp $NBLD_TMP/base-$profile0.lst $rootdir$hddrepo
 	rm -f $install_profile
 	test "x$ks_scripts" != x && cat $customdir/$ks_scripts >> $install_profile
 	echo "_KS_product_title='$product_title'" >> $install_profile
@@ -376,6 +367,7 @@ EOF
 	test "x$ks_autopart_use_swap_zvol" != x && echo "_KS_autopart_use_swap_zvol='$ks_autopart_use_swap_zvol'" >> $install_profile
 	test "x$ks_need_network" != x && echo "_KS_need_network='$ks_need_network'" >> $install_profile
 	test "x$ks_disable_motd" != x && echo "_KS_disable_motd='$ks_disable_motd'" >> $install_profile
+	test "x$ks_disable_services" != x && echo "_KS_disable_services='$ks_disable_services'" >> $install_profile
 	if test "x$ks_startup_wizard" != x; then
 	        echo "_KS_startup_wizard='$ks_startup_wizard'" >> $install_profile
 	        test "x$ks_show_wizard_license" != x && echo "_KS_show_wizard_license='$ks_show_wizard_license'" >> $install_profile
@@ -469,10 +461,9 @@ EOF
 	chmod 755 $rootdir/usr/bin/tetris
 	cp -f $customdir/nexenta-log $rootdir/usr/bin/install-log
 	chmod 755 $rootdir/usr/bin/install-log
-	cp -f $customdir/tail.pl $rootdir/usr/bin
-	chmod 755 $rootdir/usr/bin/tail.pl
+	test "x$product_type" != "x" && product_title="$product_title $product_type"
+	test "x$sw_version" != "x" && os_version="$os_version ($sw_version)"
 	screen_title="$product_title $os_version"
-	test "x$sw_version" != "x" && screen_title="$screen_title, software $sw_version"
 	cat << EOF > $rootdir/root/.screenrc
 bindkey -k k1 select 1
 bindkey -k k2 select 2
@@ -512,9 +503,6 @@ EOF
 		fi
 	done
 fi
-
-# do not trigger postinst.sh
-rm -f $rootdir/tmp/nlubin/env.sh
 
 if test "x$mode" = xbase; then
 	# do some base mode customizations
@@ -556,7 +544,7 @@ echo \"Warning: Fake start-stop-daemon called, doing nothing\"" > "$rootdir/sbin
 	chroot $environ apt-get -y install g++
 	chroot $environ apt-get -y install developer-linker
 	chroot $environ apt-get -y install devscripts
-	chroot $environ apt-get -y install debarchiver
+	chroot $environ apt-get -y install reprepro
 	chroot $environ apt-get -y install gnome-devel
 	chroot $environ apt-get -y install kdelibs-bin
 	chroot $environ apt-get -y install libqt3-mt-dev
@@ -613,7 +601,6 @@ for pid in `ps -ef | awk '/devfsadmd/ {print $2}'`; do
 	fi
 done
 sleep 2
-umount $rootdir/devices 2>/dev/null 1>&2
 
 rm -f $rootdir/etc/zfs/zpool.cache
 
@@ -630,11 +617,11 @@ find $rootdir/usr -type d -name ".svn" | xargs rm -rf
 if test "x$debug" != xyes; then
 	rm -f $rootdir/var/cache/apt/archives/*.deb
 	rm -f $rootdir/var/cache/apt/*.bin
-	latest_log=/tmp/debootstrap.log.latest.$$
+	latest_log=$NBLD_TMP/debootstrap.log.latest.$$
 	cp $rootdir/debootstrap/debootstrap.log $latest_log
 	rm -rf $rootdir/debootstrap
 else
-	latest_log=/tmp/debootstrap.log.latest.$$
+	latest_log=$NBLD_TMP/debootstrap.log.latest.$$
 	cp $rootdir/debootstrap/debootstrap.log $latest_log
 	rm -rf $rootdir/debootstrap
 fi

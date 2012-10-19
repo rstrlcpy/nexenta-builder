@@ -22,31 +22,26 @@ work_out_debs () {
     return 0
 }
 
-install_class_action_files () {
-	alien_pkgs=`find $TARGET/var/lib/dpkg/alien/ -maxdepth 1 -mindepth 1 -type d`
-	for pkg in $alien_pkgs; do
-		if [ ! -d $pkg/reloc ]; then
-			continue
-		fi
-		cd $pkg/reloc
-		file_list=`find . -maxdepth 1 -mindepth 1 -type d`
-		if [ $? -eq 0 ]; then
-			info CONFIGURING "Setting up %s..." `basename $pkg`
-			for file in $file_list; do
-				cp -a $file $TARGET/
-			done
-		fi
-		cd - > /dev/null 2>&1
-	done
-}
-
 first_stage_install () {
 
-    mkdir -p $TARGET/var/lib/dpkg/{updates,info,alien,alternatives,parts,triggers}
+    mkdir -p $TARGET/var/lib/dpkg/{updates,info,alternatives,parts,triggers}
 
     touch $TARGET/var/lib/dpkg/{status,available,lock}
 
-    for pkg in sunwcsd sunwcs shell-bash archiver-gnu-tar package-dpkg library-zlib compress-gzip compress-bzip2 system-library system-library-math; do
+    core_pkgs_0="sunwcsd \
+                 sunwcs \
+                 shell-bash \
+                 archiver-gnu-tar \
+                 file-gnu-coreutils \
+                 file-gnu-findutils \
+                 package-dpkg \
+                 library-zlib \
+                 compress-gzip \
+                 compress-bzip2 \
+                 system-library \
+                 system-library-math"
+
+    for pkg in $core_pkgs_0; do
         extract $pkg
     done
 

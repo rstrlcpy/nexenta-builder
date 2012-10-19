@@ -61,6 +61,7 @@ package-dpkg-apt \
 text-gnu-sed \
 text-gnu-grep \
 file-gnu-coreutils \
+file-gnu-findutils \
 package-dpkg \
 library-security-libgpg-error \
 system-library-security-libgcrypt \
@@ -77,6 +78,8 @@ system-library-storage-scsi-plugins \
 compress-bzip2 \
 system-library-math \
 runtime-perl-510-extra \
+library-perl-5-text-wrapi18n \
+library-perl-5-text-charwidth \
 library-zlib"
 
 #runtime-perl-510 \
@@ -129,7 +132,6 @@ function dpkginst
 
 mkdir -p $TARGET/var/lib/dpkg/updates
 mkdir -p $TARGET/var/lib/dpkg/info
-mkdir -p $TARGET/var/lib/dpkg/alien
 mkdir -p $TARGET/var/lib/dpkg/alternatives
 mkdir -p $TARGET/var/lib/dpkg/parts
 mkdir -p $TARGET/var/lib/dpkg/triggers

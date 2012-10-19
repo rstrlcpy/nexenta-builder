@@ -1,5 +1,5 @@
 #
-# NexentaStor 4.x Profile (Open Storage Appliance)
+# illumian 1.0 Profile
 #
 
 #
@@ -93,7 +93,7 @@ text-gawk \
 archiver-gnu-tar \
 system-library-gcc-44-runtime \
 package-dpkg \
-nexenta-keyring \
+icore-keyring \
 crypto-gnupg \
 package-dpkg-apt \
 library-security-libassuan \
@@ -101,72 +101,9 @@ terminal-dialog \
 terminal-screen \
 \
 runtime-perl-512 \
-runtime-perl-510-extra \
+runtime-perl \
 library-perl-5-sun-solaris \
-library-perl-5-text-wrapi18n \
-library-perl-5-text-charwidth \
 "
-
-NM_STUFF="\
-developer-versioning-rcs \
-library-perl-5-archive-zip \
-library-perl-5-carp-assert \
-library-perl-5-class-methodmaker \
-library-perl-5-compiler-kit \
-library-perl-5-crypt-des \
-library-perl-5-dbd-sqlite \
-library-perl-5-digest-hmac \
-library-perl-5-digest-sha1 \
-library-perl-5-email-date-format \
-library-perl-5-file-which \
-library-perl-5-getopt-argvfile \
-library-perl-5-io-socket-ssl \
-library-perl-5-json \
-library-perl-5-mailtools \
-library-perl-5-module-scandeps \
-library-perl-5-net-dbus \
-library-perl-5-net-libidn \
-library-perl-5-par \
-library-perl-5-search-xapian \
-library-perl-5-dtrace \
-library-perl-5-term-readkey \
-library-perl-5-test-pod \
-library-perl-5-text-asciitable \
-library-perl-5-time-modules \
-library-perl-5-xml-libxml \
-library-perl-5-xml-namespacesupport \
-library-perl-5-xml-sax \
-library-perl-5-xml-twig \
-library-python-2-sqlobject-26 \
-library-python-2-turbogears-26 \
-library-python-2-turbokid-26 \
-library-xapian \
-network-sshpass \
-network-rrs \
-library-xapian-omega \
-\
-library-perl-5-xml-parser \
-library-perl-5-database \
-library-python-2-setuptools-26 \
-library-python-2-simplejson-26 \
-terminal-dialog \
-terminal-screen \
-\
-nbs \
-nms \
-nmdtrace \
-nmu \
-nmc \
-nmv-theme-nexentaplain \
-nmv \
-chpasswd \
-runtime-tcl-8 \
-mapmgr \
-nexenta-eula \
-$NM_PLUGINS \
-"
-
-REQ_DEBS="$REQ_DEBS"
 
 #
 # MINIMAL_CMN_DEBS
@@ -180,6 +117,9 @@ system-kernel \
 system-kernel-platform \
 package-dpkg-apt \
 package-dpkg \
+runtime-perl-512 \
+runtime-perl \
+library-perl-5-sun-solaris \
 "
 
 #
@@ -257,12 +197,12 @@ terminal-dialog \
 terminal-screen \
 hddisco \
 mdisco \
-machinesig \
 shell-expect \
-library-perl-5-compiler-kit \
 service-file-system-nfs \
 system-file-system-nfs \
-release-name \
+runtime-perl-512 \
+runtime-perl \
+library-perl-5-sun-solaris \
 "
 
 
@@ -483,7 +423,6 @@ locale-uk \
 locale-ur \
 locale-vi \
 locale-zh-cn \
-locale-zh-cn-extra \
 locale-zh-hk \
 locale-zh-mo \
 locale-zh-sg \
@@ -495,7 +434,6 @@ locale-zh-tw \
 #
 #
 STAGE0_HDD_END="\
-package-dpkg-apt-clone \
 service-network-ntp \
 system-library-dbus \
 library-nspr \
@@ -503,7 +441,6 @@ security-sudo \
 package-svr4 \
 library-perl-5-sun-solaris \
 file-gnu-findutils \
-$NM_STUFF \
 $LOCALES
 "
 
@@ -650,16 +587,16 @@ driver-usb \
 driver-x11-winlock \
 driver-x11-xsvc \
 driver-xvm-pv \
-driver-storage-pvscsi \
-driver-network-vmxnet3s \
-driver-ipmi \
 "
 
 #
 # STAGE0_EXCLUDE_DEBS -
 #
 #
-STAGE0_EXCLUDE_DEBS=""
+STAGE0_EXCLUDE_DEBS="\
+runtime-perl-510 \
+runtime-perl-510-extra \
+"
 
 #
 # LOCAL_ARCHIVE_DEBS - the content of on-ISO APT repository
@@ -674,50 +611,23 @@ LOCAL_ARCHIVE_DEBS=""
 # (see nbld-bootstrap source code for details)
 #
 company_title="Nexenta"
-product_title="NexentaStor"
-model_id="STOR_UNIFIED"
-model_name="Open Storage Appliance"
-os_version="4.0"
-sw_version="4.0.0"
+product_title="illumian"
+os_version="v1.0"
+sw_version="1.0a5"
+sw_description="(based on illumos)"
 rootsize1="1024"
-profile1="appliance"
-lines1="10000"
-desc1="NexentaStor Appliance installation profile"
+profile1="illumian-core"
+lines1="3000"
+desc1="Standard iCore installation profile"
 longdesc1=""
 profiles="1"
-dot_screenrc="nza-dot-screenrc"
-apt_sources="http://nexenta.com/apt-nza siddy-stable main contrib non-free"
-ks_license_text="nexenta-eula:/etc/nexenta-eula.txt"
-ks_min_mem_required="768"
+release_file="core-release.txt"
+apt_sources="http://apt.illumian.org/illumian illumian-unstable main contrib non-free"
+ks_min_mem_required="256"
 ks_rootdisk_type="zfs"
 ks_rootdisks=
-ks_disable_motd="1"
 ks_auto_reboot="0"
 ks_use_grub_mbr="1"
 ks_autopart_manual="0"
-ks_welcome_head="1"
-ks_welcome_ks="0"
-ks_check_upgrade="0"
-ks_scripts="nza-ks-scripts"
-ks_detect_removable="0"
-ks_root_passwd="nexenta"
-ks_user_name="admin"
-ks_user_passwd="nexenta"
-ks_hostname="myhost"
-ks_domainname="mydomain.local"
-ks_iface_ip0="random"
-ks_iface_mask0="255.255.255.0"
-ks_ifaces="0"
-ks_need_network="1"
 ks_autopart_use_swap_zvol="1"
-ks_autopart_export_home="0"
-ks_gateway="0"
-ks_dns1="0"
-ks_dns2="0"
-ks_use_dhcp="0"
-ks_use_ipv6="0"
-ks_time_zone="US/Pacific"
-ks_kbd_type="US-English"
-ks_startup_wizard="nza-wizard.nmc"
-ks_show_wizard_license="1"
 mode_type="install"

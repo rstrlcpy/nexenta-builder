@@ -37,7 +37,6 @@ var
 #!var/lib/dpkg
 !var/cache/man
 !var/lib/scrollkeeper
-!var/lib/dpkg/alien
 usr
 !usr/nexenta
 !usr/include

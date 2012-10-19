@@ -127,6 +127,11 @@ result_disk_spare=""
 
 auto_install=""
 MACHINESIG=""
+
+# Variables that used to configure destination SMF
+SVCENV=""
+SVCCFG=""
+
 dialog_cmd() {
 	echo dialog\ --backtitle\ $TITLE-Installer-$MACHINESIG\ --keep-window\ --colors
 }
@@ -959,6 +964,8 @@ autopart_zfs()
 	local config=$2
 	local s0_slices=$(echo $autodisks|sed -e "s/\(d[0-9]\+\)/\1s0/g")
 	local hot_spare_cmd="spare $3"
+	local zpool_version="$(extract_args zpool-version)"
+	local zpool_prop=''
 
 	zfs_root_slices=$s0_slices
 
@@ -966,12 +973,18 @@ autopart_zfs()
 
 	test ! -d $TMPDEST && mkdir -p $TMPDEST
 
+	if echo $zpool_version | grep -Eq '^[0-9]{1,2}$'; then
+	    if [ $zpool_version -ge '1' -a $zpool_version -le '28' ]; then
+		zpool_prop="-o version=$zpool_version"
+	    fi
+	fi
+
 	test $config = "pool" && config=""
 	test "x$3" = "x" && hot_spare_cmd=""
-	if ! zpool create -f -O compression=on -m /syspool $ZFS_ROOTPOOL $config $s0_slices $hot_spare_cmd 2>$AUTOPART_FMT_ERR; then
+	if ! zpool create -f -O compression=on $zpool_prop -m /syspool $ZFS_ROOTPOOL $config $s0_slices $hot_spare_cmd 2>$AUTOPART_FMT_ERR; then
 		zpool destroy $ZFS_ROOTPOOL 2>/dev/null
 		sync
-		if ! zpool create -f -O compression=on -m /syspool $ZFS_ROOTPOOL $config $s0_slices $hot_spare_cmd 2>$AUTOPART_FMT_ERR; then
+		if ! zpool create -f -O compression=on $zpool_prop -m /syspool $ZFS_ROOTPOOL $config $s0_slices $hot_spare_cmd 2>$AUTOPART_FMT_ERR; then
 			oneline_msgbox Error "Cannot create ZFS 'root' pool using disk(s) $disks with error:\n\n $(cat $AUTOPART_FMT_ERR)\n"
 			return 1
 		fi
@@ -1016,6 +1029,7 @@ autopart()
 	local root_min_bytes=$(($root_min_size*1024*1024))
 	local swap_size=$AUTOPART_SWAP_SIZE
 	local swap_bytes=$(($swap_size*1024*1024))
+	local partition_max_bytes="2000000000000"
 
 	if test $(($cyls*$csize)) -lt $root_min_bytes; then
 		oneline_msgbox Error "Disk size is too small and cannot even fit a root partition.\nNeeded at least $root_min_size MB."
@@ -1025,6 +1039,14 @@ autopart()
 	if test $(($cyls*$csize)) -lt $(($root_min_bytes+$swap_bytes)); then
 		oneline_msgbox Error "Disk size is too small.\nNeeded at least $(($root_min_size+$swap_size)) MB."
 		return 1
+	fi
+
+	if test $(($cyls*$csize)) -gt $partition_max_bytes; then
+		if ! oneline_Yn_ask "Disk size $(basename $phys) exceeds maximum partition size of 2TB and will be shrunk. Proceed?"; then
+		    return 1
+		fi
+		cyls=$(($partition_max_bytes/$csize))
+		oneline_info "Auto partitioning '$autodisk $result_disk_spare' for '$ROOTDISK_TYPE' configuration..."
 	fi
 
 	if ! fdisk -B $phys >/dev/null 2>&1; then
@@ -1042,7 +1064,17 @@ autopart()
 
 	if test $fstype = "zfs"; then
 		zpool create -f -m legacy tmp $d || printlog "Cannot create temporary ZFS pool on disk '$d'"
-		zpool destroy tmp || printlog "Cannot destroy temporary ZFS pool on disk '$d'"
+
+		counter=0
+		while ! zpool destroy -f tmp; do
+		    counter=$(( $counter + 1 ))
+		    sleep 5
+		    if [ $counter -eq 10 ]; then
+			printlog "Cannot destroy temporary ZFS pool on disk '$d'"
+			break
+		    fi
+		done
+
 		if ! zdb -l /dev/rdsk/${d}s0 | grep devid >/dev/null; then
 			printlog "Warning! Disk '$d' is not labeled correctly: devid is missing"
 		fi
@@ -2351,6 +2383,26 @@ configure_language()
 	language=$(dialog_res)
 }
 
+set_passwd()
+{
+	local username=$1
+	local passwd=$2
+
+	# Delete any existing password
+	passwd -d "$username" 2>/dev/null >/dev/null
+
+	# Remove LD_LIBRARY_PATH after gcc on illumian has been fixed
+	LD_LIBRARY_PATH=/usr/gcc/4.4/lib expect <<SET_PASSWD
+log_user 0
+spawn passwd "$username"
+expect {
+	Enter existing login password: {send \r ; exp_continue}
+	New Password: {send "$passwd\r" ; exp_continue}
+	eof exit
+}
+SET_PASSWD
+}
+
 set_language()
 {
 
@@ -2609,7 +2661,7 @@ customize_hdd_install()
 	cp /etc/passwd /etc/passwd.$$
 	cp /etc/shadow /etc/shadow.$$
 
-	echo "root:$pass1" | chpasswd
+	set_passwd root $pass1
 	mv $TMPDEST/etc/passwd /tmp/passwd.tmp
 	cat /etc/passwd | grep ^root: > $TMPDEST/etc/passwd
 	cat /tmp/passwd.tmp | grep ^root: -v >> $TMPDEST/etc/passwd
@@ -2680,7 +2732,7 @@ customize_hdd_install()
 	cp /etc/passwd /etc/passwd.$$
 	cp /etc/shadow /etc/shadow.$$
 
-	echo "$user:$pass1" | chpasswd
+	set_passwd "$user" "$pass1"
 	cat /etc/passwd | egrep "^$user" >> $TMPDEST/etc/passwd
 	cat /etc/shadow | egrep "^$user" |  $AWK -F: '{print $1":"$2":"$3"::::::"}' >> $TMPDEST/etc/shadow
 
@@ -2819,6 +2871,9 @@ customize_common()
 
 	cp /etc/rtc_config $TMPDEST/etc/rtc_config
 	printlog "Installed /etc/rtc_config"
+
+	echo "* Do not use SMP during core dumping" >> $TMPDEST/etc/system
+	echo "set dump_plat_mincpu = 0" >> $TMPDEST/etc/system
 }
 
 customize_hdd_upgrade()
@@ -3116,6 +3171,36 @@ vfstab_setup()
 	fi
 }
 
+setup_smf_environment_variables()
+{
+	local DBFILE=${TMPDEST}/etc/svc/repository.db
+	local CONFIGD=${TMPDEST}/lib/svc/bin/svc.configd
+	local DTD=${TMPDEST}/usr/share/lib/xml/dtd/service_bundle.dtd.1
+	SVCCFG=${TMPDEST}/usr/sbin/svccfg
+	SVCENV="PKG_INSTALL_ROOT=${TMPDEST} SVCCFG_DTD=${DTD} \
+	SVCCFG_REPOSITORY=${DBFILE} SVCCFG_CONFIGD_PATH=${CONFIGD}"
+}
+
+configure_coreadm()
+{
+	# Core files will be stored on separately dataset
+	zfs create $ZFS_ROOTPOOL/cores
+	zfs set mountpoint=/var/cores syspool/cores
+	zfs set quota=1g syspool/cores
+
+	# First need to import coreadm manifest to change its properties
+	eval "${SVCENV} ${SVCCFG} import ${TMPDEST}/lib/svc/manifest/system/coreadm.xml"
+
+	# Enable syslog to track when global cores are dumped
+	eval "${SVCENV} ${SVCCFG} -s svc:/system/coreadm:default setprop config_params/global_log_enabled = boolean: true >/dev/null 2>&1"
+
+	# Core file will contains all possible information
+	eval "${SVCENV} ${SVCCFG} -s svc:/system/coreadm:default setprop config_params/global_content = astring: all >/dev/null 2>&1"
+
+	# Core files will be dumped as core.<Executable file name>.<PID>.<timestamp> to /var/cores directory
+	eval "${SVCENV} ${SVCCFG} -s svc:/system/coreadm:default setprop config_params/global_pattern = astring: '/var/cores/core.%f.%p.%t' >/dev/null 2>&1"
+}
+
 configure_repository()
 {
 	plat='none'
@@ -3125,14 +3210,8 @@ configure_repository()
 	chown root:sys ${TMPDEST}/etc/svc/repository.db
 
 	CWD=`pwd`
-    DBFILE=${TMPDEST}/etc/svc/repository.db
-	CONFIGD=${TMPDEST}/lib/svc/bin/svc.configd
-	SVCCFG=${TMPDEST}/usr/sbin/svccfg
-	DTD=${TMPDEST}/usr/share/lib/xml/dtd/service_bundle.dtd.1
-	SVCENV="PKG_INSTALL_ROOT=${TMPDEST} SVCCFG_DTD=${DTD} \
-	SVCCFG_REPOSITORY=${DBFILE} SVCCFG_CONFIGD_PATH=${CONFIGD}"
 
-    cd ${TMPDEST}/etc/svc/profile
+	cd ${TMPDEST}/etc/svc/profile
 
 	rm -f inetd_services.xml >/dev/null 2>&1
 	$LN -fs inetd_generic.xml inetd_services.xml >/dev/null 2>&1
@@ -3151,9 +3230,70 @@ configure_repository()
 
 	eval "${SVCENV} ${SVCCFG} apply ${TMPDEST}/etc/svc/profile/platform.xml >/dev/null 2>&1"
 
-    cd $CWD
+	cd $CWD
 
 	printlog "SMF repository configured at /etc/svc/repository.db"
+}
+
+disable_services()
+{
+    local profile_name="${TMPDEST}/etc/svc/profile/site/nexenta_disabled.xml"
+    local svclist="$_KS_disable_services"
+    local license=$(cat <<EOF
+<!--\n
+CDDL HEADER START\n\n
+
+The contents of this file are subject to the terms of the\n
+Common Development and Distribution License (the "License").\n
+You may not use this file except in compliance with the License.\n\n
+
+You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE\n
+or http://www.opensolaris.org/os/licensing.\n
+See the License for the specific language governing permissions\n
+and limitations under the License.\n\n
+
+When distributing Covered Code, include this CDDL HEADER in each\n
+file and include the License file at usr/src/OPENSOLARIS.LICENSE.\n
+If applicable, add the following below this CDDL HEADER, with the\n
+fields enclosed by brackets "[]" replaced with your own identifying\n
+information: Portions Copyright [yyyy] [name of copyright owner]\n\n
+
+CDDL HEADER END\n\n
+
+Copyright 2010 Sun Microsystems, Inc.  All rights reserved.\n
+Use is subject to license terms.\n\n
+
+Default service profile, containing a typical set of active service\n
+instances.\n\n
+
+NOTE:  Service profiles delivered by this package are not editable,\n
+and their contents will be overwritten by package or patch\n
+operations, including operating system upgrade.  Make customizations\n
+in a different file.  The paths, /etc/svc/profile/site.xml and\n
+/var/svc/profile/site.xml, are distinguished location for site-specific\n
+service profiles, treated otherwise equivalently to this file.\n\n
+
+Service profile to deactivate the following service\n\n
+-->\n
+EOF
+)
+
+    echo "<?xml version='1.0'?>" > $profile_name
+    echo "<!DOCTYPE service_bundle SYSTEM '/usr/share/lib/xml/dtd/service_bundle.dtd.1'>" >> $profile_name
+    echo -e $license >> $profile_name
+    echo "<service_bundle type='profile' name='default'>" >> $profile_name
+
+    for i in $svclist; do 
+	svc=`echo $i | cut -d':' -f1`
+	instance=`echo $i | cut -d':' -f2`
+
+	echo -e "\t<service name='${svc}' version='1' type='service'>" >> $profile_name
+	echo -e "\t\t<instance name='${instance}' enabled='false'/>" >> $profile_name
+	echo -e "\t</service>" >> $profile_name
+    done
+
+    echo "</service_bundle>" >> $profile_name
+
 }
 
 update_boot_archive()
@@ -3221,6 +3361,11 @@ customize_sources()
 		echo "deb-src $_KS_plugin_sources" >> $APTSOURCES
 	fi
 	rm -f "$TMPDEST/var/lib/apt/lists/*" 2>/dev/null 1>&2
+
+	# Disable downloading of Translation's indexes
+	# because our APT does not contains Translation section
+	echo 'Acquire::Languages "none";' > $TMPDEST/etc/apt/apt.conf.d/99translation
+
 	printlog "Installed /etc/apt/sources.list"
 }
 
@@ -3296,10 +3441,9 @@ aborted_sig()
 
 aborted()
 {
-	oneline_msgbox Warning "Installation has been interrupted."
+	oneline_msgbox Warning "Installation has been interrupted. Press Ok to power off"
 	cleanup
-	screen -X quit >/dev/null
-	exit 1
+	poweroff
 }
 
 kbd_layouts()
@@ -3789,10 +3933,13 @@ extract_lic_text()
 
 create_swap()
 {
+	local pagesize=$(test -f /usr/bin/pagesize && pagesize)
+	pagesize=${pagesize:-4096}
+
 	for sswap in `echo $slice_swap|sed -e "s/ /\n/g"`; do
 		if boolean_check $_KS_autopart_use_swap_zvol; then
 			local rawswap="/dev/zvol/dsk/$sswap";
-			zfs create -V ${AUTOPART_SWAP_SIZE}m $sswap
+			zfs create -V ${AUTOPART_SWAP_SIZE}m -o volblocksize=$pagesize $sswap
 			swap -a $rawswap 2>/dev/null 1>&2
 		else
 			swap -a $sswap 2>/dev/null 1>&2
@@ -4068,13 +4215,11 @@ if test "x$_KS_license_text" != x -a \
 	if ! test -f "$lic_text"; then
 		lic_text=$(extract_lic_text $_KS_license_text)
 	fi
-	
+
 	while true; do
 	    if test -f "$lic_text" && \
 		! show_license "$lic_text"; then
-		$DIALOG \
-		--defaultno \
-		--yesno "Are you sure you want to interrupt NexentaStor installation and power off the computer" 0 0 && poweroff
+		oneline_yN_ask "Are you sure you want to interrupt NexentaStor installation and power off the computer" && aborted
 	    else
 		break
 	    fi
@@ -4150,7 +4295,7 @@ while true; do
 						fi
 					fi
 					printlog "Selected '$ROOTDISK_TYPE' configuration."
-					oneline_info "Auto partitioning '$autodisk' for '$ROOTDISK_TYPE' configuration..."
+					oneline_info "Auto partitioning '$autodisk $result_disk_spare' for '$ROOTDISK_TYPE' configuration..."
 					if test "x$ROOTDISK_TYPE" = xufs; then
 						find_zpool_by_disk_and_destroy $autodisk || continue
 						if ! autopart $autodisk "ufs"; then
@@ -4165,14 +4310,42 @@ while true; do
 							fi
 						done
 						test $stop_requested == 1 && continue
+
+						stop_requested=0
 						for d in `echo $autodisk|sed -e "s/ /\n/g"`; do
-							autopart $d "zfs"
+							if ! autopart $d "zfs"; then
+								stop_requested=1
+								break
+							fi
 						done
+						test $stop_requested == 1 && continue
+
 						pool_type="pool"
 						if  echo "$(dialog_res)" | grep " " >/dev/null; then
 							# always # assume mirror configuration if 2+ disks selected.
 							pool_type="mirror"
 						fi
+
+						stop_requested=0
+						for d in $result_disk_spare; do
+						    if ! find_zpool_by_disk_and_destroy $d; then
+								stop_requested=1
+								break
+						    fi
+						done
+						test $stop_requested == 1 && continue
+
+						stop_requested=0
+						for d in $result_disk_spare; do
+							if ! autopart $d "zfs"; then
+								stop_requested=1
+								break
+							fi
+						done
+						test $stop_requested == 1 && continue
+
+						result_disk_spare=`echo $result_disk_spare|sed -e 's/\(c[0-9]\+[^[:space:]]*d[0-9]\+\)/\1s0/g'`
+
 						autopart_zfs "$autodisk" $pool_type "$result_disk_spare" || continue
 					fi
 				else
@@ -4239,7 +4412,10 @@ done
 customize_X
 
 oneline_info "Preparing System Services..."
+setup_smf_environment_variables
 configure_repository
+configure_coreadm
+disable_services
 
 install_grub
 

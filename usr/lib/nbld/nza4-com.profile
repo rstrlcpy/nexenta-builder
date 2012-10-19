@@ -10,6 +10,17 @@ remote-rep \
 nlm-com \
 "
 
-source $customdir/nza4.profile
+source $NBLD_LIBDIR/nza4.profile
 
-ks_license_text="nlm-com:/etc/license_text"
+ks_disable_services="\
+system/zones:default \
+system/zones-monitoring:default \
+network/shell:default \
+network/login:rlogin \
+network/finger:default \
+network/telnet:default \
+network/dns/multicast:default \
+application/font/fc-cache:default \
+system/device/audio:default \
+"
+product_type='Enterprise Edition'

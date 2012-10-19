@@ -56,26 +56,26 @@ if test ! -f $FIRSTSTART; then
 
 	if test -f $TRYREBOOT; then
 		touch $FIRSTSTART
-		cp /usr/sbin/uadmin /uadmin
-#		cp /usr/sun/bin/sleep /sleep
-		cp /usr/bin/sleep /sleep
-		cp /usr/bin/eject /eject
-#		cp /usr/sun/bin/true /true
-		cp /usr/bin/true /true
-		cp /usr/lib/libvolmgt.so.1 /lib
-		cp /usr/lib/libshell.so.1 /lib
-		cp /usr/lib/libast.so.1 /lib
-		cp /usr/lib/libcmd.so.1 /lib
-		cp /usr/lib/libdll.so.1 /lib
-		cp /usr/lib/libsum.so.1 /lib
-		cp /usr/lib/libsmbios.so.1 /lib
-		sync
-		reboot -qn 2>/dev/null &
-		/sleep 1
+
+		for UTIL in uadmin sleep echo eject sync
+		do
+			FPATH_UTIL=`which $UTIL`
+			if echo $FPATH_UTIL | grep /usr/ 2>&1 >/dev/null ; then
+				cp $FPATH_UTIL /
+			fi
+			if ldd $FPATH_UTIL | grep /usr/ 2>&1 >/dev/null ; then
+				ldd $FPATH_UTIL | grep /usr/ | awk '{print "cp "$3" /lib/"}' | /bin/sh
+			fi
+		done
+
+		/sync
 		/eject -f cdrom 2>/dev/null
-		echo "Rebooting into new root filesystem now..." >/dev/msglog
-		while /true; do /sleep 1; done
-		/uadmin 2 8 2>/dev/null
+		/echo "Rebooting into new root filesystem in 10 sec ..." >/dev/msglog
+		/sleep 10
+
+		/sbin/uadmin 2 8 2>/dev/null
+
+		exit 0
 	fi
 
 	echo >/dev/msglog
