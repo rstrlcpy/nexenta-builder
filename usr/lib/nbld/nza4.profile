@@ -41,6 +41,7 @@ network-ssh-ssh-key \
 print-lp-print-client-commands \
 release-name \
 runtime-python-26 \
+runtime-python-27 \
 runtime-tcl-8 \
 runtime-tk-8 \
 service-fault-management \
