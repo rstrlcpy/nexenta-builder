@@ -653,6 +653,9 @@ driver-xvm-pv \
 driver-storage-pvscsi \
 driver-network-vmxnet3s \
 driver-ipmi \
+network-aoe-initiator \
+network-aoe-target \
+storage-aoe \
 "
 
 #
