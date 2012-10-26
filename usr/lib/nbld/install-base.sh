@@ -78,6 +78,7 @@ system-library-storage-scsi-plugins \
 compress-bzip2 \
 system-library-math \
 runtime-perl-510-extra \
+runtime-python-27 \
 library-perl-5-text-wrapi18n \
 library-perl-5-text-charwidth \
 library-zlib"
