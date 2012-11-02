@@ -20,7 +20,7 @@ timeout 45
 #   terminal serial
 
 # Uncomment the following line to enable GRUB splashimage on console
-splashimage=/boot/grub/splash.xpm.gz
+splashimage=/boot/grub/nexenta.xpm.gz
 background 0000FF
 
 # To chainload another OS

@@ -7,7 +7,6 @@
 # It uses three main components:
 #    1) apt
 #    2) reprepro
-#    3) debootstrap
 #
 # Therefore it is required those packages to be pre-installed.
 # Apt repository is also required.
@@ -45,7 +44,7 @@ repo="$NBLD_REPO"		        # APT repository (must exist)
 dist="$NBLD_DISTRO-$NBLD_BRANCH"	# IN repository's distribution name
 distro=$NBLD_DISTRO
 rootdir="$NBLD_MINIROOT"                # bootstrap output
-hddrepo="/usr/nexenta"	        	# APT repository for HDD mode
+hddrepo="/usr/nexenta/repo"		# APT repository for HDD mode
 customdir="$NBLD_LIBDIR"	        # directory with data files
 extra_dir="/var/lib/nbld"		# directory with extra data files
 debug="$NBLD_DEBUG"		        # default no debug mode
@@ -54,6 +53,7 @@ grub_hdd_menu_file="${mode}_hdd_grub-menu.txt"
 install_script=nexenta-install.sh
 install_profile="$rootdir$hddrepo/defaults"
 pkglist="$NBLD_TMP/debootstrap-pkglist.tmp"
+srclist="/etc/apt/sources.list"
 
 product_title="NexentaOS"
 apt_sources="http://apt.gnusolaris.org elatte-testing main contrib non-free"
@@ -82,20 +82,29 @@ Usage: nbld-bootstrap [--rootdir dir] [--debug] [--repo dir] [--dist name]
 EOF
 	exit 1
 }
-fatal() { echo "Error: $1"; exit 1; }
-cleanup() {
-	umount /etc/mnttab 2>/dev/null || true
-	umount $rootdir/proc 2>/dev/null || true
+
+fatal() {
+    echo "Error: $1"; exit 1; 
 }
-abort() { echo "Error: subprocess exited with non-zero status: $?"; exit 1; }
+
+cleanup() {
+    if [ -f "$srclist.nbld" ]; then
+	mv -f "$srclist.nbld" "$srclist"
+    fi
+    echo "Ok"
+}
+
+abort() { 
+    echo "Error: subprocess exited with non-zero status: $?"; exit 1; 
+}
+
 trap "cleanup" INT EXIT TERM QUIT
 trap "abort" ERR
 
 UUID=`id -u`
-#if [ `whoami` != "root" ]; then
 if [ $UUID != "0" ]; then
 	echo "Insufficient privileges to run $0"
-	exit 1
+	abort
 fi
 
 while test "x$1" != x; do
@@ -116,8 +125,6 @@ if mount | grep $rootdir 1>/dev/null 2>&1 && test -d $rootdir; then
 	echo "Error: $rootdir is busy. has loopback mounted dirs."
 	exit 1
 fi
-
-test -d $rootdir && umount $rootdir/proc 2>/dev/null
 
 if test -f $customdir/$mode.profile; then
 	. $customdir/$mode.profile
@@ -151,8 +158,7 @@ else
 fi
 
 echo "Selected Mode is $mode"
-export BOOTSTRAP_EXTRA_DEBS="$LOCAL_ARCHIVE_DEBS ${REQ_DEBS}"
-export STAGE0_DEBS="$STAGE0_DEBS ${REQ_DEBS} $STAGE0_APTINST $STAGE0_CD $STAGE0_DRIVERS $STAGE0_CD_END $STAGE0_HDD_END"
+export STAGE0_DEBS="$STAGE0_DEBS $REQ_DEBS $STAGE0_APTINST $STAGE0_CD $STAGE0_DRIVERS $STAGE0_CD_END $STAGE0_HDD_END"
 
 # From now on selected do 'install' or 'livecd' type
 mode=$mode_type
@@ -168,135 +174,46 @@ echo "Cleaning up $rootdir ... "
 test -d $rootdir && rm -rf $rootdir
 mkdir -p $rootdir
 
-if test "x$mode" = xinstall; then
-	cat << EOF
-------------------------------------------------------------------------------
-Generating InstallCD filelist...
-------------------------------------------------------------------------------
-EOF
-export BOOTSTRAP_REQUIRED="package-dpkg package-dpkg-apt"
-
-	pkglist="$NBLD_TMP/debootstrap-pkglist.installcd.tmp"
-	/bin/bash debootstrap \
-		    --verbose \
-		    --arch solaris-i386 \
-		    --components=main,contrib,non-free \
-		    --resolve-deps \
-		    --print-debs \
-		    $dist \
-		    $rootdir \
-		    $repo \
-		    $customdir/$distro.bootstrap >$pkglist ||
-		fatal "couldn't generate package list for InstallCD"
-	cat << EOF
-------------------------------------------------------------------------------
-Downloading package archive...
-------------------------------------------------------------------------------
-EOF
-BOOTSTRAP_REQUIRED=`cat $pkglist`
-BOOTSTRAP_REQUIRED="$BOOTSTRAP_REQUIRED $STAGE0_DEBS"
-
-	export BOOTSTRAP_REQUIRED BOOTSTRAP_BASE
-	/bin/bash debootstrap \
-		    --verbose \
-		    --arch solaris-i386 \
-		    --components=main,contrib,non-free \
-		    --keep-debootstrap-dir \
-		    --resolve-deps \
-		    --download-only \
-		    $dist \
-		    $rootdir \
-		    $repo \
-		    $customdir/$distro.bootstrap ||
-		fatal "couldn't complete bootstrap of the InstallCD archive"
-	echo $BOOTSTRAP_REQUIRED > $NBLD_TMP/required-$profile1.lst
-	echo $BOOTSTRAP_BASE > $NBLD_TMP/base-$profile1.lst
-	cp $rootdir/debootstrap/debpaths $NBLD_TMP/
-	mv $rootdir/var/cache/apt/archives $rootdir/var/cache/stage0_archive
-	rm -rf $rootdir/var/cache/apt
-	rm -rf $rootdir/debootstrap
-	export BOOTSTRAP_EXTRA_DEBS="$STAGE0_DEBS"
-	if test "x$HDD_EXCLUDE_DEBS" != x; then
-		for excl_deb in `echo $HDD_EXCLUDE_DEBS|sed -e "s/ /\n/"`; do
-			find $rootdir/var/cache/stage0_archive -name "$excl_deb""_*.deb" | xargs rm
-			sed -e "/^$excl_deb/d" -i $NBLD_TMP/required-$profile1.lst
-			sed -e "/^$excl_deb/d" -i $NBLD_TMP/base-$profile1.lst
-			sed -e "/^$excl_deb/d" -i $NBLD_TMP/debpaths
-		done
-	fi
+if [ -f $srclist ]; then
+    cp -f $srclist "$srclist.nbld"
 fi
 
-cat << EOF
-------------------------------------------------------------------------------
-Generating a $profile0 profile filelist...
-------------------------------------------------------------------------------
-EOF
-pkglist="$NBLD_TMP/debootstrap-pkglist.profile0.tmp"
-export BOOTSTRAP_REQUIRED= BOOTSTRAP_BASE=$MINIMAL_CMN_DEBS
-export FAKEROOT=yes
-/bin/bash debootstrap \
-	    --verbose \
-	    --arch solaris-i386 \
-	    --components=main,contrib,non-free \
-	    --keep-debootstrap-dir \
-	    --resolve-deps \
-	    --print-debs \
-	    $dist \
-	    $rootdir \
-	    $repo \
-	    $customdir/$distro.bootstrap >$pkglist ||
-	fatal "couldn't complete a $mode-mode filelist generation phase"
-BOOTSTRAP_BASE_MINIMAL=$(cat $pkglist|egrep "^Base:"|sed -e "s/^Base: //")
-echo "Selected `echo $BOOTSTRAP_BASE|sed -e "s/\s/\n/g"|wc -l` base packages"
+echo "deb $NBLD_REPO base-unstable/4.0 main contrib non-free" > $srclist
+echo "deb $NBLD_REPO kernel-unstable/4.0 main contrib non-free" >> $srclist
+echo "deb $NBLD_REPO plugins-unstable/4.0 main contrib non-free" >> $srclist
+echo "deb $NBLD_REPO nza-unstable/4.0 main contrib non-free" >> $srclist
+
+APT_GET="apt-get -R $rootdir"
+
+if test "x$mode" = xinstall; then
 
 cat << EOF
 ------------------------------------------------------------------------------
-Generating a $mode-mode  filelist...
+Downloading package archives...
 ------------------------------------------------------------------------------
 EOF
-pkglist="$NBLD_TMP/debootstrap-pkglist.mode.tmp"
-export BOOTSTRAP_REQUIRED= BOOTSTRAP_BASE=
-export FAKEROOT=yes
-/bin/bash debootstrap \
-	    --verbose \
-	    --arch solaris-i386 \
-	    --components=main,contrib,non-free \
-	    --keep-debootstrap-dir \
-	    --resolve-deps \
-	    --print-debs \
-	    $dist \
-	    $rootdir \
-	    $repo \
-	    $customdir/$distro.bootstrap >$pkglist ||
-	fatal "couldn't complete a $mode-mode filelist generation phase"
-BOOTSTRAP_REQUIRED=$(cat $pkglist|egrep "^Required:"|sed -e "s/^Required: //")
-BOOTSTRAP_BASE=$(cat $pkglist|egrep "^Base:"|sed -e "s/^Base: //")
-echo "Selected `echo $BOOTSTRAP_REQUIRED|sed -e "s/\s/\n/g"|wc -l` required packages"
-echo "Selected `echo $BOOTSTRAP_BASE|sed -e "s/\s/\n/g"|wc -l` base packages"
-echo $BOOTSTRAP_REQUIRED > $NBLD_TMP/required-$profile0.lst
-echo $BOOTSTRAP_BASE_MINIMAL $BOOTSTRAP_BASE | sed -e "s/\s/\n/g" | sort -u > $NBLD_TMP/base-$profile0.lst
+
+BOOTSTRAP_REQUIRED="$BOOTSTRAP_REQUIRED $STAGE0_DEBS"
+
+echo "$APT_GET update"
+$APT_GET update || abort
+echo "$APT_GET install -d -y --force-yes $BOOTSTRAP_REQUIRED"
+$APT_GET install -d -y --force-yes $BOOTSTRAP_REQUIRED || fatal "Can't download package archives"
+
+fi
+
+if test "x$mode" = "xinstall"; then
+
 cat << EOF
 ------------------------------------------------------------------------------
-Bootstrapping $mode CD media...
+Generating the installation repository...
 ------------------------------------------------------------------------------
 EOF
-export BOOTSTRAP_REQUIRED BOOTSTRAP_BASE
-export FAKEROOT=yes
-/bin/bash /usr/sbin/debootstrap \
-	    --verbose \
-	    --arch solaris-i386 \
-	    --components=main,contrib,non-free \
-	    --keep-debootstrap-dir \
-	    --resolve-deps \
-	    $dist \
-	    $rootdir \
-	    $repo \
-	    $customdir/$distro.bootstrap || fatal "couldn't complete bootstrap"
-if test "x$mode" = "xinstall"; then
-	echo "Creating local repository... "
-	test -d $rootdir$hddrepo || mkdir $rootdir$hddrepo
-	mkdir $rootdir$hddrepo/conf
-	cat << EOF > $rootdir$hddrepo/conf/distributions
+
+	test -d $rootdir$hddrepo || mkdir -p $rootdir$hddrepo
+	test -d $rootdir$hddrepo/conf || mkdir -p $rootdir$hddrepo/conf
+
+cat << EOF > $rootdir$hddrepo/conf/distributions
 Origin: Installation APT
 Codename: installation
 Architectures: solaris-i386
@@ -305,22 +222,21 @@ DebIndices: Packages Release . .gz .bz2
 Description: Installation repository
 EOF
 
-	for file in `ls -1 $rootdir/var/cache/stage0_archive/*.deb`; do
-		reprepro --ignore=wrongdistribution -b $rootdir$hddrepo --export=never includedeb installation $file >$NBLD_TMP/reprepro.log.$$ 2>&1 || exit 1
+	for file in `ls $rootdir/var/cache/apt/archives/*.deb`; do
+		reprepro \
+		--ignore=wrongdistribution \
+		-b $rootdir$hddrepo \
+		--export=never includedeb installation $file >> \
+		$NBLD_TMP/reprepro.log.$$ 2>&1 || fatal "Can't build the installation repository"
 	done
-	reprepro -b $rootdir$hddrepo export installation || exit 1
+	reprepro -b $rootdir$hddrepo export installation >> \
+	$NBLD_TMP/reprepro.log.$$ 2>&1 || fatal "Can't export indexes for the installation repository"
 
-	rm -rf $rootdir/var/cache/stage0_archive
 	rm -f $rootdir/var/cache/apt/archive/*.deb
 
 	echo "deb file://$hddrepo installation main contrib non-free" > \
 		$rootdir/etc/apt/sources.list
 
-	echo "Copying pre-generated filelists... "
-	cp $NBLD_TMP/required-$profile1.lst $rootdir$hddrepo
-	cp $NBLD_TMP/base-$profile1.lst $rootdir$hddrepo
-	cp $NBLD_TMP/required-$profile0.lst $rootdir$hddrepo
-	cp $NBLD_TMP/base-$profile0.lst $rootdir$hddrepo
 	rm -f $install_profile
 	test "x$ks_scripts" != x && cat $customdir/$ks_scripts >> $install_profile
 	echo "_KS_product_title='$product_title'" >> $install_profile
@@ -408,34 +324,23 @@ EOF
 
 	echo "_KS_inst_dist='installation'" >> $install_profile
 
-	echo "Initial local repository APT update ... "
+cat << EOF
+------------------------------------------------------------------------------
+Initial local repository APT update ... 
+------------------------------------------------------------------------------
+EOF
 
-	unset FAKEROOT
-	DEBCONF_FRONTEND=noninteractive
-	DEBCONF_NONINTERACTIVE_SEEN=true
-	export DEBCONF_FRONTEND DEBCONF_NONINTERACTIVE_SEEN
-
-	chroot $environ mount -F proc /proc
-
-	chroot $environ apt-key update
-	chroot $environ apt-get update
-	chroot $environ apt-get -y install -f --force-yes
-
-#	# Hack needed to install x11* packages.
-	chroot $environ apt-key update
-	chroot $environ rm -f /etc/apt/apt.conf.d/01icore
-	chroot $environ apt-get -o APT::Immediate-Configure=off -y install -f --force-yes
-	chroot $environ rm -f /etc/apt/apt.conf.d/01icore
-#	# End of hack
-
-	APTCMD="apt-get -y --force-yes install"
 	FILESCD="$STAGE0_CD $STAGE0_DRIVERS $STAGE0_CD_END"
-	chroot $environ $APTCMD $FILESCD
-
+	
+	$APT_GET update
+	$APT_GET install -m -y --force-yes sunwcsd
+	$APT_GET install -m -y --force-yes sunwcs shell-bash package-dpkg package-dpkg-apt
+	$APT_GET install -m -y --force-yes $FILESCD
+	$APT_GET install -f -y --force-yes
+	$APT_GET clean
+	
 	# save list of packages for APT installation
-	echo "$STAGE0_APTINST $STAGE0_DRIVERS $STAGE0_HDD_END $ADD_PLUGINS" > $rootdir$hddrepo/aptinst.lst
-
-	chroot $environ umount /proc
+	echo "$REQ_DEBS $STAGE0_APTINST $STAGE0_DRIVERS $STAGE0_CD_END $STAGE0_HDD_END" > $rootdir$hddrepo/aptinst.lst
 
 	echo "Preparing hwdisco ... "
 	cp $customdir/hwdisco.pl $rootdir$hddrepo/hwdisco
@@ -471,7 +376,7 @@ bindkey -k k3 select 3
 startup_message off
 sorendition 04
 hardstatus lastline "%{kB} %w %= | $screen_title"
-screen -t Installer 1 /usr/nexenta/nexenta-install.sh
+screen -t Installer 1 $hddrepo/nexenta-install.sh
 screen -t Shell     2
 screen -t Log       3 /usr/bin/install-log
 select 1
@@ -480,9 +385,6 @@ EOF
 	mv $rootdir/etc/syslog.conf $rootdir/etc/syslog.conf.unmodified
 	cp $customdir/nexenta-syslog.conf $rootdir/etc/syslog.conf
 	chmod 644 $rootdir/etc/syslog.conf
-	echo "export TERMINFO=/usr/share/lib/terminfo" >> $rootdir/root/.bash_profile
-	echo "export TERM=sun-color" >> $rootdir/root/.bash_profile
-
 	cp -f $customdir/install-base.sh $rootdir$hddrepo/install-base.sh
 	chmod 755 $rootdir$hddrepo/install-base.sh
 
@@ -504,92 +406,6 @@ EOF
 	done
 fi
 
-if test "x$mode" = xbase; then
-	# do some base mode customizations
-	baserepo=$repo
-	cat << EOF > $rootdir/etc/apt/sources.list
-deb file://$baserepo/ $dist main non-free contrib
-deb-src file://$baserepo/ $dist main non-free contrib
-EOF
-	mv "$rootdir/sbin/start-stop-daemon" "$rootdir/sbin/start-stop-daemon.REAL"
-
-	echo \
-"#!/bin/sh
-
-echo
-echo \"Warning: Fake start-stop-daemon called, doing nothing\"" > "$rootdir/sbin/start-stop-daemon"
-	chmod 755 "$rootdir/sbin/start-stop-daemon"
-	cp /usr/bin/hackzone-build $rootdir/usr/bin
-	cp /usr/bin/hackzone-env.sh $rootdir/usr/bin
-	mkdir -p $rootdir/usr/local/bin
-	cp $customdir/gpg-nexenta $rootdir/usr/local/bin
-	tar -C $rootdir/root -xf $customdir/gnupg-info.tar
-	chown -R root $rootdir/root/.gnupg
-	mkdir -p $rootdir${baserepo}
-	mount -F lofs -O $baserepo $rootdir${baserepo}
-	readline_common_deb=`find $baserepo/dists/$dist -name "readline-common_*.deb"`
-	chroot $environ dpkg -i $readline_common_deb
-	libreadline_deb=`find $baserepo/dists/$dist -name "libreadline5_*.deb"`
-	chroot $environ dpkg -i $libreadline_deb
-	gnupg_deb=`find $baserepo/dists/$dist -name "gnupg_*.deb"`
-	chroot $environ dpkg -i $gnupg_deb
-	chroot $environ apt-get update
-	chroot $environ apt-get -y install debhelper
-	chroot $environ apt-get -y install nexenta-keyring
-	chroot $environ apt-get -y install subversion
-	chroot $environ apt-get -y install dpkg-dev
-	chroot $environ apt-get -y install gcc
-	chroot $environ apt-get -y install vim
-	chroot $environ apt-get -y install cpp
-	chroot $environ apt-get -y install g++
-	chroot $environ apt-get -y install developer-linker
-	chroot $environ apt-get -y install devscripts
-	chroot $environ apt-get -y install reprepro
-	chroot $environ apt-get -y install gnome-devel
-	chroot $environ apt-get -y install kdelibs-bin
-	chroot $environ apt-get -y install libqt3-mt-dev
-	chroot $environ apt-get -y install kde-devel
-	chroot $environ apt-get -y install libarts1-dev
-	chroot $environ apt-get -y install libartsc0-dev
-	chroot $environ apt-get -y install lib64gcc1
-	chroot $environ apt-get -y install dbs
-	chroot $environ apt-get -y install python-sqlite
-	chroot $environ apt-get -y install diffstat
-	chroot $environ apt-get -y install liburi-perl
-	chroot $environ apt-get -y install dput
-	chroot $environ apt-get -y install zlib1g
-	cp /etc/dput.cf $rootdir/etc
-	sed -i "s/\#PS1/PS1/" $rootdir/root/.bashrc
-	echo "ps -ef >/dev/null 2>&1 || mount /proc" >> $rootdir/root/.bashrc
-	echo "82.211.81.182   gb.archive.ubuntu.com" >> $rootdir/etc/hosts
-	echo "82.211.81.182   archive.ubuntu.com" >> $rootdir/etc/hosts
-	echo "213.133.98.126  packages.ubuntu.com" >> $rootdir/etc/hosts
-	chroot $environ apt-get -y install wget
-	umount $rootdir${baserepo} 2>/dev/null
-else
-	if test "x$STAGE0_EXCLUDE_DEBS" != x -a "x$mode" != xlivecd; then
-
-		echo "Remove excluded packages ... "
-
-		# save some bins...
-		cp $rootdir/usr/bin/rmformat /tmp/rmformat.saved
-		cp $rootdir/usr/lib/libsmedia.so.1 /tmp/libsmedia.so.1.saved
-		cp -ar $rootdir/usr/lib/smedia /tmp/smedia.saved
-
-		# remove what is not needed...
-		chroot $environ mount /proc
-		chroot $environ apt-get -y remove $STAGE0_EXCLUDE_DEBS
-		if ! test -f $rootdir/usr/bin/vi; then
-			ln -s vedit $rootdir/usr/bin/vi
-		fi
-		chroot $environ umount /proc 2>/dev/null
-
-		# restore bins...
-		mv /tmp/rmformat.saved $rootdir/usr/bin/rmformat
-		mv /tmp/libsmedia.so.1.saved $rootdir/usr/lib/libsmedia.so.1
-		mv /tmp/smedia.saved $rootdir/usr/lib/smedia
-	fi
-fi
 
 echo "Polishing ... "
 
@@ -613,26 +429,14 @@ sed -i -e "/\/dev\/sysmsg/d" $rootdir/etc/syslog.conf
 rm -f $rootdir/*.err
 rm -f $rootdir/*.orig
 rm -f $rootdir/core
-find $rootdir/usr -type d -name ".svn" | xargs rm -rf
-if test "x$debug" != xyes; then
-	rm -f $rootdir/var/cache/apt/archives/*.deb
-	rm -f $rootdir/var/cache/apt/*.bin
-	latest_log=$NBLD_TMP/debootstrap.log.latest.$$
-	cp $rootdir/debootstrap/debootstrap.log $latest_log
-	rm -rf $rootdir/debootstrap
-else
-	latest_log=$NBLD_TMP/debootstrap.log.latest.$$
-	cp $rootdir/debootstrap/debootstrap.log $latest_log
-	rm -rf $rootdir/debootstrap
-fi
+
 # Cleanup logs and extra files
 rm -rf $rootdir/var/cache/debconf
 rm -rf $rootdir/var/log/bootstrap.log
 rm -rf $rootdir/var/log/dpkg.log
 rm -rf $rootdir/var/lib/dpkg/info
-rm -f $rootdir/var/cache/apt/archives/*.deb
+rm -f  $rootdir/var/cache/apt/archives/*.deb
 rm -rf $rootdir/tmp/*
-echo "NOTE: log file saved at $latest_log"
 
 crle -u -c $rootdir/var/ld/ld.config -l /lib:/usr/lib:/usr/gnu/lib
 crle -64 -u -c $rootdir/var/ld/64/ld.config -l /lib/64:/usr/lib/64:/usr/gnu/lib/64
@@ -640,4 +444,4 @@ crle -64 -u -c $rootdir/var/ld/64/ld.config -l /lib/64:/usr/lib/64:/usr/gnu/lib/
 devfsadm -r $rootdir -u
 
 CWD=`dirname $0`
-$CWD/nbld-livecd || exit 1
+$CWD/nbld-livecd || abort
