@@ -7,6 +7,10 @@
 #
 # Generic Nexenta installation with removable drive support
 
+CUSTOM_REPO=$1
+REPO=${CUSTOM_REPO:=/usr/nexenta/repo}
+MSIG_REPO="/usr/nexenta"
+
 pkill -9 dialog 2>/dev/null
 clear
 echo "Initializing Installer. Please wait..."
@@ -20,7 +24,7 @@ exec 2>&3
 printlog() {
 	echo "* $*" >&3
 	if test "x$auto_install" = "x1"; then
-		echo "PXE-INST-MSG: $*" | /usr/nexenta/remote-logger "--host=$loghost" "--port=$logport"
+		echo "PXE-INST-MSG: $*" | $REPO/remote-logger "--host=$loghost" "--port=$logport"
 	fi
 }
 
@@ -36,8 +40,8 @@ export PS1="\W> "
 #export TERMINFO=/usr/share/lib/terminfo
 export TERMINFO=/usr/gnu/share/terminfo
 #export TERM=sun-color
-export TERM=xterm
-export PATH=/usr/nexenta:/usr/gnu/bin:/bin:/sbin:/usr/sbin:/usr/bin:$PATH
+#export TERM=xterm
+export PATH=$REPO:/usr/gnu/bin:/bin:/sbin:/usr/sbin:/usr/bin:$PATH
 
 TITLE="NexentaOS"
 BOOT_ANYWHERE=${BOOT_ANYWHERE:-0}
@@ -55,8 +59,6 @@ RM_LABEL="NEXENTA"
 RM_DISK=""
 UPGRADE_DISK=""
 UPGRADE=0
-CUSTOM_REPO=$1
-REPO=${CUSTOM_REPO:=/usr/nexenta}
 DEFPROFILE=$REPO/defaults
 TMPDEST=/tmp/dest.$$
 UPGRADE_LOG=$TMPDEST/var/tmp/nexenta_upgrade.log
@@ -73,7 +75,7 @@ HDDISCO="/usr/bin/hddisco"
 testusr=n3x3nt4
 signature=`date '+%F-%N'`
 LANGS_FILE=$REPO/languages
-sysmem=`prtconf | grep 'Memory size:' | nawk '{ print $3 }'`
+sysmem=`prtconf | grep 'Memory size:' | awk '{ print $3 }'`
 set -i reposize
 set -i spaceneeded
 DU=/usr/bin/du
@@ -1989,13 +1991,20 @@ progress_bar()
 install_base()
 {
 	local lines=${_KS_profile_lines[$_KS_profile_selected]}
-#	local lines=`cat $REPO/aptinst.lst | wc -w`
 	local message="Installing the base $DEFAULT_PROFILE software..."
-    local progr_log_file='/tmp/install-base-debootstrap.log'
+	local progr_log_file='/tmp/install-base-debootstrap.log'
+	
+	export errlog='/tmp/install-base.err'
+	
 	printlog $message
 	printlog "== $REPO/install-base.sh $TMPDEST $REPO $MEMSCRATCH"
 	$REPO/install-base.sh $TMPDEST $REPO $MEMSCRATCH 2>&1 > /dev/null 2>/dev/null &
 	progress_bar $lines install-base.sh $progr_log_file "$message... Please wait."
+	
+	if [ -f $errlog ]; then
+	    oneline_msgbox "Error" "$(cat $errlog)"
+	    aborted
+	fi
 }
 
 process_extradebs()
@@ -4113,11 +4122,11 @@ if test -f ${EXTRADEB_PROFILE}; then
 fi
 DEFAULT_PROFILE=${_KS_profile_name[$_KS_profile_selected]}
 TITLE="$_KS_product_title"
-if test -f $REPO/machinesig; then
+if test -f $MSIG_REPO/machinesig; then
 	devfsadm -c disk 2>/dev/null 1>&2
 	rmformat 2>/dev/null 1>&2
 	sync
-	export MACHINESIG="`$REPO/machinesig`"
+	export MACHINESIG="`$MSIG_REPO/machinesig`"
 fi
 DIALOG="$(dialog_cmd)"
 DIALOG_WITH_ESC="$(dialog_cmd_with_escape)"
@@ -4152,7 +4161,7 @@ svcadm enable datalink-management > /dev/null 2>&1
 svcadm enable system/hal > /dev/null 2>&1
 svcadm enable system/filesystem/rmvolmgr > /dev/null 2>&1
 
-for i in `ls /tmp/dest.*/usr/nexenta 2>/dev/null`; do umount $i 2>/dev/null; done
+for i in `ls /tmp/dest.*${REPO} 2>/dev/null`; do umount $i 2>/dev/null; done
 for i in `ls /tmp/dest.* 2>/dev/null`; do umount $i 2>/dev/null; done
 
 # ignore Ctrl-C
@@ -4458,7 +4467,7 @@ if [ $UPGRADE -eq 0 ]; then
 	fi
 	if test "x$auto_install" = "x1"; then
 		touch $TMPDEST/.pxe-provisioned
-		cp -a /usr/nexenta/remote-logger $TMPDEST/usr/bin/
+		cp -a $REPO/remote-logger $TMPDEST/usr/bin/
 		nlm_key="$(extract_args nlm_key | sed -e 's/_/-/g')";
 		if test "x$nlm_key" != x; then
 			test -d "$TMPDEST/var/lib/nza" && mkdir -p $TMPDEST/var/lib/nza
@@ -4490,7 +4499,7 @@ fi
 oneline_info "Updating Boot Archive..."
 update_boot_archive
 
-test -f $REPO/machinesig && $REPO/machinesig
+test -f $MSIG_REPO/machinesig && $MSIG_REPO/machinesig
 
 printlog "Installer finished at '`date`'. Logging."
 printlog "Saving log file ..."

@@ -6,7 +6,7 @@ Build-Depends: package-dpkg-debhelper (>= 40-0-13)
 
 Package: nexenta-builder
 Architecture: solaris-i386
-Depends: package-dpkg-apt, reprepro, debootstrap, media-cdrtools
+Depends: package-dpkg-apt, developer-reprepro, media-cdrtools
 Description: Nexenta ISO Builder Kit
  Bootstraps Nexenta Core Platform into customized ISO using
  APT repository as its input

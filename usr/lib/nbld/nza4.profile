@@ -41,6 +41,7 @@ network-ssh-ssh-key \
 print-lp-print-client-commands \
 release-name \
 runtime-python-26 \
+runtime-python-27 \
 runtime-tcl-8 \
 runtime-tk-8 \
 service-fault-management \
@@ -249,6 +250,7 @@ archiver-gnu-tar \
 # CD stage
 #
 STAGE0_CD_END="\
+text-gawk \
 text-gnu-grep \
 text-gnu-sed \
 file-gnu-findutils \
@@ -262,9 +264,10 @@ shell-expect \
 library-perl-5-compiler-kit \
 service-file-system-nfs \
 system-file-system-nfs \
+system-extended-system-utilities \
 release-name \
+editor-nano \
 "
-
 
 #
 # STAGE0_APTINST
@@ -653,6 +656,9 @@ driver-xvm-pv \
 driver-storage-pvscsi \
 driver-network-vmxnet3s \
 driver-ipmi \
+network-aoe-initiator \
+network-aoe-target \
+storage-aoe \
 "
 
 #
@@ -681,7 +687,7 @@ os_version="4.0"
 sw_version="4.0.0"
 rootsize1="1024"
 profile1="appliance"
-lines1="10000"
+lines1="3000"
 desc1="NexentaStor Appliance installation profile"
 longdesc1=""
 profiles="1"

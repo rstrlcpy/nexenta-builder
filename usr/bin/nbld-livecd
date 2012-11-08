@@ -37,7 +37,7 @@ umask 0222
 SED="/usr/gnu/bin/sed"
 
 MODE=livecd
-REPO=/usr/nexenta
+REPO=/usr/nexenta/repo
 
 #
 # CUSTOM_DIR specifies the location where customized LiveCD
@@ -702,7 +702,7 @@ function customize_usr
 		fi
 	fi
 
-	ln -sf ../../usr/nexenta/hwdisco ${FAKEROOT}/usr/bin/hwdisco
+	ln -sf ../../usr/nexenta/repo/hwdisco ${FAKEROOT}/usr/bin/hwdisco
 }
 
 iso_excl='

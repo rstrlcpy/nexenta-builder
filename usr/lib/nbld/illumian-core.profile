@@ -189,6 +189,7 @@ archiver-gnu-tar \
 # CD stage
 #
 STAGE0_CD_END="\
+text-gawk \
 text-gnu-grep \
 text-gnu-sed \
 file-gnu-findutils \
@@ -203,6 +204,7 @@ system-file-system-nfs \
 runtime-perl-512 \
 runtime-perl \
 library-perl-5-sun-solaris \
+editor-nano \
 "
 
 
