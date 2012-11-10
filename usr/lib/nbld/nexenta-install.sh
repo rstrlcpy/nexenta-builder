@@ -3823,6 +3823,8 @@ apply_profile()
 {
 	oneline_info "Applying user profile..."
 	mkdir -p $TMPDEST/var/tmp
+	chmod a+rwXt $TMPDEST/var/tmp
+
 	cd $TMPDEST/var/tmp
 	ln -sf ../../$REPO/required-$DEFAULT_PROFILE.lst required.lst
 	ln -sf ../../$REPO/base-$DEFAULT_PROFILE.lst base.lst
