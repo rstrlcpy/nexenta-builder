@@ -1,3 +1,10 @@
+nexenta-builder (40-1-0) unstable; urgency=low
+
+  * Bump version for 4.0.1
+  * #12047 rb3782 - idmapd falls with an error due to wrong permissions on /var/tmp
+
+ -- Nexenta Systems <maintainer@nexenta.com>  Mon, 12 Nov 2012 23:10:00 +0300
+
 nexenta-builder (40-0-1) unstable; urgency=low
 
   * #9571 - fixed stupid typo
