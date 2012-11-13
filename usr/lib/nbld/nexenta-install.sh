@@ -1993,14 +1993,14 @@ install_base()
 	local lines=${_KS_profile_lines[$_KS_profile_selected]}
 	local message="Installing the base $DEFAULT_PROFILE software..."
 	local progr_log_file='/tmp/install-base-debootstrap.log'
-	
+
 	export errlog='/tmp/install-base.err'
-	
+
 	printlog $message
 	printlog "== $REPO/install-base.sh $TMPDEST $REPO $MEMSCRATCH"
 	$REPO/install-base.sh $TMPDEST $REPO $MEMSCRATCH 2>&1 > /dev/null 2>/dev/null &
 	progress_bar $lines install-base.sh $progr_log_file "$message... Please wait."
-	
+
 	if [ -f $errlog ]; then
 	    oneline_msgbox "Error" "$(cat $errlog)"
 	    aborted
@@ -2883,6 +2883,14 @@ customize_common()
 
 	echo "* Do not use SMP during core dumping" >> $TMPDEST/etc/system
 	echo "set dump_plat_mincpu = 0" >> $TMPDEST/etc/system
+
+	# Ticket #7529
+	echo "# disable deep-sleep C-states" >> $TMPDEST/etc/power.conf
+	echo "cpu_deep_idle disable"         >> $TMPDEST/etc/power.conf
+	echo "* Recommendation from Sun (Oracle) to work around a bug:"              >> $TMPDEST/etc/system
+	echo "* 6958068 - Nehalem deeper C-states cause erratic scheduling behavior" >> $TMPDEST/etc/system
+	echo "set idle_cpu_prefer_mwait = 0"                                         >> $TMPDEST/etc/system
+	echo "set idle_cpu_no_deep_c = 1"                                            >> $TMPDEST/etc/system
 }
 
 customize_hdd_upgrade()
@@ -3292,7 +3300,7 @@ EOF
     echo -e $license >> $profile_name
     echo "<service_bundle type='profile' name='default'>" >> $profile_name
 
-    for i in $svclist; do 
+    for i in $svclist; do
 	svc=`echo $i | cut -d':' -f1`
 	instance=`echo $i | cut -d':' -f2`
 
