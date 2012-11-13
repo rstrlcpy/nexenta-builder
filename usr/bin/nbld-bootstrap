@@ -84,7 +84,7 @@ EOF
 }
 
 fatal() {
-    echo "Error: $1"; exit 1; 
+    echo "Error: $1"; exit 1;
 }
 
 cleanup() {
@@ -94,8 +94,8 @@ cleanup() {
     echo "Ok"
 }
 
-abort() { 
-    echo "Error: subprocess exited with non-zero status: $?"; exit 1; 
+abort() {
+    echo "Error: subprocess exited with non-zero status: $?"; exit 1;
 }
 
 trap "cleanup" INT EXIT TERM QUIT
@@ -253,7 +253,7 @@ EOF
 		eval "echo \"_KS_iface_mask[$i]='\$ks_iface_mask$i'\"" >> $install_profile
 	done
 	echo "_KS_ifaces='$ks_ifaces'" >> $install_profile
-	echo "_KS_apt_sources='$apt_sources'" >> $install_profile
+	test "x$apt_sources" != x && echo "_KS_apt_sources='$apt_sources'" >> $install_profile
 	test "x$build_number" != x && echo "_KS_build_number='build $build_number'" >> $install_profile
 	test "x$plugin_sources" != x && echo "_KS_plugin_sources='$plugin_sources'" >> $install_profile
 	echo "_KS_profile_selected='$defprofile'" >> $install_profile
@@ -326,19 +326,19 @@ EOF
 
 cat << EOF
 ------------------------------------------------------------------------------
-Initial local repository APT update ... 
+Initial local repository APT update ...
 ------------------------------------------------------------------------------
 EOF
 
 	FILESCD="$STAGE0_CD $STAGE0_DRIVERS $STAGE0_CD_END"
-	
+
 	$APT_GET update
 	$APT_GET install -m -y --force-yes sunwcsd
 	$APT_GET install -m -y --force-yes sunwcs shell-bash package-dpkg package-dpkg-apt
 	$APT_GET install -m -y --force-yes $FILESCD
 	$APT_GET install -f -y --force-yes
 	$APT_GET clean
-	
+
 	# save list of packages for APT installation
 	echo "$REQ_DEBS $STAGE0_APTINST $STAGE0_DRIVERS $STAGE0_CD_END $STAGE0_HDD_END" > $rootdir$hddrepo/aptinst.lst
 
