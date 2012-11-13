@@ -3360,14 +3360,18 @@ cleanup_after_install()
 customize_sources()
 {
 	APTSOURCES="$TMPDEST/etc/apt/sources.list"
-	echo "# Main repository sources" > $APTSOURCES
-	echo "deb $_KS_apt_sources" >> $APTSOURCES
-	echo "deb-src $_KS_apt_sources" >> $APTSOURCES
+	if test "x$_KS_apt_sources" != x; then
+		echo "# Main repository sources" > $APTSOURCES
+		echo "deb $_KS_apt_sources" >> $APTSOURCES
+		echo "deb-src $_KS_apt_sources" >> $APTSOURCES
+		printlog "Main APT sources have been configured"
+	fi
 	if test "x$_KS_plugin_sources" != x; then
 		echo >> $APTSOURCES
 		echo "# Third-party and commercial NexentaStor plugins sources" >> $APTSOURCES
 		echo "deb $_KS_plugin_sources" >> $APTSOURCES
 		echo "deb-src $_KS_plugin_sources" >> $APTSOURCES
+		printlog "Third-party and commercial NexentaStor plugins APT sources have been configred"
 	fi
 	rm -f "$TMPDEST/var/lib/apt/lists/*" 2>/dev/null 1>&2
 
@@ -3375,7 +3379,6 @@ customize_sources()
 	# because our APT does not contains Translation section
 	echo 'Acquire::Languages "none";' > $TMPDEST/etc/apt/apt.conf.d/99translation
 
-	printlog "Installed /etc/apt/sources.list"
 }
 
 customize_X()
