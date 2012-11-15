@@ -56,7 +56,6 @@ pkglist="$NBLD_TMP/debootstrap-pkglist.tmp"
 srclist="/etc/apt/sources.list"
 
 product_title="NexentaOS"
-apt_sources="http://apt.gnusolaris.org elatte-testing main contrib non-free"
 
 # do not show license by default
 ks_license_text=""
