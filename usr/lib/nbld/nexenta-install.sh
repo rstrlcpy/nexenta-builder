@@ -3360,6 +3360,11 @@ cleanup_after_install()
 customize_sources()
 {
 	APTSOURCES="$TMPDEST/etc/apt/sources.list"
+
+	# Initial clean up, because $APTSOURCES file contains
+	# the lines that used by installer
+	cat /dev/null > $APTSOURCES
+
 	if test "x$_KS_apt_sources" != x; then
 		echo "# Main repository sources" > $APTSOURCES
 		echo "deb $_KS_apt_sources" >> $APTSOURCES
