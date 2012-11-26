@@ -178,10 +178,10 @@ if [ -f $srclist ]; then
     cp -f $srclist "$srclist.nbld"
 fi
 
-echo "deb $NBLD_REPO base-unstable/4.0 main contrib non-free" > $srclist
-echo "deb $NBLD_REPO kernel-unstable/4.0 main contrib non-free" >> $srclist
-echo "deb $NBLD_REPO plugins-unstable/4.0 main contrib non-free" >> $srclist
-echo "deb $NBLD_REPO nza-unstable/4.0 main contrib non-free" >> $srclist
+echo "deb $NBLD_REPO base-$NBLD_BRANCH/4.0 main contrib non-free" > $srclist
+echo "deb $NBLD_REPO kernel-$NBLD_BRANCH/4.0 main contrib non-free" >> $srclist
+echo "deb $NBLD_REPO plugins-$NBLD_BRANCH/4.0 main contrib non-free" >> $srclist
+echo "deb $NBLD_REPO nza-$NBLD_BRANCH/4.0 main contrib non-free" >> $srclist
 
 APT_GET="apt-get -R $rootdir"
 
