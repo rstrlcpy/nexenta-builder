@@ -106,6 +106,7 @@ runtime-perl-510-extra \
 library-perl-5-sun-solaris \
 library-perl-5-text-wrapi18n \
 library-perl-5-text-charwidth \
+diagnostic-nexenta-collector \
 "
 
 NM_STUFF="\
