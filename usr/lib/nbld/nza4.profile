@@ -78,7 +78,7 @@ system-network \
 system-network-routing \
 system-xopen-xcu4 \
 system-zones \
-text-doctools \
+text-mantools \
 text-groff \
 text-less \
 text-locale \
