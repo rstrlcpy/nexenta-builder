@@ -2765,10 +2765,10 @@ customize_hdd_install()
 	    echo "SUPATH=$ALLPATH" >> $TMPDEST/etc/default/su
 	fi
 
-    if [ -f $TMPDEST/etc/default/login ]; then
-        echo "PATH=$ALLPATH" >> $TMPDEST/etc/default/login
-        echo "SUPATH=$ALLPATH" >> $TMPDEST/etc/default/login
-    fi
+	if [ -f $TMPDEST/etc/default/login ]; then
+	    echo "PATH=$ALLPATH" >> $TMPDEST/etc/default/login
+	    echo "SUPATH=$ALLPATH" >> $TMPDEST/etc/default/login
+	fi
 
 	if [ -f $TMPDEST/etc/sudoers ] ; then
 	    sed '/env_reset/d' $TMPDEST/etc/sudoers > $TMPDEST/etc/sudoers.temp
@@ -2821,6 +2821,11 @@ customize_hdd_install()
 	    test -d /var/lib/nza || mkdir /var/lib/nza
 	    echo $_KS_build_number > $TMPDEST/var/lib/nza/.build
 	fi
+
+	cp -f $REPO/scsi_vhci.conf $TMPDEST/kernel/drv/scsi_vhci.conf
+	chroot $TMPDEST /usr/bin/env -i PATH=/usr/gnu/bin:/sbin:/bin:/usr/sbin:$PATH \
+			LOGNAME=root HOME=/root TERM=xterm \
+			/usr/bin/dpkg-divert --quiet --add /kernel/drv/scsi_vhci.conf
 
 	apply_kbd
 
