@@ -75,6 +75,7 @@ HDDISCO="/usr/bin/hddisco"
 testusr=n3x3nt4
 signature=`date '+%F-%N'`
 LANGS_FILE=$REPO/languages
+NZALANGS_FILE=$TMPDEST/var/lib/nza/languages
 sysmem=`prtconf | grep 'Memory size:' | awk '{ print $3 }'`
 set -i reposize
 set -i spaceneeded
@@ -2372,6 +2373,7 @@ getrand_10_200() {
 configure_language()
 {
 	local lang_item=""
+	local nza_lang_list=""
 
 	# if language was defined via profile (auto installation),
 	# then we do not ask user about it
@@ -2386,6 +2388,17 @@ configure_language()
 		language="en"
 		return
 	fi
+
+	for i in `cat $LANGS_FILE | $AWK '{print $1}'`
+	do
+	    if test "x$nza_lang_list" == "x"; then
+		nza_lang_list=$i
+		continue
+	    fi
+	    nza_lang_list=$(echo $nza_lang_list,$i)
+	done
+
+	echo $nza_lang_list > $NZALANGS_FILE
 
 	$DIALOG --nocancel --radiolist 'Please select interface languange...' 15 40 12 `cat $LANGS_FILE` 2>$DIALOG_RES
 
@@ -3938,7 +3951,7 @@ extract_lic_file()
 {
 	local lic_text=$1
 	lic_pkgname=$(echo "$lic_text"| $AWK -F: '{print $1}')
-	lic_pkg=$(find $REPO -name "${lic_pkgname}_*.deb" 2>/dev/null)
+	lic_pkg=$(find {$REPO,$EXTRADEBDIR} -name "${lic_pkgname}_*.deb" 2>/dev/null)
 	if test -f "$lic_pkg"; then
 		dpkg -x "$lic_pkg" "/tmp/$lic_pkgname" 2>/dev/null
 		lic_text=$(echo "$lic_text"| $AWK -F: '{print $2}')
@@ -3950,7 +3963,7 @@ extract_lic_text()
 {
 	local lic_text=$1
 	lic_pkgname=$(echo "$lic_text"| $AWK -F: '{print $1}')
-	lic_pkg=$(find $REPO -name "${lic_pkgname}_*.deb" 2>/dev/null)
+	lic_pkg=$(find {$REPO,$EXTRADEBDIR} -name "${lic_pkgname}_*.deb" 2>/dev/null)
 	if test -f "$lic_pkg"; then
 		dpkg -x "$lic_pkg" "/tmp/$lic_pkgname" 2>/dev/null
 		lic_file=$(echo "$lic_text"| $AWK -F: '{print $2}')
@@ -4240,6 +4253,10 @@ if ! check_requirements; then
 	aborted
 fi
 
+if test -f $(echo $EXTRADEBDIR/*_eula); then
+	_KS_license_text=$(cat $EXTRADEBDIR/*_eula)
+fi
+
 if test "x$_KS_license_text" != x -a \
 	"x$_KS_license_text" != x0 -a \
 	"x$auto_install" = x; then
@@ -4461,6 +4478,10 @@ fi
 if test "x$rawdump" != x; then
 	oneline_info "Activating crash dump service..."
 	activate_dump
+fi
+
+if test -f "$EXTRADEBDIR/languages"; then
+    LANGS_FILE="$EXTRADEBDIR/languages"
 fi
 
 if test -f $LANGS_FILE; then
