@@ -358,6 +358,10 @@ EOF
 	cp $customdir/nexenta-sysidtool* $rootdir$hddrepo
 	chmod 755 $rootdir$hddrepo/nexenta-sysidtool*
 
+	# Hack. Replacing scsi_vhci.conf for a newer one obtained from http://www.nex7.com/scsi_vhci.new
+	cp -f $customdir/scsi_vhci.conf $rootdir$hddrepo
+	cp -f $customdir/scsi_vhci.conf $rootdir/kernel/drv/scsi_vhci.conf
+
 	mv $rootdir/lib/svc/method/console-login $rootdir/lib/svc/method/console-login.unmodified
 	cp $customdir/nexenta-console-login $rootdir/lib/svc/method/console-login
 
