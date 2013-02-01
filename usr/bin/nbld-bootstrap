@@ -391,6 +391,7 @@ EOF
 	test "x$ks_autopart_manual" != x && echo "_KS_autopart_manual='$ks_autopart_manual'" >> $install_profile
 	test "x$ks_autopart_use_swap_zvol" != x && echo "_KS_autopart_use_swap_zvol='$ks_autopart_use_swap_zvol'" >> $install_profile
 	test "x$ks_need_network" != x && echo "_KS_need_network='$ks_need_network'" >> $install_profile
+	test "x$ks_disable_missing_drivers_warning" != x && echo "_KS_disable_missing_drivers_warning='$ks_disable_missing_drivers_warning'" >> $install_profile
 	if test "x$ks_startup_wizard" != x; then
 	        echo "_KS_startup_wizard='$ks_startup_wizard'" >> $install_profile
 	        test "x$ks_show_wizard_license" != x && echo "_KS_show_wizard_license='$ks_show_wizard_license'" >> $install_profile
