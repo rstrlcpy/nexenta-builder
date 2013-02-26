@@ -2,542 +2,36 @@
 # NexentaStor 4.x Profile (Open Storage Appliance)
 #
 
-#
-# REQ_DEBS
-#
-REQ_DEBS="\
+COMMON_REQ_DEBS="\
 sunwcs \
 sunwcsd \
-file-gnu-coreutils \
-system-kernel \
-system-kernel-cpu-counters \
-system-kernel-dynamic-reconfiguration-i86pc \
-system-kernel-power \
-system-kernel-platform \
-system-kernel-power \
-system-kernel-secure-rpc \
-system-kernel-security-gss \
-system-kernel-suspend-resume \
-compress-bzip2 \
-compress-gzip \
-crypto-ca-certificates \
-database-sqlite-3 \
-editor-vim \
-install-beadm \
-library-libffi \
-library-libidn \
-library-libtecla \
-library-libxml2 \
-library-ncurses \
-library-nspr \
-library-readline \
-library-security-trousers \
-library-zlib \
-naming-ldap \
-network-bridging \
-network-ftp \
-network-ssh \
-network-ssh-ssh-key \
-print-lp-print-client-commands \
-release-name \
-runtime-python-26 \
-runtime-python-27 \
-runtime-tcl-8 \
-runtime-tk-8 \
-service-fault-management \
-service-file-system-smb \
-service-network-dns-mdns \
-service-network-network-clients \
-service-network-ssh \
-service-picl \
-service-resource-pools \
-service-security-gss \
-service-security-kerberos-5 \
 shell-bash \
-system-boot-wanboot \
-system-data-keyboard-keytables \
-system-extended-system-utilities \
-system-file-system-autofs \
-system-file-system-nfs \
-system-file-system-smb \
-system-file-system-zfs \
-system-kernel-secure-rpc \
-system-library \
-system-library-c++-sunpro \
-system-library-iconv-utf-8 \
-system-library-libdiskmgt \
-system-library-math \
-system-library-mozilla-nss \
-system-library-security-gss \
-system-library-security-gss-diffie-hellman \
-system-library-security-gss-spnego \
-system-library-security-libgcrypt \
-system-library-security-libsasl \
-system-library-storage-scsi-plugins \
-system-network \
-system-network-routing \
-system-xopen-xcu4 \
-system-zones \
-text-mantools \
-text-groff \
-text-less \
-text-locale \
-text-texinfo \
-\
-system-boot-grub \
-system-boot-real-mode \
-system-data-hardware-registry \
-media-cdrtools \
-text-gnu-sed \
-text-gnu-grep \
-text-gawk \
-archiver-gnu-tar \
-system-library-gcc-44-runtime \
 package-dpkg \
-nexenta-keyring \
-crypto-gnupg \
 package-dpkg-apt \
-library-security-libassuan \
 terminal-dialog \
 terminal-screen \
-\
-runtime-perl-512 \
-runtime-perl-510-extra \
-library-perl-5-sun-solaris \
-library-perl-5-text-wrapi18n \
-library-perl-5-text-charwidth \
-diagnostic-nexenta-collector \
-"
-
-NM_STUFF="\
-developer-versioning-rcs \
-library-perl-5-archive-zip \
-library-perl-5-carp-assert \
-library-perl-5-class-methodmaker \
-library-perl-5-compiler-kit \
-library-perl-5-crypt-des \
-library-perl-5-dbd-sqlite \
-library-perl-5-digest-hmac \
-library-perl-5-digest-sha1 \
-library-perl-5-email-date-format \
-library-perl-5-file-which \
-library-perl-5-getopt-argvfile \
-library-perl-5-io-socket-ssl \
-library-perl-5-json \
-library-perl-5-mailtools \
-library-perl-5-module-scandeps \
-library-perl-5-net-dbus \
-library-perl-5-net-libidn \
-library-perl-5-par \
-library-perl-5-search-xapian \
-library-perl-5-dtrace \
-library-perl-5-term-readkey \
-library-perl-5-test-pod \
-library-perl-5-text-asciitable \
-library-perl-5-time-modules \
-library-perl-5-xml-libxml \
-library-perl-5-xml-namespacesupport \
-library-perl-5-xml-sax \
-library-perl-5-xml-twig \
-library-python-2-sqlobject-26 \
-library-python-2-turbogears-26 \
-library-python-2-turbokid-26 \
-library-xapian \
-network-sshpass \
-network-rrs \
-library-xapian-omega \
-\
-library-perl-5-xml-parser \
-library-perl-5-database \
-library-python-2-setuptools-26 \
-library-python-2-simplejson-26 \
-terminal-dialog \
-terminal-screen \
-\
-nbs \
-nms \
-nmdtrace \
-nmu \
-nmc \
-nmv-theme-nexentaplain \
-nmv \
-chpasswd \
-runtime-tcl-8 \
-mapmgr \
-nexenta-eula \
-$NM_PLUGINS \
-"
-
-REQ_DEBS="$REQ_DEBS"
-
-#
-# MINIMAL_CMN_DEBS
-#
-#
-MINIMAL_CMN_DEBS="\
-sunwcsd \
-sunwcs \
-system-library \
 system-kernel \
 system-kernel-platform \
-package-dpkg-apt \
-package-dpkg \
-"
-
-#
-# STAGE0_DEBS - the content of InstallCD miniroot
-#               (generally speaking, this is Installer requirements)
-#
-STAGE0_DEBS=""
-
-#
-# CD stage
-#
-STAGE0_CD="\
-developer-debug-mdb \
-developer-debug-mdb-module-module-qlc \
-developer-dtrace \
-developer-linker \
-driver-network-platform \
-library-libtecla \
-library-security-trousers \
-network-ftp \
-network-ssh \
-network-ssh-ssh-key \
-service-hal \
-service-fault-management \
-service-network-dns-mdns \
-service-network-network-clients \
-service-network-ssh \
-service-resource-pools \
-system-boot-grub \
-system-boot-real-mode \
-system-data-hardware-registry \
-system-file-system-zfs \
-system-kernel \
-system-kernel-cpu-counters \
 system-kernel-dynamic-reconfiguration-i86pc \
-system-kernel-platform \
 system-kernel-power \
-system-kernel-secure-rpc \
-system-kernel-security-gss \
-system-kernel-suspend-resume \
-system-library-libdiskmgt \
+system-management-pcitool \
 system-library-platform \
 system-library-policykit \
 system-library-processor \
-system-library-math \
-system-library-security-libgcrypt \
 system-network \
-system-network-routing \
-system-scheduler-fss \
-service-storage-avs-cache-management \
-service-storage-media-volume-manager \
-service-storage-removable-media \
-storage-svm \
-system-library-iconv-utf-8 \
-media-cdrtools \
-install-beadm \
-text-less \
-editor-vim \
-web-wget \
-compress-bzip2 \
-compress-gzip \
-text-locale \
-archiver-gnu-tar \
-"
-
-#
-# CD stage
-#
-STAGE0_CD_END="\
-text-gawk \
-text-gnu-grep \
-text-gnu-sed \
-file-gnu-findutils \
-file-gnu-coreutils \
-terminal-dialog \
-terminal-screen \
-hddisco \
-mdisco \
-machinesig \
-shell-expect \
-library-perl-5-compiler-kit \
-service-file-system-nfs \
-system-file-system-nfs \
-system-extended-system-utilities \
-release-name \
-editor-nano \
-"
-
-#
-# STAGE0_APTINST
-#
-STAGE0_APTINST="$STAGE0_CD \
-naming-ldap \
-network-bridging \
-network-ipfilter \
-network-iscsi-initiator \
-network-iscsi-iser \
-network-iscsi-target \
-network-netcat \
-network-telnet \
-service-fault-management-smtp-notify \
-service-fault-management-snmp-notify \
-service-file-system-nfs \
-service-file-system-smb \
-service-network-dhcp \
-service-network-dhcp-datastore-binfiles \
-service-network-ftp \
-service-network-legacy \
-service-network-load-balancer-ilb \
-service-network-network-servers \
-service-network-nis \
-service-network-slp \
-service-network-smtp-sendmail \
-service-network-telnet \
-service-network-tftp \
-service-network-uucp \
-service-network-wpa \
-service-picl \
-service-resource-cap \
-service-resource-pools-poold \
-service-security-gss \
-service-security-kerberos-5 \
-service-storage-fibre-channel-fc-fabric \
-service-storage-isns \
-service-storage-media-volume-manager \
-service-storage-ndmp \
-service-storage-removable-media \
-service-storage-virus-scan \
-storage-avs-point-in-time-copy \
-storage-avs-remote-mirror \
-storage-metassist \
-storage-mpathadm \
-storage-stmf \
-system-accounting-legacy \
-system-boot-network \
-system-boot-wanboot \
-system-boot-wanboot-internal \
-system-data-keyboard-keytables \
-system-data-terminfo \
-system-dtrace-tests \
-system-extended-system-utilities \
-system-fault-management-eversholt-utilities \
-system-file-system-autofs \
-system-file-system-nfs \
-system-file-system-ntfsprogs \
-system-file-system-smb \
 system-file-system-udfs \
-system-file-system-zfs-tests \
-system-flash-fwflash \
-system-fru-id \
-system-fru-id-platform \
-system-io-tests \
-system-ipc \
-system-kernel-dtrace-providers \
-system-kernel-dtrace-providers-xdt \
-system-kernel-rsmops \
-system-library-install-libinstzones \
-system-library-libfcoe \
-system-library-security-gss \
-system-library-security-gss-diffie-hellman \
-system-library-security-gss-spnego \
-system-library-security-libsasl \
-system-library-security-rpcsec \
-system-library-storage-fibre-channel-libsun-fc \
-system-library-storage-ima \
-system-library-storage-ima-header-ima \
-system-library-storage-libmpscsi-vhci \
-system-library-storage-scsi-plugins \
-system-library-svm-rcm \
-system-management-intel-amt \
-system-management-pcitool \
-system-management-snmp-sea-sea-config \
-system-management-wbem-data-management \
-system-network-http-cache-accelerator \
-system-network-ipqos \
-system-network-ipqos-ipqos-config \
-system-network-nis \
-system-network-ppp \
-system-network-ppp-pppdump \
-system-network-ppp-tunnel \
-system-network-routing-vrrp \
-system-network-spdadm \
-system-network-udapl \
-system-network-udapl-udapl-tavor \
-system-network-wificonfig \
-system-remote-shared-memory \
-system-security-kerberos-5 \
-system-storage-fibre-channel-port-utility \
-system-storage-luxadm \
-system-storage-parted \
-system-storage-sasinfo \
 system-tnf \
-system-xopen-xcu4 \
-system-xopen-xcu6 \
-system-xvm-ipagent \
-system-zones \
-system-zones-brand-s10 \
-system-zones-brand-sn1 \
-system-zones-internal \
+service-hal \
+system-boot-real-mode \
+system-data-hardware-registry \
+release-name \
 "
 
-STAGE0_APTINST_OLD=" \
-"
-
-#
-# LOCALES
-#
-LOCALES="\
-locale-af \
-locale-ar \
-locale-as \
-locale-az \
-locale-be \
-locale-bg \
-locale-bg-extra \
-locale-bn \
-locale-bo \
-locale-bs \
-locale-ca \
-locale-ca-extra \
-locale-cs \
-locale-cs-extra \
-locale-da \
-locale-da-extra \
-locale-de \
-locale-de-extra \
-locale-el \
-locale-el-extra \
-locale-en \
-locale-en-extra \
-locale-es \
-locale-es-extra \
-locale-et \
-locale-fi \
-locale-fi-extra \
-locale-fil \
-locale-fr \
-locale-fr-extra \
-locale-ga \
-locale-gu \
-locale-he \
-locale-hi \
-locale-hr \
-locale-hr-extra \
-locale-hu \
-locale-hu-extra \
-locale-hy \
-locale-id \
-locale-ii \
-locale-is \
-locale-is-extra \
-locale-it \
-locale-it-extra \
-locale-ja \
-locale-ka \
-locale-kk \
-locale-km \
-locale-kn \
-locale-ko \
-locale-kok \
-locale-lt \
-locale-lt-extra \
-locale-lv \
-locale-lv-extra \
-locale-mk \
-locale-mk-extra \
-locale-ml \
-locale-mn \
-locale-mr \
-locale-ms \
-locale-mt \
-locale-nb \
-locale-ne \
-locale-nl \
-locale-nl-extra \
-locale-nn \
-locale-or \
-locale-pa \
-locale-pl \
-locale-pl-extra \
-locale-pt \
-locale-pt-extra \
-locale-ro \
-locale-ru \
-locale-ru-extra \
-locale-sa \
-locale-si \
-locale-sk \
-locale-sl \
-locale-sq \
-locale-sq-extra \
-locale-sr \
-locale-sv \
-locale-sv-extra \
-locale-ta \
-locale-te \
-locale-th \
-locale-th-extra \
-locale-tr \
-locale-tr-extra \
-locale-ug \
-locale-uk \
-locale-ur \
-locale-vi \
-locale-zh-cn \
-locale-zh-cn-extra \
-locale-zh-hk \
-locale-zh-mo \
-locale-zh-sg \
-locale-zh-tw \
-"
-
-#
-# STAGE0_HDD_END
-#
-#
-STAGE0_HDD_END="\
-package-dpkg-apt-clone \
-service-network-ntp \
-system-library-dbus \
-library-nspr \
-security-sudo \
-package-svr4 \
-library-perl-5-sun-solaris \
-file-gnu-findutils \
-$NM_STUFF \
-$LOCALES
-"
-
-#
-# STAGE0_DRIVERS -
-#
-#
-STAGE0_DRIVERS="\
-driver-audio-audio810 \
-driver-audio-audiocmi \
-driver-audio-audioemu10k \
-driver-audio-audiohd \
-driver-audio-audioixp \
-driver-audio-audiols \
-driver-audio-audiop16x \
-driver-audio-audiosolo \
-driver-audio-audiovia823x \
-driver-audio-audiovia97 \
-driver-audio \
+DRIVERS_DEBS="\
 driver-crypto-dca \
 driver-crypto-dprov \
 driver-crypto-tpm \
 driver-firewire \
-driver-graphics-agpgart \
-driver-graphics-atiatom \
-driver-graphics-av1394 \
-driver-graphics-dcam1394-devfsadm-dcam1394 \
-driver-graphics-dcam1394 \
-driver-graphics-drm \
-driver-graphics-usbvc \
 driver-i86pc-fipe \
 driver-i86pc-ioat \
 driver-i86pc-platform \
@@ -651,8 +145,6 @@ driver-storage-smp \
 driver-storage-sv \
 driver-usb-ugen \
 driver-usb \
-driver-x11-winlock \
-driver-x11-xsvc \
 driver-xvm-pv \
 driver-storage-pvscsi \
 driver-network-vmxnet3s \
@@ -662,18 +154,169 @@ network-aoe-target \
 storage-aoe \
 "
 
-#
-# STAGE0_EXCLUDE_DEBS -
-#
-#
-STAGE0_EXCLUDE_DEBS=""
+NZA_DEBS="\
+nbs \
+nms \
+nmdtrace \
+nmu \
+nmc \
+nmv-theme-nexentaplain \
+nmv \
+$NM_PLUGINS \
+"
 
-#
-# LOCAL_ARCHIVE_DEBS - the content of on-ISO APT repository
-#                      (what will be installed by default)
-#
-LOCAL_ARCHIVE_DEBS=""
+LOCALES="\
+locale-af \
+locale-ar \
+locale-as \
+locale-az \
+locale-be \
+locale-bg \
+locale-bg-extra \
+locale-bn \
+locale-bo \
+locale-bs \
+locale-ca \
+locale-ca-extra \
+locale-cs \
+locale-cs-extra \
+locale-da \
+locale-da-extra \
+locale-de \
+locale-de-extra \
+locale-el \
+locale-el-extra \
+locale-en \
+locale-en-extra \
+locale-es \
+locale-es-extra \
+locale-et \
+locale-fi \
+locale-fi-extra \
+locale-fil \
+locale-fr \
+locale-fr-extra \
+locale-ga \
+locale-gu \
+locale-he \
+locale-hi \
+locale-hr \
+locale-hr-extra \
+locale-hu \
+locale-hu-extra \
+locale-hy \
+locale-id \
+locale-ii \
+locale-is \
+locale-is-extra \
+locale-it \
+locale-it-extra \
+locale-ja \
+locale-ka \
+locale-kk \
+locale-km \
+locale-kn \
+locale-ko \
+locale-kok \
+locale-lt \
+locale-lt-extra \
+locale-lv \
+locale-lv-extra \
+locale-mk \
+locale-mk-extra \
+locale-ml \
+locale-mn \
+locale-mr \
+locale-ms \
+locale-mt \
+locale-nb \
+locale-ne \
+locale-nl \
+locale-nl-extra \
+locale-nn \
+locale-or \
+locale-pa \
+locale-pl \
+locale-pl-extra \
+locale-pt \
+locale-pt-extra \
+locale-ro \
+locale-ru \
+locale-ru-extra \
+locale-sa \
+locale-si \
+locale-sk \
+locale-sl \
+locale-sq \
+locale-sq-extra \
+locale-sr \
+locale-sv \
+locale-sv-extra \
+locale-ta \
+locale-te \
+locale-th \
+locale-th-extra \
+locale-tr \
+locale-tr-extra \
+locale-ug \
+locale-uk \
+locale-ur \
+locale-vi \
+locale-zh-cn \
+locale-zh-cn-extra \
+locale-zh-hk \
+locale-zh-mo \
+locale-zh-sg \
+locale-zh-tw \
+"
 
+HDD_WORKAROUND_DEBS="\
+network-iscsi-iser \
+system-file-system-nfs \
+web-wget \
+"
+
+HDD_REQ_DEBS="\
+$COMMON_REQ_DEBS \
+$NZA_DEBS \
+$LOCALES \
+$HDD_WORKAROUND_DEBS \
+package-dpkg-apt-clone \
+diagnostic-nexenta-collector \
+developer-debug-mdb \
+developer-debug-mdb-module-module-qlc \
+developer-linker \
+security-sudo \
+system-xvm-ipagent \
+system-xvm-xvmstore \
+system-kernel-cpu-counters \
+system-kernel-dtrace-providers \
+system-kernel-dtrace-providers-xdt \
+system-kernel-suspend-resume \
+system-file-system-autofs \
+service-fault-management-snmp-notify \
+system-file-system-zfs-tests \
+"
+
+CD_REQ_DEBS="\
+$COMMON_REQ_DEBS \
+file-gnu-findutils \
+file-gnu-coreutils \
+text-gawk \
+text-gnu-grep \
+text-gnu-sed \
+hddisco \
+mdisco \
+machinesig \
+shell-expect \
+library-perl-5-compiler-kit \
+service-file-system-nfs \
+system-file-system-nfs \
+network-ssh \
+network-ssh-ssh-key \
+service-network-ssh \
+system-extended-system-utilities \
+"
 
 
 #

@@ -556,8 +556,8 @@ function create_mini
 	rm -rf ${MINIROOT_STAGING_64b}/tmp/*
 	rm -rf ${MINIROOT_STAGING_32b}/tmp/*
 
-	rm -f ${MINIROOT_STAGING_64b}/dev/{*dsk/*,cfg/*,scsi/*/*}
-	rm -f ${MINIROOT_STAGING_32b}/dev/{*dsk/*,cfg/*,scsi/*/*}
+	rm -rf ${MINIROOT_STAGING_64b}/dev/{*dsk/*,cfg/*,scsi/*}
+	rm -rf ${MINIROOT_STAGING_32b}/dev/{*dsk/*,cfg/*,scsi/*}
 
 	# Find out the size of miniroot staging area
 	sync; sync; sync
