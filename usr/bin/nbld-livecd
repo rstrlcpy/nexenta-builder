@@ -206,11 +206,6 @@ network/rpc/metamed
 network/rpc/metamh
 network/rpc/gss
 network/rpc/rquota
-network/nfs/status
-network/nfs/nlockmgr
-network/nfs/client
-network/nfs/server
-network/nfs/rquota
 network/security/ktkt_warn
 application/gdm
 '
