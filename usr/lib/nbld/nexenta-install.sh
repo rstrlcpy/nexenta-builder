@@ -2659,9 +2659,6 @@ customize_hdd_install()
 	chown root:sys $TMPDEST/etc/passwd
 	printlog "Root SHELL is set to /bin/bash"
 
-	# Increases amount of MSI a PCI can allocate. Fixes #11636
-	echo "set ddi_msix_alloc_limit=6" >> $TMPDEST/etc/system
-
 	apply_kbd
 
 	customize_common
