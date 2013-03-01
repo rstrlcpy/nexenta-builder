@@ -296,6 +296,7 @@ system-kernel-suspend-resume \
 system-file-system-autofs \
 service-fault-management-snmp-notify \
 system-file-system-zfs-tests \
+runtime-perl-510-extra \
 "
 
 CD_REQ_DEBS="\
