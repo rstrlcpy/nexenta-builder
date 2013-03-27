@@ -151,6 +151,7 @@ driver-network-vmxnet3s \
 driver-ipmi \
 network-aoe-initiator \
 network-aoe-target \
+network-ipfilter \
 storage-aoe \
 "
 
