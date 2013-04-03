@@ -153,6 +153,7 @@ network-aoe-initiator \
 network-aoe-target \
 network-ipfilter \
 storage-aoe \
+driver-isal \
 "
 
 NZA_DEBS="\
