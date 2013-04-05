@@ -157,7 +157,6 @@ else
 fi
 
 echo "Selected Mode is $mode"
-export STAGE0_DEBS="$STAGE0_DEBS $REQ_DEBS $STAGE0_APTINST $STAGE0_CD $STAGE0_DRIVERS $STAGE0_CD_END $STAGE0_HDD_END"
 
 # From now on selected do 'install' or 'livecd' type
 mode=$mode_type
@@ -192,12 +191,12 @@ Downloading package archives...
 ------------------------------------------------------------------------------
 EOF
 
-BOOTSTRAP_REQUIRED="$BOOTSTRAP_REQUIRED $STAGE0_DEBS"
+HDD_LIST_DEBS="$HDD_REQ_DEBS $DRIVERS_DEBS $HDD_USER_DEFINED_DEBS"
 
 echo "$APT_GET update"
 $APT_GET update || abort
-echo "$APT_GET install -d -y --force-yes $BOOTSTRAP_REQUIRED"
-$APT_GET install -d -y --force-yes $BOOTSTRAP_REQUIRED || fatal "Can't download package archives"
+echo "$APT_GET install -d -y --force-yes $HDD_LIST_DEBS"
+$APT_GET install -d -y --force-yes $HDD_LIST_DEBS || fatal "Cannot download package archives"
 
 fi
 
@@ -330,7 +329,7 @@ Initial local repository APT update ...
 ------------------------------------------------------------------------------
 EOF
 
-	FILESCD="$STAGE0_CD $STAGE0_DRIVERS $STAGE0_CD_END"
+	FILESCD="$CD_REQ_DEBS $DRIVERS_DEBS $CD_USER_DEFINED_DEBS"
 
 	$APT_GET update
 	$APT_GET install -m -y --force-yes sunwcsd
@@ -340,14 +339,10 @@ EOF
 	$APT_GET clean
 
 	# save list of packages for APT installation
-	echo "$REQ_DEBS $STAGE0_APTINST $STAGE0_DRIVERS $STAGE0_CD_END $STAGE0_HDD_END" > $rootdir$hddrepo/aptinst.lst
+	echo "$HDD_LIST_DEBS" > $rootdir$hddrepo/aptinst.lst
 
 	echo "Preparing hwdisco ... "
 	cp $customdir/hwdisco.pl $rootdir$hddrepo/hwdisco
-
-#	# Hack, because now chpasswd is not provided by any package
-#	echo "Preparing chpasswd ... "
-#	cp $customdir/chpasswd $rootdir/usr/sbin/chpasswd
 
 	touch $rootdir/etc/login.defs
 

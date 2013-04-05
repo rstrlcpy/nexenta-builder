@@ -30,6 +30,7 @@ mnt
 lib
 platform/i86pc/kernel
 platform/i86xpv/kernel
+platform/i86hvm/kernel
 proc
 sbin
 system
