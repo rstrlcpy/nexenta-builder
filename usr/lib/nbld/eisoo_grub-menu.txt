@@ -1,0 +1,65 @@
+#
+# Copyright 2005 Nexenta Systems, Inc.  All rights reserved.
+# Use is subject to license terms.
+#
+# $Id: hdd_grub_menu.txt 17654 2006-03-10 20:40:48Z mac $
+#
+
+# default menu entry to boot
+default 1
+
+# menu timeout in second before default OS is booted
+# set to -1 to wait for user input
+timeout 45
+
+# To enable grub serial console to ttya uncomment the following lines
+# and comment out the splashimage line below
+# WARNING: don't enable grub serial console when BIOS console serial
+#	redirection is active!!!
+#   serial --unit=0 --speed=9600
+#   terminal serial
+
+# Uncomment the following line to enable GRUB splashimage on console
+splashimage=/boot/grub/nexenta.xpm.gz
+background 0000FF
+
+# To chainload another OS
+#
+# title Another OS
+#	root (hd<disk no>,<partition no>)
+#	chainloader +1
+#
+# To chainload a Solaris release not based on grub
+#
+# title Solaris 9
+#	root (hd<disk no>,<partition no>)
+#	chainloader +1
+#	makeactive
+#
+# To load a Solaris instance based on grub
+#
+# title Solaris <version>
+#	root (hd<disk no>,<partition no>,x)	--x = Solaris root slice
+#	kernel /platform/i86pc/multiboot
+#	module /platform/i86pc/boot_archive
+#
+# To override Solaris boot args (see kernel(1M)), console device and
+# properties set via eeprom(1M) edit the "kernel" line to:
+#
+#   kernel /platform/i86pc/multiboot <boot-args> -B prop1=val1,prop2=val2,...
+
+title Install EISOO OS via serial port COM1 (__autoversion__)
+	root (cd)
+	kernel$ /platform/i86pc/kernel/$ISADIR/unix -B atapi-cd-dma-enabled=0 -B console=ttya
+	module$ /platform/i86pc/$ISADIR/miniroot
+title Install EISOO OS via keyboard/monitor (__autoversion__)
+	root (cd)
+	kernel$ /platform/i86pc/kernel/$ISADIR/unix -B atapi-cd-dma-enabled=0
+	module$ /platform/i86pc/$ISADIR/miniroot
+title Memory Subsystem Test (Hardware Verification)
+	root (cd)
+	kernel /boot/memtest86+.bin
+title Recovery Console
+	root (cd)
+	kernel$ /platform/i86pc/kernel/unix -B atapi-cd-dma-enabled=0 -s
+	module$ /platform/i86pc/miniroot
