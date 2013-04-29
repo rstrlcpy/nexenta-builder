@@ -13,12 +13,12 @@ _KS_callback_post_install()
 	echo "	exit" >> $TMPDEST/root/.bash_profile
 	echo "elif test \"x\$nms_state\" = 'xdisabled'; then" >> $TMPDEST/root/.bash_profile
 	echo "  echo " >> $TMPDEST/root/.bash_profile
-	echo "  echo '   EisooStor Safe Mode: starting UNIX shell now...'" >> $TMPDEST/root/.bash_profile
+	echo "  echo '   EISOO AnyStorage Safe Mode: starting UNIX shell now...'" >> $TMPDEST/root/.bash_profile
 	echo "  echo " >> $TMPDEST/root/.bash_profile
 	echo "else" >> $TMPDEST/root/.bash_profile
 	echo "  echo " >> $TMPDEST/root/.bash_profile
 	echo "  echo '                         * * *'" >> $TMPDEST/root/.bash_profile
-	echo "  echo '  Eisoo Storage Appliance failed to initialize!'" >> $TMPDEST/root/.bash_profile
+	echo "  echo '  EISOO Storage Appliance failed to initialize!'" >> $TMPDEST/root/.bash_profile
 	echo "  echo '  Suggested possible recovery actions:'" >> $TMPDEST/root/.bash_profile
 	echo "  echo '     - Reboot into a known working system checkpoint'" >> $TMPDEST/root/.bash_profile
 	echo "  echo '     - Run \"svcadm clear nms\" and try to re-login'" >> $TMPDEST/root/.bash_profile

@@ -1116,7 +1116,7 @@ if [ -d ${FAKEROOT}/${REPO} ]; then
 	MODE=install
 	DATE_TIME="-$(date +%y-%m-%d_%H-%M)"
 	ISO_IMAGE=${STAGING_DIR}/${NBLD_DEFAULT_MODE}_install${DATE_TIME}.iso
-	if cat ${FAKEROOT}/${REPO}/defaults | egrep -i "NexentaCore|NexentaStor|iCore|Eisoo" >/dev/null; then
+	if cat ${FAKEROOT}/${REPO}/defaults | egrep -i "NexentaCore|NexentaStor|EISOO" >/dev/null; then
 		INSTALL_MODE=core
 	else
 		INSTALL_MODE=generic

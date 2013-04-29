@@ -50,14 +50,14 @@ background 0000FF
 
 # __date__
 #---------- ADDED BY BOOTADM - DO NOT EDIT ----------
-title EISOO OS [Auto-detect 32-bit/64-bit]
+title EISOO AnyStorage [Auto-detect 32-bit/64-bit]
 	findroot (pool_syspool,0,a)
 	bootfs syspool/rootfs-nmu-000
 	kernel$ /platform/i86pc/kernel/$ISADIR/unix
 	module$ /platform/i86pc/$ISADIR/boot_archive
 #---------------------END BOOTADM--------------------
 #---------- ADDED BY BOOTADM - DO NOT EDIT ----------
-title EISOO OS [Safe Mode, 32-bit]
+title EISOO AnyStorage [Safe Mode, 32-bit]
 	findroot (pool_syspool,0,a)
 	bootfs syspool/rootfs-nmu-000
 	kernel$ /platform/i86pc/kernel/unix -s

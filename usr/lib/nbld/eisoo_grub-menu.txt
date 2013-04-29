@@ -48,11 +48,11 @@ background 0000FF
 #
 #   kernel /platform/i86pc/multiboot <boot-args> -B prop1=val1,prop2=val2,...
 
-title Install EISOO OS via serial port COM1 (__autoversion__)
+title Install EISOO AnyStorage via serial port COM1 (__autoversion__)
 	root (cd)
 	kernel$ /platform/i86pc/kernel/$ISADIR/unix -B atapi-cd-dma-enabled=0 -B console=ttya
 	module$ /platform/i86pc/$ISADIR/miniroot
-title Install EISOO OS via keyboard/monitor (__autoversion__)
+title Install EISOO AnyStorage via keyboard/monitor (__autoversion__)
 	root (cd)
 	kernel$ /platform/i86pc/kernel/$ISADIR/unix -B atapi-cd-dma-enabled=0
 	module$ /platform/i86pc/$ISADIR/miniroot

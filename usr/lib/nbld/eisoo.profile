@@ -25,7 +25,7 @@ system/device/audio:default \
 "
 product_type='Enterprise Edition'
 
-company_title="Eisoo"
-product_title="Eisoo"
-desc1="EISOO OS Appliance installation profile"
+company_title="EISOO"
+product_title="EISOO"
+desc1="EISOO Storage Appliance installation profile"
 ks_scripts="eisoo-ks-scripts"
