@@ -7,11 +7,6 @@ nmv-autosmart \
 nmc-autosmart \
 nms-rrdaemon \
 remote-rep \
-nmc-rsf-cluster \
-nms-rsf-cluster \
-nmv-rsf-cluster \
-ns-i18n-rsf-cluster \
-rsf-1 \
 nlm-com \
 "
 
