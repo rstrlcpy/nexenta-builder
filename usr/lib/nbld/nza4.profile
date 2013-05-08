@@ -298,6 +298,7 @@ system-file-system-autofs \
 service-fault-management-snmp-notify \
 system-file-system-zfs-tests \
 runtime-perl-510-extra \
+system-storage-sasinfo \
 "
 
 CD_REQ_DEBS="\
